@@ -1,0 +1,7 @@
+---
+description: "Use quando precisar criar ou vincular um work item no Azure DevOps Board antes de iniciar qualquer trabalho no projeto."
+---
+
+Follow the canonical procedure in `processes/create-work-item.md`.
+
+Tool-call examples in the canonical use Claude Code MCP naming (e.g., `mcp__azure-devops__*`, `mcp__sonarqube__*`). In Cursor, use the equivalent MCP tools registered in your stack — see `ai-tools-matrix.md` for the mapping.

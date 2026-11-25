@@ -1,0 +1,7 @@
+---
+description: "Use quando o usuário iniciar uma nova sessão de desenvolvimento no projeto — seja Nova Feature, Bug Fix, Follow-up, Melhoria/Refatoração, Testes, Express (mudança pequena) ou Freestyle."
+---
+
+Follow the canonical procedure in `processes/start-workflow.md`.
+
+Tool-call examples in the canonical use Claude Code MCP naming (e.g., `mcp__azure-devops__*`, `mcp__sonarqube__*`). In Cursor, use the equivalent MCP tools registered in your stack — see `ai-tools-matrix.md` for the mapping.

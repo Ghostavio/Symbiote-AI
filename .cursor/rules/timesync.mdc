@@ -1,0 +1,7 @@
+---
+description: "Use quando o usuário precisar sincronizar horas de trabalho com o 7pace Timetracker — tanto para o dia atual quanto para múltiplos dias passados."
+---
+
+Follow the canonical procedure in `processes/timesync.md`.
+
+Tool-call examples in the canonical use Claude Code MCP naming (e.g., `mcp__azure-devops__*`, `mcp__sonarqube__*`). In Cursor, use the equivalent MCP tools registered in your stack — see `ai-tools-matrix.md` for the mapping.

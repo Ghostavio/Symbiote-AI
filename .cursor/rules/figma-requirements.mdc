@@ -1,0 +1,7 @@
+---
+description: "Use quando o usuário quiser levantar requisitos de uma feature a partir de um design no Figma (via MCP, local ou online) — extrair telas, componentes, estados, textos e tokens e transformá-los num documento de requisitos que alimenta o spec-builder."
+---
+
+Follow the canonical procedure in `processes/figma-requirements.md`.
+
+Os exemplos de tool-call usam nomes de MCP do Claude Code (ex.: `mcp__figma-dev-mode__*`). Em Cursor, use os MCP tools equivalentes registrados na sua stack — ver `ai-tools-matrix.md`.
