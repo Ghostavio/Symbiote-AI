@@ -39,6 +39,13 @@ if [[ -z "$DESCRIPTION" || -z "$START_TIME" || -z "$END_TIME" ]]; then
   echo "[Clockify] ERRO: --description, --start e --end são obrigatórios." >&2
   exit 1
 fi
+ISO_Z_REGEX='^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'
+if [[ ! "$START_TIME" =~ $ISO_Z_REGEX || ! "$END_TIME" =~ $ISO_Z_REGEX ]]; then
+  echo "[Clockify] ERRO: --start e --end devem estar no formato exato AAAA-MM-DDTHH:MM:SSZ (ex: 2026-01-14T14:00:00Z)." >&2
+  echo "  --start: '$START_TIME'" >&2
+  echo "  --end:   '$END_TIME'" >&2
+  exit 1
+fi
 
 if [[ -z "${CLOCKIFY_API_TOKEN:-}" ]]; then
   echo "[Clockify] SKIP — CLOCKIFY_API_TOKEN não configurado"
@@ -57,18 +64,20 @@ PROJECT_ID="${CLOCKIFY_PROJECT_ID:-}"
 CLOCKIFY_START=$(echo "$START_TIME" | sed 's/Z$/-03:00/')
 CLOCKIFY_END=$(echo "$END_TIME" | sed 's/Z$/-03:00/')
 
-BODY=$(python3 -c "
-import json
+BODY=$(CLOCKIFY_START="$CLOCKIFY_START" CLOCKIFY_END="$CLOCKIFY_END" \
+  DESCRIPTION="$DESCRIPTION" PROJECT_ID="$PROJECT_ID" \
+  python3 -c '
+import json, os
 body = {
-    'start': '$CLOCKIFY_START',
-    'end': '$CLOCKIFY_END',
-    'description': '$DESCRIPTION',
-    'billable': True,
+    "start": os.environ["CLOCKIFY_START"],
+    "end": os.environ["CLOCKIFY_END"],
+    "description": os.environ["DESCRIPTION"],
+    "billable": True,
 }
-if '$PROJECT_ID':
-    body['projectId'] = '$PROJECT_ID'
+if os.environ["PROJECT_ID"]:
+    body["projectId"] = os.environ["PROJECT_ID"]
 print(json.dumps(body))
-")
+')
 
 if $DRY_RUN; then
   echo "[Clockify] DRY RUN — POST /time-entries"

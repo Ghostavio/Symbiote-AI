@@ -82,6 +82,18 @@ if [[ -z "$WORK_ITEM_ID" ]]; then
   echo "ERRO: --work-item-id é obrigatório para 7pace." >&2
   exit 1
 fi
+if [[ ! "$WORK_ITEM_ID" =~ ^[0-9]+$ ]]; then
+  echo "ERRO: --work-item-id deve conter só dígitos (ex: 1234)." >&2
+  echo "  --work-item-id: '$WORK_ITEM_ID'" >&2
+  exit 1
+fi
+ISO_Z_REGEX='^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'
+if [[ ! "$START_TIME" =~ $ISO_Z_REGEX || ! "$END_TIME" =~ $ISO_Z_REGEX ]]; then
+  echo "ERRO: --start e --end devem estar no formato exato AAAA-MM-DDTHH:MM:SSZ (ex: 2026-01-14T14:00:00Z)." >&2
+  echo "  --start: '$START_TIME'" >&2
+  echo "  --end:   '$END_TIME'" >&2
+  exit 1
+fi
 
 # --- Calcular duração em segundos ---
 # Tenta BSD date (macOS) primeiro; fallback pra GNU date (Linux). Se ambos falharem,
@@ -125,18 +137,20 @@ fi
 
 SEVENPACE_BASE_URL="${SEVENPACE_BASE_URL:-https://<SEVENPACE_ORG>.timehub.7pace.com}"
 
-BODY=$(python3 -c "
-import json
+BODY=$(WORK_ITEM_ID="$WORK_ITEM_ID" DURATION_SECONDS="$DURATION_SECONDS" \
+  START_TIME="$START_TIME" DESCRIPTION="$DESCRIPTION" ACTIVITY_TYPE_ID="$ACTIVITY_TYPE_ID" \
+  python3 -c '
+import json, os
 body = {
-    'workItemId': int('$WORK_ITEM_ID'),
-    'length': $DURATION_SECONDS,
-    'timestamp': '$START_TIME',
-    'comment': '$DESCRIPTION',
-    'activityTypeId': '$ACTIVITY_TYPE_ID',
-    'timeZone': -180,
+    "workItemId": int(os.environ["WORK_ITEM_ID"]),
+    "length": int(os.environ["DURATION_SECONDS"]),
+    "timestamp": os.environ["START_TIME"],
+    "comment": os.environ["DESCRIPTION"],
+    "activityTypeId": os.environ["ACTIVITY_TYPE_ID"],
+    "timeZone": -180,
 }
 print(json.dumps(body))
-")
+')
 
 if $DRY_RUN; then
   echo "[7pace] DRY RUN — POST /api/rest/workLogs?api-version=3.2"
