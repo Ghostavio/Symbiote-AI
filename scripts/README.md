@@ -65,7 +65,7 @@ Se você usa uma ferramenta de AI compatível, invoque a skill **`/setup-7pace`*
 | `--end`           | Sim         | Fim no formato ISO 8601                                     |
 | `--work-item-id`  | Sim         | ID do work item no Azure DevOps                             |
 | `--activity-type` | Não         | Tipo de atividade (default: `Desenvolvimento`)              |
-| `--dry-run`       | Não         | Mostra o que seria enviado sem criar                        |
+| `--dry-run`       | Não         | Mostra o JSON sem carregar credenciais nem chamar a API    |
 
 ### Activity Types disponíveis
 
