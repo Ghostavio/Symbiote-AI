@@ -100,4 +100,5 @@ if [[ "$HTTP_CODE" == "201" ]]; then
   echo "[Clockify] OK — entry criada (ID: $ENTRY_ID)"
 else
   echo "[Clockify] ERRO $HTTP_CODE — $RESPONSE_BODY" >&2
+  exit 1
 fi
