@@ -40,6 +40,7 @@ When the user requests one of these by name (e.g., "rode o `phase-code-review`")
 | `spec-builder`            | [processes/spec-builder.md](processes/spec-builder.md)     | Construir especificação de feature a partir do template padrão                          |
 | `phase-code-review`  | [processes/phase-code-review.md](processes/phase-code-review.md) | Code review com lint + typecheck + SonarQube + testes + correções automáticas |
 | `timesync`                | [processes/timesync.md](processes/timesync.md)             | Sincronização de horas no 7pace Timetracker                                             |
+| `timesync-clockify`       | [processes/timesync-clockify.md](processes/timesync-clockify.md) | Extensão opcional para registrar as mesmas horas também no Clockify                     |
 | `setup-azure-mcp`         | [processes/setup-azure-mcp.md](processes/setup-azure-mcp.md) | Configurar MCP do Azure DevOps na ferramenta de AI em uso                                |
 | `setup-sonarqube-mcp`     | [processes/setup-sonarqube-mcp.md](processes/setup-sonarqube-mcp.md) | Configurar MCP do SonarQube (via Docker)                                                |
 | `setup-7pace`             | [processes/setup-7pace.md](processes/setup-7pace.md)       | Configurar integração com 7pace Timetracker (token + .env)                              |
