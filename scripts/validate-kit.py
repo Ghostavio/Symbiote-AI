@@ -112,10 +112,17 @@ def validate_wrappers(root: Path) -> list[str]:
                 errors.append(
                     f".claude/skills/{skill_name}/SKILL.md: no matching canonical {expected_rel}"
                 )
-            elif expected_rel not in content:
-                errors.append(
-                    f".claude/skills/{skill_name}/SKILL.md: does not reference {expected_rel}"
-                )
+            else:
+                expected_target = canonicals[skill_name].resolve()
+                resolved_targets = {
+                    (skill_file.parent / target.split("#", 1)[0]).resolve()
+                    for target in extract_local_links(content)
+                    if target.split("#", 1)[0] and not target.startswith("/")
+                }
+                if expected_target not in resolved_targets:
+                    errors.append(
+                        f".claude/skills/{skill_name}/SKILL.md: must link directly to {expected_rel}"
+                    )
     else:
         errors.append("Missing required directory: .claude/skills/")
 
