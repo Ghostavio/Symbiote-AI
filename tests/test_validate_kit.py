@@ -601,6 +601,8 @@ class ValidateKitTests(unittest.TestCase):
         # Avoid false-positive detection on non-React Vite projects
         self.assertNotIn("vite.config.ts", manifest["detect"].get("files", []))
         self.assertNotIn("vite.config.js", manifest["detect"].get("files", []))
+        # Avoid auto-filling unconfirmed tools (TS/Vitest/Playwright) or npx downloads
+        self.assertNotIn("commands", manifest)
 
         editor_settings = json.loads(
             (react_dir / manifest["files"]["editor_settings"]).read_text(encoding="utf-8")

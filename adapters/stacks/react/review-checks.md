@@ -4,7 +4,7 @@ Checklist especializado para carregar em [`processes/phase-code-review.md`](../.
 
 ## §2 Code Quality & Patterns (React)
 
-- [ ] Componentes funcionais com TypeScript estrito (sem `any` injustificado e sem mutação direta de props ou estado).
+- [ ] Componentes funcionais bem estruturados; quando o projeto usar TypeScript, tipagem estrita sem `any` injustificado e sem mutação direta de props ou estado.
 - [ ] Regras dos Hooks respeitadas (`rules-of-hooks` e `exhaustive-deps` sem `eslint-disable` sem justificativa clara).
 - [ ] Estado derivado calculado durante o render em vez de duplicado e sincronizado via `useEffect`.
 - [ ] `useEffect` restrito a sincronização com sistemas externos (não usado para derivar estado ou responder a eventos do usuário).
@@ -31,18 +31,20 @@ Checklist especializado para carregar em [`processes/phase-code-review.md`](../.
 ## §5 Accessibility & Tests (React)
 
 - [ ] HTML semântico (`<button>` em vez de `<div onClick>`), `<label>` associado a inputs, `aria-label` em botões de ícone e suporte a foco/teclado em modais, menus e tabelas interativas.
-- [ ] Testes de componentes escritos com foco em comportamento (queries acessíveis da Testing Library e `userEvent`), cobrindo caminhos felizes, erro e estados vazios.
-- [ ] Sem acoplamento de testes unitários ou E2E a classes CSS voláteis (preferir roles acessíveis e `data-testid` estável).
+- [ ] **Testes de componentes:** escritos com foco em comportamento (queries acessíveis da Testing Library e `userEvent`), cobrindo caminhos felizes, erro e estados vazios.
+- [ ] **Testes E2E:** seguem a convenção de seletores adotada pelo projeto (`data-testid` / `getByTestId` quando usar `docs/e2e.md`, ou a convenção registrada em `.claude/PROJECT_REFERENCE.md`), sem acoplamento a classes CSS voláteis.
 
-## §7–§8 Quality Checks & Static Analysis (exemplos React)
+## §7–§8 Quality Checks & Static Analysis (exemplos condicionais React)
 
-Comandos típicos (ajuste ao gerenciador de pacotes e scripts reais do projeto):
+Execute **apenas** os scripts e ferramentas realmente instalados e confirmados no projeto host (`.claude/PROJECT_REFERENCE.md` / `package.json`). Evite invocar `npx` sem `--no-install` contra ferramentas ausentes (como `tsc`, `vitest` ou `playwright`), pois isso pode baixar pacotes fora do lockfile em revisões não interativas.
+
+Exemplos condicionais (use os scripts reais do projeto com `npm`/`pnpm`/`yarn`/`bun`, somente quando a respectiva ferramenta estiver configurada):
 
 ```bash
-npm run lint                         # ESLint (recomendado com react-hooks, jsx-a11y e sonarjs)
-npx tsc --noEmit                     # Typecheck
-npx vitest run                       # Testes unitários/componentes (ou jest, conforme o projeto)
-npx playwright test --reporter=list  # E2E (quando aplicável)
+npm run lint                                     # quando houver script de lint (ESLint com react-hooks/jsx-a11y/sonarjs)
+npm run typecheck                                # ou ./node_modules/.bin/tsc --noEmit (somente se TypeScript estiver instalado)
+npm test                                         # runner unitário/componentes configurado (ex.: Vitest ou Jest)
+npm run test:e2e                                 # somente se Playwright ou outro runner E2E estiver configurado
 ```
 
 Exemplos comuns de análise estática em TypeScript/React (ESLint / SonarJS / SonarQube):

@@ -4,7 +4,7 @@ Convenções recomendadas para projetos **React** acoplados ao **Symbiote-AI**. 
 
 ## Padrões de componentes e Hooks
 
-- **Componentes funcionais com TypeScript estrito:** prefira `strict: true`, tipagem explícita de props e contratos de domínio (evite `any` injustificado e mutação direta de props ou estado).
+- **Componentes funcionais e tipagem (quando o projeto usar TypeScript):** prefira `strict: true`, tipagem explícita de props e contratos de domínio (evite `any` injustificado e mutação direta de props ou estado). Em projetos JavaScript, mantenha contratos claros de props e validação nas fronteiras externas.
 - **Regras dos Hooks:** nunca chame Hooks condicionalmente, em loops ou após retornos antecipados; respeite `eslint-plugin-react-hooks` (`rules-of-hooks` e `exhaustive-deps`) sem silenciar alertas sem justificativa documentada.
 - **Estado mínimo e derivado:** calcule valores derivados durante o render em vez de duplicar estado sincronizado via `useEffect`; prefira `useState`/`useReducer` locais antes de elevar para Context ou store global.
 - **`useEffect` apenas para sincronização externa:** use efeitos somente para integrar com sistemas fora do React (assinaturas, timers, eventos de browser, SDKs externos), sempre retornando função de cleanup (incluindo `AbortController` para cancelar requisições manuais). Lógica disparada por ações do usuário pertence a event handlers, não a efeitos.
@@ -38,20 +38,22 @@ src/features/<feature>/
 
 - **Idioma da UI:** siga o idioma configurado no projeto (padrão pt-BR com acentuação correta).
 - **Estilização e temas:** siga a estratégia já adotada no projeto (Tailwind CSS, CSS Modules, design system/tokens CSS), preservando consistência em modo claro/escuro quando suportado.
-- **Acessibilidade e testabilidade:** prefira HTML semântico (`<button>`, `<a href>`, `<label htmlFor>`), garanta `aria-label` em botões de ícone e controles sem texto visível, suporte navegação por teclado/foco em diálogos e menus, e use `data-testid` apenas como complemento estável quando seletores acessíveis não bastarem (nunca acoplar testes a classes CSS).
+- **Acessibilidade e testabilidade:** prefira HTML semântico (`<button>`, `<a href>`, `<label htmlFor>`), garanta `aria-label` em botões de ícone e controles sem texto visível e suporte navegação por teclado/foco em diálogos e menus. Para atributos `data-testid`, siga a convenção de seletores adotada pelo projeto nos testes E2E (nunca acoplar testes a classes CSS).
 
-## Testes
+## Testes e comandos
+
+### Comandos do projeto
+
+React não implica automaticamente TypeScript, Vitest ou Playwright. Preencha `<LINT_CMD>`, `<TYPECHECK_CMD>`, `<TEST_CMD>`, `<E2E_CMD>`, `<BUILD_CMD>` e `<DEV_CMD>` no `.claude/PROJECT_REFERENCE.md` **apenas com os scripts e ferramentas realmente instalados e confirmados no projeto host** (ex.: `package.json` + gerenciador de pacotes do repo). Evite comandos via `npx` sem `--no-install` que possam baixar pacotes fora do lockfile em execuções não interativas.
 
 ### Unitários e de componentes (Vitest ou Jest + React Testing Library)
 
-- **Teste comportamento, não implementação:** prefira queries acessíveis (`getByRole`, `getByLabelText`, `findByText`) e `userEvent` em vez de inspecionar estado interno de hooks ou detalhes do DOM.
+- **Teste comportamento, não implementação:** em testes de componentes, prefira queries acessíveis (`getByRole`, `getByLabelText`, `findByText`) e `userEvent` em vez de inspecionar estado interno de hooks ou detalhes do DOM.
 - **Isolamento e mocks:** prefira `vi.fn()` / `jest.fn()` e mocks de fronteira HTTP (ex.: MSW) em vez de mockar internos do React; restaure mocks/timers entre testes para evitar vazamento de estado.
 
-> Se o projeto host usar Jest ou outro runner/gerenciador (`pnpm`, `yarn`, `bun`), registre os comandos reais no `.claude/PROJECT_REFERENCE.md`.
+### E2E (Playwright ou runner adotado pelo projeto)
 
-### E2E (Playwright)
-
-Siga [`docs/e2e.md`](../../../docs/e2e.md) para Page Object Model (POM), seletores acessíveis/`data-testid` e fixtures de autenticação.
+Diferencie a estratégia de seletores entre testes de componentes (queries acessíveis) e E2E (siga sempre a convenção adotada pelo projeto): em projetos que adotam [`docs/e2e.md`](../../../docs/e2e.md), use Page Object Model (POM), `data-testid` (`page.getByTestId(...)`) como seletor principal e fixtures de autenticação — nunca seletores acoplados a classes CSS. Caso o projeto já utilize outra convenção (ex.: seletores acessíveis no Playwright ou outro runner), registre-a no `.claude/PROJECT_REFERENCE.md`.
 
 ## Preferências de editor (opcional)
 

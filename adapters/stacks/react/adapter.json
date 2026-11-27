@@ -3,7 +3,7 @@
   "name": "React",
   "category": "stack",
   "version": "1.0.0",
-  "description": "Convenções, checks de revisão e preferências de editor para aplicações React modernas com TypeScript (componentes funcionais, Hooks, separação de estado cliente/servidor, Vitest/Testing Library e Playwright).",
+  "description": "Convenções, checks de revisão e preferências de editor para aplicações React modernas (componentes funcionais, Hooks, separação de estado cliente/servidor, testes de componente/E2E e TypeScript quando configurado).",
   "detect": {
     "packages": [
       "react",
@@ -12,14 +12,6 @@
       "@vitejs/plugin-react-swc",
       "next"
     ]
-  },
-  "commands": {
-    "lint": "npm run lint",
-    "typecheck": "npx tsc --noEmit",
-    "test": "npx vitest run",
-    "e2e": "npx playwright test --reporter=list",
-    "build": "npm run build",
-    "dev": "npm run dev"
   },
   "files": {
     "conventions": "conventions.md",
