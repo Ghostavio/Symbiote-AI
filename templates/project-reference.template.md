@@ -175,7 +175,7 @@ Descreva como a aplicação roda localmente sem depender de todos os serviços e
 ```text
 # (preencha com as variáveis/chaves de configuração por ambiente)
 APP_ENV=local
-API_BASE_URL=<DEV_URL>
+API_BASE_URL=<API_BASE_URL>   # URL da API/mock (ex.: http://localhost:3000 ou caminho relativo como /api quando houver proxy)
 AUTH_ISSUER_URL=<URL do provedor OAuth2/OIDC>
 AUTH_CLIENT_ID=<client id público>
 ```
