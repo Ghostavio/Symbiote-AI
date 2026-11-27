@@ -70,6 +70,15 @@ Quando o risco ou a complexidade indicar outro nível, explique brevemente qual 
 
 Trate **modelo** e **esforço** como escolhas separadas. Em Anthropic, OpenAI e Google, use o modelo escolhido pelo usuário ou pelo projeto e aplique o esforço aos controles disponíveis na ferramenta. Considere sugerir outro modelo separadamente quando houver benefício claro. Os quatro níveis são a escala do kit. Use o equivalente documentado pelo cliente, quando houver, e informe se a sessão não permitir alterar um parâmetro ou se for preciso ajustá-lo manualmente. Registre apenas o nível que de fato foi aplicado.
 
+### Combinar modelos na mesma entrega
+
+Quando houver escolha de modelos e autorização para delegar, considere dividir uma entrega em duas passagens:
+
+1. **Primeira passagem com um modelo mais econômico.** Dê a ele o escopo, os critérios de aceitação e as verificações esperadas. Use-o para a maior parte da implementação bem especificada, como testes diretos, mudanças repetitivas e documentação. Peça o diff, os resultados dos checks e as dúvidas em aberto.
+2. **Revisão e refinamento com um modelo mais capaz.** Entregue o pedido original, o diff e as evidências. Peça que verifique a intenção e os casos de maior risco, refine o que tiver impacto no resultado e rode novamente os checks afetados por suas correções. Aplique correções dentro da autorização definida em [`phase-code-review`](phase-code-review.md).
+
+A proporção depende do trabalho. Use uma única passagem quando a revisão separada custar mais do que agrega. Em decisões de alto impacto ou requisitos ambíguos, envolva o modelo mais capaz desde o planejamento e delegue a execução depois que os critérios estiverem claros.
+
 ### Claude Code — sugerir `ultracode` em alta complexidade
 
 No **Claude Code**, quando a task for de **alta complexidade** — feature grande multi-fase (>50 arquivos), migração/auditoria ampla, espaço de design largo, ou que se beneficie de verificação adversarial — **sugira ao usuário ativar o `ultracode`** (orquestração multi-agente via workflows). O ultracode decompõe o trabalho em muitos subagentes paralelos com verificação adversarial e síntese — ideal para abrangência e confiança em escala. É **opt-in** e consome muito mais tokens: proponha, estime o ganho e deixe o usuário decidir. Para trabalho pequeno/médio, mantenha a execução normal (Express inline ou subagentes pontuais).
