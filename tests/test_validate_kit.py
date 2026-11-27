@@ -157,6 +157,138 @@ class ValidateKitTests(unittest.TestCase):
             self.assertIn("not executable", joined)
             self.assertIn("-n' failed", joined)
 
+    def test_valid_alias_passes_validation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root, "simbiose")
+            (root / "processes" / "scaffold.md").write_text(
+                "---\nname: scaffold\nalias_of: simbiose\ndescription: \"Alias\"\n---\n\n"
+                "Follow [`processes/simbiose.md`](simbiose.md).\n",
+                encoding="utf-8",
+            )
+            alias_skill = root / ".claude" / "skills" / "scaffold"
+            alias_skill.mkdir(parents=True)
+            (alias_skill / "SKILL.md").write_text(
+                "---\nname: scaffold\nalias_of: simbiose\ndescription: \"Alias\"\n---\n\n"
+                "Follow [`processes/simbiose.md`](../../../processes/simbiose.md).\n",
+                encoding="utf-8",
+            )
+            (root / ".cursor" / "rules" / "scaffold.mdc").write_text(
+                "---\nalias_of: simbiose\ndescription: \"Alias\"\n---\n\n"
+                "Follow `processes/simbiose.md`.\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(validator.validate_repo(root), [])
+
+    def test_detects_alias_pointing_to_missing_or_chained_target(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root, "simbiose")
+            (root / "processes" / "scaffold.md").write_text(
+                "---\nname: scaffold\nalias_of: simbiose\ndescription: \"Alias\"\n---\n\n"
+                "Follow [`processes/simbiose.md`](simbiose.md).\n",
+                encoding="utf-8",
+            )
+            (root / "processes" / "chained.md").write_text(
+                "---\nname: chained\nalias_of: scaffold\ndescription: \"Chained\"\n---\n\n"
+                "Follow [`processes/scaffold.md`](scaffold.md).\n",
+                encoding="utf-8",
+            )
+            alias_skill = root / ".claude" / "skills" / "missing-alias"
+            alias_skill.mkdir(parents=True)
+            (alias_skill / "SKILL.md").write_text(
+                "---\nname: missing-alias\nalias_of: ghost\ndescription: \"Broken\"\n---\n\n"
+                "Follow [`processes/ghost.md`](../../../processes/ghost.md).\n",
+                encoding="utf-8",
+            )
+            errors = validator.validate_wrappers(root)
+            joined = "\n".join(errors)
+            self.assertIn("processes/chained.md: alias_of 'scaffold'", joined)
+            self.assertIn("missing-alias/SKILL.md: alias_of 'ghost'", joined)
+
+    def test_detects_alias_wrapper_pointing_to_wrong_canonical(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root, "simbiose")
+            (root / "processes" / "other.md").write_text(
+                "---\nname: other\ndescription: \"Other\"\n---\n\n# Other\n",
+                encoding="utf-8",
+            )
+            (root / "processes" / "scaffold.md").write_text(
+                "---\nname: scaffold\nalias_of: simbiose\ndescription: \"Alias\"\n---\n\n"
+                "Follow [`processes/simbiose.md`](simbiose.md).\n",
+                encoding="utf-8",
+            )
+            alias_skill = root / ".claude" / "skills" / "scaffold"
+            alias_skill.mkdir(parents=True)
+            (alias_skill / "SKILL.md").write_text(
+                "---\nname: scaffold\nalias_of: simbiose\ndescription: \"Alias\"\n---\n\n"
+                "Follow [`processes/simbiose.md`](../../../processes/other.md).\n",
+                encoding="utf-8",
+            )
+            errors = validator.validate_wrappers(root)
+            self.assertTrue(
+                any(
+                    "scaffold/SKILL.md: must link directly to processes/simbiose.md" in e
+                    for e in errors
+                ),
+                errors,
+            )
+
+    def test_detects_alias_target_mismatch_across_tools(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root, "simbiose")
+            # Add a second valid primary canonical (timesync) with full wrappers
+            (root / "processes" / "timesync.md").write_text(
+                "---\nname: timesync\ndescription: \"Timesync\"\n---\n\n# Timesync\n",
+                encoding="utf-8",
+            )
+            ts_skill = root / ".claude" / "skills" / "timesync"
+            ts_skill.mkdir(parents=True)
+            (ts_skill / "SKILL.md").write_text(
+                "---\nname: timesync\ndescription: \"Timesync\"\n---\n\n"
+                "Follow [`processes/timesync.md`](../../../processes/timesync.md).\n",
+                encoding="utf-8",
+            )
+            (root / ".cursor" / "rules" / "timesync.mdc").write_text(
+                "---\ndescription: \"Timesync\"\n---\n\n"
+                "Follow `processes/timesync.md`.\n",
+                encoding="utf-8",
+            )
+            with (root / "AGENTS.md").open("a", encoding="utf-8") as f:
+                f.write("| `timesync` | [processes/timesync.md](processes/timesync.md) |\n")
+            with (root / ".github" / "copilot-instructions.md").open("a", encoding="utf-8") as f:
+                f.write("| `timesync` | [processes/timesync.md](../processes/timesync.md) |\n")
+
+            # Canonical alias and Cursor point to simbiose, while Claude points to timesync
+            (root / "processes" / "scaffold.md").write_text(
+                "---\nname: scaffold\nalias_of: simbiose\ndescription: \"Alias\"\n---\n\n"
+                "Follow [`processes/simbiose.md`](simbiose.md).\n",
+                encoding="utf-8",
+            )
+            (root / ".cursor" / "rules" / "scaffold.mdc").write_text(
+                "---\nalias_of: simbiose\ndescription: \"Alias\"\n---\n\n"
+                "Follow `processes/simbiose.md`.\n",
+                encoding="utf-8",
+            )
+            alias_skill = root / ".claude" / "skills" / "scaffold"
+            alias_skill.mkdir(parents=True)
+            (alias_skill / "SKILL.md").write_text(
+                "---\nname: scaffold\nalias_of: timesync\ndescription: \"Conflicting alias\"\n---\n\n"
+                "Follow [`processes/timesync.md`](../../../processes/timesync.md).\n",
+                encoding="utf-8",
+            )
+            errors = validator.validate_wrappers(root)
+            self.assertTrue(
+                any(
+                    "scaffold/SKILL.md: alias_of 'timesync' disagrees with processes/scaffold.md (expected 'simbiose')"
+                    in e
+                    for e in errors
+                ),
+                errors,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
