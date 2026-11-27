@@ -1,6 +1,8 @@
-# AI Workflow Kit
+# Symbiote-AI
 
-Um kit **portátil e neutro de marca** para desenvolvimento assistido por IA, com skills/processos que padronizam o fluxo de ponta a ponta: iniciar trabalho, levantar requisitos, especificar, revisar código, sincronizar horas e rastrear no board — funcionando em **várias ferramentas de IA** (Claude Code, Cursor, Codex, Copilot).
+![Identidade visual do Symbiote-AI. Ferrofluido preto envolve um núcleo facetado, e os espaços entre os dois sugerem um S na versão plana.](docs/brand/symbiote-ai.png)
+
+O Symbiote-AI se integra a projetos novos ou existentes e amplia o que a equipe já faz com desenvolvimento assistido por IA. O kit oferece processos portáteis para iniciar trabalho, levantar requisitos, escrever especificações, revisar código, sincronizar horas e acompanhar tarefas no board. Funciona com Claude Code, Cursor, Codex e Copilot.
 
 > Extraído e generalizado de um workflow real de um time de produto. Todos os dados específicos de empresa/projeto foram trocados por **placeholders** (`<...>`) e por um stack de **exemplo** — use `/integrar` (projeto existente) ou `/scaffold` (projeto novo) para especializá-lo ao seu contexto.
 
@@ -50,7 +52,7 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 ## Layout
 
 ```
-ai-workflow-kit/
+Symbiote-AI/
 ├── README.md                     ← este arquivo
 ├── LICENSE                       ← texto da Apache License 2.0
 ├── NOTICE                        ← aviso de copyright e licença

@@ -3,7 +3,7 @@ name: integrar
 description: "Use quando o kit for inserido num novo projeto e precisar ser adaptado ao contexto dele — detecta stack, gerenciador de pacotes, framework de teste, tracker, time tracking, plataforma de docs e convenções, propõe um plano de adaptação e reescreve processos/wrappers/matrix/scripts após sua confirmação."
 ---
 
-# Integrar — Adaptar o AI Workflow Kit ao projeto host
+# Integrar — Adaptar o Symbiote-AI ao projeto host
 
 Esta skill **especializa o kit genérico** para o projeto onde ele foi solto. O kit foi montado com uma arquitetura de indireção — **processos canônicos tool-neutral** (`processes/*.md`), **wrappers finos por ferramenta** (`.claude/skills/`, `.cursor/rules/`, `AGENTS.md`, `.github/copilot-instructions.md`) e a **`ai-tools-matrix.md`** — e usa **placeholders** (`<AZURE_ORG>`, `<PROJECT_KEY>`, …). O `integrar` detecta o contexto, mapeia os placeholders para valores reais e reescreve os arquivos.
 
