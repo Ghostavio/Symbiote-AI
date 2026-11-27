@@ -65,7 +65,7 @@ Respeite como cada provedor representa vínculo com o tracker:
 
 ### 4. Fuso horário consistente
 
-`--start` e `--end` são timestamps ISO 8601 com fuso explícito. `Z` significa UTC; para indicar horário local, use o offset válido naquela data (por exemplo, `-03:00`). Os scripts calculam a duração pelo instante representado e enviam os mesmos timestamps aos provedores, sem inferir o fuso do computador nem aplicar conversões fixas. Em regiões com horário de verão, informe o offset vigente na data da sessão.
+`--start` e `--end` são timestamps ISO 8601 com fuso explícito. `Z` significa UTC; para indicar horário local, use o offset válido naquela data (por exemplo, `-03:00`). Os scripts calculam a duração pelo instante representado e normalizam os instantes para UTC (`Z`) ao enviar aos provedores, sem inferir o fuso do computador nem aplicar conversões fixas. Em regiões com horário de verão, informe o offset vigente na data da sessão.
 
 ### 5. Segredos fora do contexto da IA
 

@@ -105,7 +105,7 @@ O contrato comum dos scripts: `--description`, `--start` (ISO 8601), `--end`, `-
 
 - O kit já inclui 7pace (`scripts/sync-7pace.sh`) e Clockify (`.claude/integrations/timetracking/`) como referência. Use-os como molde para Toggl/Harvest (mesma estrutura: parse de args → monta JSON → `curl` → trata HTTP code).
 - Atualize `processes/timesync.md` com os exemplos da ferramenta escolhida e a `ai-tools-matrix.md` se houver tool-call de MCP associado.
-- Conversão de fuso: lembre que o `sync-7pace.sh` envia `timeZone: -180` e trata a hora local com sufixo `Z` por convenção; o `sync-clockify.sh` converte `Z`→`-03:00`. Ajuste para o fuso/projeto correto.
+- Fuso horário: os scripts de referência usam `scripts/time-entry-interval.py` para exigir timestamps ISO 8601 com fuso explícito (`Z` ou offset `±HH:MM`), calcular a duração em UTC e normalizar os envios para UTC (`Z`), sem conversões fixas nem dependência do timezone da máquina.
 
 ## Referência de placeholders do kit
 
