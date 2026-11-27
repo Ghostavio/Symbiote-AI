@@ -53,8 +53,8 @@ Azure DevOps · **Jira** · GitHub Issues · GitLab · nenhum.
 Confirme os comandos reais: `<TEST_CMD>`, `<LINT_CMD>`, `<TYPECHECK_CMD>`, `<BUILD_CMD>`, `<E2E_CMD>`, e os caminhos `<src>`, `<e2e-dir>`. Os checks do `phase-code-review §2` (hoje exemplo Angular) devem ser regerados para o stack detectado.
 
 ### 2.6 Ferramentas de IA em uso
-Claude Code · Cursor · Codex · Copilot · Gemini · outras.
-→ Mantenha apenas os wrappers das ferramentas usadas (os demais podem ficar como referência). Garanta que cada um aponte para `processes/*.md`.
+Claude Code · Antigravity · Gemini CLI · Codex · Cursor · Copilot · outras.
+→ Mantenha apenas os wrappers das ferramentas usadas (os demais podem ficar como referência). Garanta que cada um aponte para `processes/*.md`. **Atenção:** `.agents/skills/` é compartilhado por Antigravity, Gemini CLI e Codex, e `GEMINI.md` depende de `AGENTS.md` — em projetos Gemini-only ou Antigravity-only, **preserve `AGENTS.md` e `.agents/skills/`** ao remover wrappers de outras ferramentas.
 
 ### 2.7 Pack de domínio (opcional)
 O kit não traz um domain pack pronto. Pergunte se o usuário quer **gerar um domain pack** para o stack do projeto (skills de domínio: API, componentes, testes, convenções) a partir do `templates/project-reference.template.md` preenchido.
@@ -72,7 +72,7 @@ Mostre, e peça aprovação explícita:
 ## Passo 4 — Aplicar (após aprovação)
 
 1. Substituir placeholders em `processes/`, wrappers, `ai-tools-matrix.md`, scripts (use busca/substituição consistente; valide que nenhum `<PLACEHOLDER>` ficou para trás onde deveria ter valor). Ajustar também `.cursor/settings.json`: trocar `vitest.rootConfig` (hoje o exemplo `app/vitest.config.ts`) por `<APP_DIR>/vitest.config.ts` com o valor real.
-2. Renomear/remover skills conforme o plano e ajustar os 4 conjuntos de wrappers + a matrix coerentemente.
+2. Renomear/remover skills conforme o plano e ajustar todos os conjuntos de wrappers mantidos (`.agents/skills/`, `.claude/skills/`, `.cursor/rules/`, `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md`) + a `ai-tools-matrix.md` coerentemente — preservando `AGENTS.md` e `.agents/skills/` sempre que Antigravity, Gemini CLI ou Codex estiverem em uso.
 3. Escrever/atualizar `.mcp.json` com os servidores escolhidos.
 4. Configurar o time tracking escolhido (script + chaves no `.env.example`).
 5. Configurar o destino de documentação (in-repo vs MCP externo).

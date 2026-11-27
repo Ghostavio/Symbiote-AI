@@ -1,5 +1,7 @@
 import importlib.util
 from pathlib import Path
+import re
+import shutil
 import tempfile
 import unittest
 
@@ -69,6 +71,31 @@ class ValidateKitTests(unittest.TestCase):
     def test_current_repository_passes_validation(self):
         errors = validator.validate_repo(REPO_ROOT)
         self.assertEqual(errors, [], "\n".join(errors))
+
+    def test_installed_layout_from_simbiose_passes_validation(self):
+        simbiose_text = (REPO_ROOT / "processes" / "simbiose.md").read_text(encoding="utf-8")
+        match = re.search(
+            r"## Passo 3 — Instalar o kit no projeto novo.*?```\n(.*?)\n```",
+            simbiose_text,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(match, "Could not locate Step 3 install layout in processes/simbiose.md")
+        entries = match.group(1).split()
+        self.assertTrue(entries, "Step 3 install layout is empty")
+        with tempfile.TemporaryDirectory() as tmp:
+            dst = Path(tmp)
+            for rel in entries:
+                clean = rel.rstrip("/")
+                src = REPO_ROOT / clean
+                self.assertTrue(src.exists(), f"Documented install path does not exist: {rel}")
+                target = dst / clean
+                if src.is_dir():
+                    shutil.copytree(src, target)
+                else:
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src, target)
+            errors = validator.validate_repo(dst)
+            self.assertEqual(errors, [], "\n".join(errors))
 
     def test_minimal_synthetic_repo_passes(self):
         with tempfile.TemporaryDirectory() as tmp:

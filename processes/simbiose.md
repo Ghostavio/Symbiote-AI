@@ -43,7 +43,7 @@ Copie a estrutura do kit para a raiz do projeto recém-criado (sem `.env`):
 
 ```
 .agents/   .claude/   .cursor/   .github/copilot-instructions.md   AGENTS.md   GEMINI.md
-processes/   templates/   docs/   scripts/   ai-tools-matrix.md
+processes/   templates/   docs/   scripts/   ai-tools-matrix.md   GUIA-DE-EXPANSAO.md
 ```
 
 Crie um `.gitignore` que ignore `.env` e segredos (e adicione as entradas do stack geradas pelo scaffolder).
