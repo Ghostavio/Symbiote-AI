@@ -221,7 +221,10 @@ Consultar https://github.com/obra/superpowers/blob/main/README.md para detalhes 
 claude plugin marketplace add https://registry.claude.ai/marketplace
 claude plugin install superpowers@claude-plugins-official
 claude plugin install playwright@claude-plugins-official
-claude plugin install typescript-lsp@claude-plugins-official
+
+# Opcional — instale apenas o plugin LSP correspondente à stack do projeto
+# Exemplo para TypeScript/JavaScript:
+# claude plugin install typescript-lsp@claude-plugins-official
 ```
 
 Se algum plugin falhar:

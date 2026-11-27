@@ -157,8 +157,9 @@ entrega só o que importa:
 Se o RTK NÃO estiver instalado e a suíte for muito verbosa, use:
 
 ```bash
-<TEST_CMD> 2>&1 | tee /tmp/test-output.log
-# depois inspecione com Read/Grep no /tmp/test-output.log
+<TEST_CMD> > /tmp/test-output.log 2>&1
+TEST_STATUS=$?
+# inspecione /tmp/test-output.log com Read/Grep e confira TEST_STATUS (0 = sucesso)
 ```
 
 Fix any failures caused by the reviewed code. Do NOT fix pre-existing failures.
