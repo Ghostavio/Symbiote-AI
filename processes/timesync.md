@@ -118,7 +118,7 @@ scripts/sync-7pace.sh \
 ```
 
 > Para lotes grandes, prefira um script de lote dedicado para a API do provedor (com dry-run e conferência de status HTTP) em vez de disparar dezenas de chamadas manuais sem verificação.
-> Se uma sincronização multi-provedor falhar parcialmente, **não reexecute o provedor que já teve sucesso** — reenvie apenas o provedor que falhou usando o script específico dele. Se um **timeout** ou erro de rede deixar o resultado de uma gravação incerto, **consulte e reconcilie os lançamentos existentes no provedor antes de tentar novamente**, para evitar duplicar uma entrada que já foi gravada com sucesso.
+> Se uma sincronização falhar parcialmente, reenvie apenas ao provedor pendente. No wrapper 7pace + Clockify, reutilize os argumentos da sessão original e acrescente `--provider 7pace` ou `--provider clockify`. Para outras combinações, use o adaptador do provedor pendente. Se um timeout, erro de rede ou resposta inconclusiva deixar o resultado incerto, consulte e reconcilie os lançamentos existentes antes de tentar novamente.
 
 ### Passo 3 — Validar distribuição diária
 

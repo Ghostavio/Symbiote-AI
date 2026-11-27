@@ -6,7 +6,7 @@
 # - 7pace Timetracker (via scripts/sync-7pace.sh)
 # - Clockify (via sync-clockify.sh local)
 #
-# Uso idêntico ao sync-7pace.sh do repo.
+# Aceita os argumentos do sync-7pace.sh e --provider 7pace|clockify.
 # ============================================================
 
 set -euo pipefail
@@ -16,32 +16,65 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 SYNC_7PACE="$PROJECT_ROOT/scripts/sync-7pace.sh"
 SYNC_CLOCKIFY="$SCRIPT_DIR/sync-clockify.sh"
 
-# Parse para separar: argumentos pro 7pace e descrição (para construir prefixo Clockify)
 DESCRIPTION=""
 WORK_ITEM_ID=""
 START_TIME=""
 END_TIME=""
-DRY_RUN_FLAG=""
+PROVIDER="both"
+SEVENPACE_ARGS=()
+CLOCKIFY_FLAGS=()
 
-# Copiar todos os args originais
-ORIG_ARGS=("$@")
-
-# Extrair valores específicos para o Clockify sem perder os originais
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --description) DESCRIPTION="$2"; shift 2 ;;
-    --work-item-id) WORK_ITEM_ID="$2"; shift 2 ;;
-    --start) START_TIME="$2"; shift 2 ;;
-    --end) END_TIME="$2"; shift 2 ;;
-    --dry-run) DRY_RUN_FLAG="--dry-run"; shift ;;
-    *) shift ;;
+    --description|--work-item-id|--start|--end|--activity-type|--provider)
+      if [[ $# -lt 2 || "$2" == --* ]]; then
+        echo "ERRO: informe um valor para $1." >&2
+        exit 1
+      fi
+      ;;
   esac
+  case "$1" in
+    --description) DESCRIPTION="$2" ;;
+    --work-item-id) WORK_ITEM_ID="$2" ;;
+    --start) START_TIME="$2" ;;
+    --end) END_TIME="$2" ;;
+    --activity-type) ;;
+    --provider)
+      case "$2" in
+        7pace|clockify) PROVIDER="$2" ;;
+        *) echo "ERRO: --provider aceita 7pace ou clockify." >&2; exit 1 ;;
+      esac
+      shift 2
+      continue
+      ;;
+    --dry-run)
+      SEVENPACE_ARGS+=("$1")
+      CLOCKIFY_FLAGS=("--dry-run")
+      shift
+      continue
+      ;;
+    *) echo "Argumento desconhecido: $1" >&2; exit 1 ;;
+  esac
+  SEVENPACE_ARGS+=("$1" "$2")
+  shift 2
 done
 
-# 1. Sincronizar com 7pace (passa argumentos originais)
-"$SYNC_7PACE" "${ORIG_ARGS[@]}"
+if [[ -z "$DESCRIPTION" || -z "$START_TIME" || -z "$END_TIME" || ! "$WORK_ITEM_ID" =~ ^[0-9]+$ ]]; then
+  echo "ERRO: --description, --start, --end e --work-item-id numérico são obrigatórios." >&2
+  exit 1
+fi
 
-# 2. Sincronizar com Clockify (com prefixo {ID}: exceto Daily)
+if [[ "$PROVIDER" != "clockify" ]]; then
+  "$SYNC_7PACE" "${SEVENPACE_ARGS[@]}"
+fi
+if [[ "$PROVIDER" == "7pace" ]]; then
+  exit 0
+fi
+if [[ "$PROVIDER" == "clockify" ]]; then
+  CLOCKIFY_FLAGS+=("--require-config")
+fi
+
+# Prefixo {ID}: no Clockify, exceto Daily
 if [[ "$DESCRIPTION" == "Daily" ]]; then
   CLOCKIFY_DESC="Daily"
 else
@@ -52,4 +85,4 @@ fi
   --description "$CLOCKIFY_DESC" \
   --start "$START_TIME" \
   --end "$END_TIME" \
-  $DRY_RUN_FLAG
+  ${CLOCKIFY_FLAGS[@]+"${CLOCKIFY_FLAGS[@]}"}
