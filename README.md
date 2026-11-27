@@ -1,5 +1,7 @@
 # Symbiote-AI
 
+![Identidade visual do Symbiote-AI. Ferrofluido preto envolve um núcleo facetado, e os espaços entre os dois sugerem um S na versão plana.](docs/brand/symbiote-ai.png)
+
 O Symbiote-AI se integra a projetos novos ou existentes e amplia o que a equipe já faz com desenvolvimento assistido por IA. O kit oferece processos portáteis para iniciar trabalho, levantar requisitos, escrever especificações, revisar código, sincronizar horas e acompanhar tarefas no board. Funciona com Claude Code, Cursor, Codex e Copilot.
 
 > Extraído e generalizado de um workflow real de um time de produto. Todos os dados específicos de empresa/projeto foram trocados por **placeholders** (`<...>`) e por um stack de **exemplo** — use `/integrar` (projeto existente) ou `/scaffold` (projeto novo) para especializá-lo ao seu contexto.
