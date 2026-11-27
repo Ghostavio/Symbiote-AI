@@ -118,7 +118,7 @@ scripts/sync-7pace.sh \
 ```
 
 > Para lotes grandes, prefira um script de lote dedicado para a API do provedor (com dry-run e conferência de status HTTP) em vez de disparar dezenas de chamadas manuais sem verificação.
-> Se uma sincronização multi-provedor falhar parcialmente, **não reexecute o provedor que já teve sucesso** — reenvie apenas o provedor que falhou usando o script específico dele.
+> Se uma sincronização multi-provedor falhar parcialmente, **não reexecute o provedor que já teve sucesso** — reenvie apenas o provedor que falhou usando o script específico dele. Se um **timeout** ou erro de rede deixar o resultado de uma gravação incerto, **consulte e reconcilie os lançamentos existentes no provedor antes de tentar novamente**, para evitar duplicar uma entrada que já foi gravada com sucesso.
 
 ### Passo 3 — Validar distribuição diária
 
@@ -133,7 +133,7 @@ Produtivo tarde (13:00-18:00)    5h 00min
                                  8h 00min ✓
 ```
 
-Se algum dia ultrapassar a jornada (ex.: 31h), houve entrada consolidada — delete e refaça com sessões individuais.
+Se algum dia ultrapassar a jornada esperada, **não assuma automaticamente que houve entrada consolidada** — horas extras legítimas ou lançamentos sobrepostos também podem explicar o total. Inspecione os lançamentos existentes no provedor, confirme com o usuário qual registro (se algum) está incorreto e **obtenha aprovação explícita antes de deletar ou recriar qualquer lançamento**.
 
 ---
 
