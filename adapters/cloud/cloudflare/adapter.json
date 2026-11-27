@@ -1,0 +1,24 @@
+{
+  "id": "cloudflare",
+  "name": "Cloudflare",
+  "category": "cloud",
+  "version": "1.0.0",
+  "description": "Convenções e checks de revisão para aplicações em Cloudflare Workers/Pages (bindings, segredos, KV/D1/R2/Durable Objects/Queues, cache de borda e runtime isolado).",
+  "detect": {
+    "files": [
+      "wrangler.toml",
+      "wrangler.json",
+      "wrangler.jsonc"
+    ],
+    "packages": [
+      "wrangler",
+      "@cloudflare/workers-types",
+      "@cloudflare/vite-plugin",
+      "@opennextjs/cloudflare"
+    ]
+  },
+  "files": {
+    "conventions": "conventions.md",
+    "review_checks": "review-checks.md"
+  }
+}

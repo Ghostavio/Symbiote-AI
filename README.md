@@ -15,7 +15,7 @@ O Symbiote-AI se integra a projetos novos ou existentes e amplia o que a equipe 
   - Cursor → `.cursor/rules/<name>.mdc`
   - VSCode + Copilot → `.github/copilot-instructions.md`
 - **`ai-tools-matrix.md`** mapeia os nomes de tool-call de MCP entre as ferramentas.
-- **Adaptadores opcionais** em [`adapters/`](adapters/README.md) isolam especializações de stack, cloud e observabilidade (ex.: `adapters/stacks/angular/`, `adapters/stacks/react/`) fora do core neutro, acoplados seletivamente pela skill `simbiose`.
+- **Adaptadores opcionais** em [`adapters/`](adapters/README.md) isolam especializações de stack (`angular`, `react`), cloud (`cloudflare`, `aws`) e observabilidade (`opentelemetry`) fora do core neutro, acoplados seletivamente pela skill `simbiose`.
 - **Placeholders** (`<AZURE_ORG>`, `<PROJECT_KEY>`, `<TEST_CMD>`, …) marcam tudo que é específico de projeto. A skill `simbiose` os preenche.
 
 Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos processos.
@@ -82,7 +82,7 @@ Symbiote-AI/
 │   ├── settings.json             ← preferências mínimas do editor (formatação/lint ficam a cargo do projeto)
 │   └── rules/<skill>.mdc         ← wrappers Cursor (+ PROJECT-REFERENCE-md.mdc)
 ├── processes/                    ← PROCESSOS CANÔNICOS (fonte de verdade)
-├── adapters/                     ← adaptadores opcionais de stack, cloud e observabilidade (ex.: stacks/angular, stacks/react)
+├── adapters/                     ← adaptadores opcionais (stacks/angular, stacks/react, cloud/cloudflare, cloud/aws, observability/opentelemetry)
 ├── templates/                    ← spec-template, story.template, project-reference (template)
 ├── docs/                         ← workflow, discovery (modelo a preencher), e2e, processo-work-items, aprendizados
 ├── scripts/                      ← validador (`validate-kit.py`) e timesync (`time-entry-interval.py`, `sync-7pace.sh`, `setup-7pace.*`)

@@ -1,0 +1,30 @@
+{
+  "id": "aws",
+  "name": "AWS",
+  "category": "cloud",
+  "version": "1.0.0",
+  "description": "Convenções e checks de revisão para workloads e IaC na AWS (IAM de menor privilégio, segredos, Lambda/ECS, SQS/SNS/EventBridge, S3/DynamoDB/RDS, resiliência e custo).",
+  "detect": {
+    "files": [
+      "cdk.json",
+      "samconfig.toml",
+      "amplify.yml",
+      "buildspec.yml",
+      "appspec.yml"
+    ],
+    "packages": [
+      "aws-cdk-lib",
+      "@aws-sdk/core",
+      "@aws-sdk/client-s3",
+      "@aws-sdk/client-dynamodb",
+      "@aws-sdk/client-sqs",
+      "@aws-sdk/client-lambda",
+      "boto3",
+      "aws-amplify"
+    ]
+  },
+  "files": {
+    "conventions": "conventions.md",
+    "review_checks": "review-checks.md"
+  }
+}

@@ -614,6 +614,70 @@ class ValidateKitTests(unittest.TestCase):
             f"Expected language-scoped editor settings only, got: {list(editor_settings)}",
         )
 
+    def test_cloud_and_observability_adapters_manifests_avoid_unconfirmed_commands_and_generic_files(self):
+        expected = [
+            ("cloud", "cloudflare", "cloud", ["wrangler.toml"], ["wrangler"]),
+            ("cloud", "aws", "cloud", ["cdk.json"], ["aws-cdk-lib", "boto3"]),
+            (
+                "observability",
+                "opentelemetry",
+                "observability",
+                ["otel-collector-config.yaml"],
+                ["@opentelemetry/api", "opentelemetry-api"],
+            ),
+        ]
+        for cat_dir, adapter_id, category, req_files, req_packages in expected:
+            with self.subTest(adapter=f"{cat_dir}/{adapter_id}"):
+                adapter_dir = REPO_ROOT / "adapters" / cat_dir / adapter_id
+                manifest = json.loads((adapter_dir / "adapter.json").read_text(encoding="utf-8"))
+                self.assertEqual(manifest["id"], adapter_id)
+                self.assertEqual(manifest["category"], category)
+                self.assertNotIn("commands", manifest)
+                self.assertNotIn("editor_settings", manifest["files"])
+                for fname in req_files:
+                    self.assertIn(fname, manifest["detect"].get("files", []))
+                for pkg in req_packages:
+                    self.assertIn(pkg, manifest["detect"].get("packages", []))
+                # Avoid generic filenames that cause false positives across stacks
+                self.assertNotIn("template.yaml", manifest["detect"].get("files", []))
+                self.assertNotIn("main.tf", manifest["detect"].get("files", []))
+
+    def test_installed_layout_with_orthogonal_adapter_composition_passes_validation(self):
+        simbiose_text = (REPO_ROOT / "processes" / "simbiose.md").read_text(encoding="utf-8")
+        match = re.search(
+            r"## Passo 3 — Instalar o kit no projeto novo.*?```\n(.*?)\n```",
+            simbiose_text,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(match)
+        entries = match.group(1).split()
+        combos = [
+            ("stacks/react", "cloud/cloudflare", "observability/opentelemetry"),
+            ("stacks/angular", "cloud/aws", "observability/opentelemetry"),
+        ]
+        for combo in combos:
+            with self.subTest(combo="+".join(combo)):
+                with tempfile.TemporaryDirectory() as tmp:
+                    dst = Path(tmp)
+                    for rel in entries:
+                        clean = rel.rstrip("/")
+                        src = REPO_ROOT / clean
+                        target = dst / clean
+                        if src.is_dir():
+                            shutil.copytree(src, target)
+                        else:
+                            target.parent.mkdir(parents=True, exist_ok=True)
+                            shutil.copy2(src, target)
+                    for adapter_rel in combo:
+                        shutil.copytree(
+                            REPO_ROOT / "adapters" / adapter_rel,
+                            dst / "adapters" / adapter_rel,
+                        )
+                    errors = validator.validate_repo(dst)
+                    self.assertEqual(errors, [], "\n".join(errors))
+                    collisions = validator.find_adapter_skill_collisions(dst)
+                    self.assertEqual(collisions, [], "\n".join(collisions))
+
     def test_adapter_with_custom_file_paths_passes_validation(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
