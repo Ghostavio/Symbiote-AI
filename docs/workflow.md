@@ -15,16 +15,9 @@ O agente principal (orquestrador) coordena o trabalho, delegando implementação
 
 ---
 
-## 2. Modelo dos Subagentes
+## 2. Esforço e seleção de modelo
 
-A orquestração, o design técnico e o code review usam sempre o **modelo mais capaz disponível** na ferramenta de AI em uso. Os demais subagentes (implementação, testes, tasks mecânicas) seguem a estratégia escolhida no início da sessão (Passo 1.5 de `processes/start-workflow.md`: Adaptativo, Sempre Opus ou Sempre Sonnet).
-
-- **Claude Code:** Opus (`model: "opus"`) para orquestração, design e review; no modo Adaptativo, Sonnet (`model: "sonnet"`) para tasks mecânicas bem especificadas.
-- **Cursor:** Opus / GPT-5 / Gemini 2.5 Pro (o mais capaz disponível no plano)
-- **Codex / Antigravity:** o tier "max" / mais capaz da ferramenta
-- **VSCode + Copilot:** o modelo mais capaz na seleção do agent mode
-
-A qualidade do code review e do design depende fortemente do modelo. Não economizar aqui.
+Siga a [estratégia de esforço do workflow](../processes/start-workflow.md#passo-15--esforço-e-seleção-de-modelo). A preferência mais específica do usuário ou do projeto define o nível inicial. Use `medium` quando não houver preferência registrada e sugira um ajuste só quando o risco ou a complexidade justificar.
 
 ---
 
@@ -356,7 +349,7 @@ Trocar de sessão quando o contexto atingir ~80% de uso:
 Antes de prosseguir para a próxima fase, verificar:
 
 - [ ] Subagente implementador concluiu e commitou
-- [ ] Code review despachado e executado (lint + typecheck + SonarQube + testes + correções)
+- [ ] Revisão proporcional executada, com as verificações aplicáveis da stack e registro dos achados e das correções autorizadas
 - [ ] Issues que precisam de decisão do usuário resolvidos
 - [ ] Diário de implementação atualizado (com start time, end time e duração)
 - [ ] Board sincronizado via Azure MCP (work item + tasks)

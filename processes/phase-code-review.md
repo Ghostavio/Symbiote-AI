@@ -11,13 +11,13 @@ Compare a mudança com a intenção e as convenções do projeto. Use a profundi
 
 - **Avaliação:** quando o usuário pede uma revisão, auditoria ou parecer, inspecione o diff, rode verificações relevantes e reporte achados. Preserve os arquivos, commits e registros externos.
 - **Revisão de implementação:** quando o pedido já autoriza implementar ou corrigir, aplique correções focadas dentro desse escopo. Reporte decisões de produto ou mudanças de comportamento fora do escopo para avaliação.
-- **Profundidade:** revise mudanças pequenas, reversíveis e verificáveis na própria sessão. Para mudanças de alto impacto ou complexidade, busque revisão independente se disponível e autorizada. Escolha o modelo conforme o trabalho e as preferências da sessão. Se a revisão independente não estiver disponível, faça as verificações possíveis e sinalize a limitação.
+- **Profundidade:** revise mudanças pequenas, reversíveis e verificáveis na própria sessão. Para mudanças de alto impacto ou complexidade, busque revisão independente se disponível e autorizada. Siga a [estratégia de esforço e modelo](start-workflow.md#passo-15--esforço-e-seleção-de-modelo) e sugira ajustes conforme o risco da revisão. Se a revisão independente não estiver disponível, faça as verificações possíveis e sinalize a limitação.
 
 ## Process
 
 ### Step 1: Gather context
 
-Before dispatching the reviewer, the orchestrator collects:
+Antes de iniciar a revisão, reúna:
 
 1. **What changed** — list of commits since last review, or `git diff` summary
 2. **Reference documents** — `templates/project-reference.template.md`, paths to spec, design, discovery docs
@@ -227,7 +227,7 @@ Apresente primeiro os achados por severidade, com arquivo e linha, impacto e ver
 - **Spec problems detected:** [list issues with the spec itself, or "none"]
 
 ### Findings and fixes
-| # | Severity | Area | File:Line | Issue | Fix Applied |
+| # | Severity | Area | File:Line | Issue | Status |
 |---|----------|------|-----------|-------|-------------|
 | 1 | Critical | Spec compliance | path:42 | Field renamed without spec update | Renamed back to spec name |
 | 2 | Important | Code quality | path:99 | Missing `OnPush` | Added |
@@ -238,8 +238,8 @@ Apresente primeiro os achados por severidade, com arquivo e linha, impacto e ver
 | 1 | Spec ambiguity | path:42 | Description | Option A vs Option B |
 
 ### Quality Check Results
-- **Lint:** [PASS/FAIL — N errors fixed]
-- **Typecheck:** [PASS/FAIL — N errors fixed]
+- **Lint:** [resultado e limitações]
+- **Typecheck:** [resultado e limitações]
 - **Unit Tests:** [N passing / N total]
 - **E2E Tests:** [N passing / N total, or "not run"]
 - **Análise estática:** [ferramenta, resultado e limitações; inclua SonarQube quando usado]
@@ -256,7 +256,7 @@ Entregue o relatório ou use os achados para continuar a implementação autoriz
 
 ## Critical rules
 
-- **Never dispatch the reviewer in background** while making changes to the same files — this causes the reviewer to revert your work
+- **Isole a revisão paralela** de arquivos que estão sendo editados para evitar alterações concorrentes.
 - **Isole verificações concorrentes** quando compartilharem arquivos, portas ou outros recursos de execução.
 - **Priorize verificações rápidas quando disponíveis** para antecipar falhas antes das suítes mais longas.
 - **Análise estática faz parte da revisão.** Use as verificações locais e registre se houve análise complementar no SonarQube.

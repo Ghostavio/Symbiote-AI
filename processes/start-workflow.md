@@ -25,7 +25,7 @@ Estes princípios moldam todos os fluxos abaixo. Detalhe e contexto em [`docs/ap
 8. **Planeje um passo de integração explícito** entre fases paralelas com dependências cruzadas (worktrees são cópias isoladas; TODOs de uma fase não se resolvem na outra).
 9. **Dados mock devem passar nas regras de negócio do projeto** (validadores de CPF/CNPJ/email…). Cruze mock × validators no review.
 10. **Lint + typecheck ANTES da suíte de testes** — feedback de 3-12s contra 55-75s.
-11. **Roteie o modelo por complexidade** (ver Passo 1.5): o mais capaz para orquestração, design e review; modelos rápidos (Sonnet) para tasks mecânicas bem especificadas. A estratégia é escolhida no início da sessão, não fixada em "sempre Opus".
+11. **Dimensione modelo e esforço conforme a tarefa.** Respeite as preferências do usuário e use os critérios do Passo 1.5 para sugerir ajustes quando houver ganho claro.
 12. **Diário de implementação incremental, não retroativo** — atualize a cada entrega, não no fim.
 13. **Sincronize o tracker proativamente, não retroativamente** — crie/atualize work items durante a implementação.
 
@@ -55,35 +55,20 @@ Se o pedido já define o fluxo ou descreve uma mudança clara, fácil de verific
 
 No Express, vá direto ao [Fluxo G](#fluxo-g-express-mudança-pequena). Ele já cobre os passos de preparação aplicáveis.
 
-## Passo 1.5 — Estratégia de modelo dos subagentes
+## Passo 1.5 — Esforço e seleção de modelo
 
-Pergunte ao usuário (uma vez, no início da sessão) como escolher o modelo ao despachar subagentes — em vez de usar sempre o mais caro:
+Use a preferência mais específica disponível: a escolha explícita para a tarefa, a preferência da sessão, o padrão documentado do projeto e, por fim, **medium** como padrão do kit. O usuário pode mudar o nível a qualquer momento. Uma tarefa simples segue com o padrão, sem iniciar um questionário.
 
-> Como devo escolher o modelo dos subagentes nesta sessão?
-> **(a) Adaptativo (recomendado)** — eu decido por complexidade: Sonnet para tasks mecânicas, Opus para as complexas/críticas.
-> **(b) Sempre Opus** — máxima qualidade, maior custo.
-> **(c) Sempre Sonnet** — máxima economia/velocidade.
+| Esforço | Quando sugerir |
+| --- | --- |
+| `low` | Tarefa mecânica ou revisão de um diff pequeno, com critério de pronto claro e baixo impacto. |
+| `medium` | Implementação ou revisão comum, com contexto conhecido e verificações disponíveis. |
+| `high` | Regras de negócio complexas, investigação difícil, integrações ou mudanças com risco relevante de regressão. |
+| `max` | Planejamento ou validação de alto impacto em várias áreas, quando a análise adicional justificar custo e latência. |
 
-Guarde a escolha para a sessão e respeite overrides pontuais do usuário.
+Quando o risco ou a complexidade indicar outro nível, explique brevemente qual tarefa se beneficia, por quê e qual a contrapartida. Use a preferência vigente até o usuário aceitar a sugestão, salvo se ele já tiver delegado os ajustes. A sugestão pode se aplicar só à etapa que dela precisa, como a orquestração de uma mudança ampla.
 
-### Heurística de roteamento (modo Adaptativo)
-
-Classifique cada subagente **antes** de despachar e anuncie a escolha (ex.: "despachando em Sonnet — task mecânica"):
-
-**→ Sonnet (mecânico / bem especificado):**
-- Boilerplate seguindo padrão existente (entities, DTOs, mappers, barrels)
-- Edições repetitivas em muitos arquivos (renomes, formatação, migração simples)
-- Testes unitários diretos a partir de um plano detalhado
-- Extração/sumarização de informação já estruturada
-
-**→ Opus (complexo / alto impacto):**
-- **Code review de alto impacto** e **design técnico** com decisões que afetam várias fases
-- **Orquestração** (o thread principal)
-- Lógica de negócio não-trivial, integração entre camadas, algoritmos
-- Depuração de causa raiz, ajustes visuais difíceis, decisões de arquitetura
-- Qualquer task ambígua ou com requisitos incompletos
-
-Na dúvida sobre a complexidade, **suba o tier** (prefira Opus) — o custo de retrabalho supera o de tokens.
+Trate **modelo** e **esforço** como escolhas separadas. Em Anthropic, OpenAI e Google, use o modelo escolhido pelo usuário ou pelo projeto e aplique o esforço aos controles disponíveis na ferramenta. Considere sugerir outro modelo separadamente quando houver benefício claro. Os quatro níveis são a escala do kit. Use o equivalente documentado pelo cliente, quando houver, e informe se a sessão não permitir alterar um parâmetro ou se for preciso ajustá-lo manualmente. Registre apenas o nível que de fato foi aplicado.
 
 ### Claude Code — sugerir `ultracode` em alta complexidade
 
