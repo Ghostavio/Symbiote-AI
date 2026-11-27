@@ -4,9 +4,10 @@
 Checks:
 1. Wrapper parity & target integrity across:
    - processes/<name>.md (canonical procedures, plus optional alias_of redirects)
-   - .claude/skills/<name>/SKILL.md
+   - .claude/skills/<name>/SKILL.md (Claude Code)
+   - .agents/skills/<name>/SKILL.md (Antigravity, Gemini CLI, Codex, Agent Skills)
    - .cursor/rules/<name>.mdc (excluding alwaysApply context rules)
-   - AGENTS.md
+   - AGENTS.md and GEMINI.md (including Antigravity's 24 KB per-file rule cap)
    - .github/copilot-instructions.md
 2. Local relative markdown links across all .md and .mdc files.
 3. Shell scripts under scripts/ and .claude/integrations/: shebang, executable
@@ -29,6 +30,7 @@ HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 MD_LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 EXTERNAL_PREFIXES = ("http://", "https://", "mailto:", "tel:")
+MAX_RULE_BYTES = 24_000
 
 
 def parse_frontmatter(text: str) -> dict[str, str] | None:
@@ -72,12 +74,97 @@ def _resolved_local_targets(source_file: Path, content: str) -> set[Path]:
     }
 
 
+def _validate_skill_dir(
+    skills_dir: Path,
+    rel_prefix: str,
+    label: str,
+    canonicals: dict[str, Path],
+    canonical_aliases: dict[str, tuple[Path, str, str]],
+    valid_aliases: dict[str, str],
+) -> list[str]:
+    errors: list[str] = []
+    found: set[str] = set()
+    aliases_found: set[str] = set()
+
+    if not skills_dir.is_dir():
+        return [f"Missing required directory: {rel_prefix}/"]
+
+    for skill_dir in sorted(p for p in skills_dir.iterdir() if p.is_dir()):
+        skill_name = skill_dir.name
+        skill_file = skill_dir / "SKILL.md"
+        if not skill_file.is_file():
+            errors.append(f"{rel_prefix}/{skill_name}: missing SKILL.md")
+            continue
+        content = skill_file.read_text(encoding="utf-8")
+        fm = parse_frontmatter(content)
+        if not fm or fm.get("name") != skill_name or not fm.get("description"):
+            errors.append(
+                f"{rel_prefix}/{skill_name}/SKILL.md: invalid or incomplete frontmatter"
+            )
+            continue
+
+        alias_of = fm.get("alias_of", "").strip()
+        if alias_of:
+            if skill_name not in canonical_aliases:
+                errors.append(
+                    f"{rel_prefix}/{skill_name}/SKILL.md: alias_of '{alias_of}' "
+                    f"has no canonical alias processes/{skill_name}.md"
+                )
+                continue
+            canonical_target = canonical_aliases[skill_name][1]
+            if alias_of != canonical_target:
+                errors.append(
+                    f"{rel_prefix}/{skill_name}/SKILL.md: alias_of '{alias_of}' "
+                    f"disagrees with processes/{skill_name}.md (expected '{canonical_target}')"
+                )
+                continue
+            if canonical_target not in canonicals:
+                continue
+            aliases_found.add(skill_name)
+            expected_rel = f"processes/{canonical_target}.md"
+            expected_target = canonicals[canonical_target].resolve()
+            if expected_target not in _resolved_local_targets(skill_file, content):
+                errors.append(
+                    f"{rel_prefix}/{skill_name}/SKILL.md: must link directly to {expected_rel}"
+                )
+        else:
+            expected_rel = f"processes/{skill_name}.md"
+            if skill_name in canonical_aliases:
+                canonical_target = canonical_aliases[skill_name][1]
+                errors.append(
+                    f"{rel_prefix}/{skill_name}/SKILL.md: must declare "
+                    f"alias_of: {canonical_target} to match processes/{skill_name}.md"
+                )
+            elif skill_name not in canonicals:
+                errors.append(
+                    f"{rel_prefix}/{skill_name}/SKILL.md: no matching canonical {expected_rel}"
+                )
+            else:
+                found.add(skill_name)
+                expected_target = canonicals[skill_name].resolve()
+                if expected_target not in _resolved_local_targets(skill_file, content):
+                    errors.append(
+                        f"{rel_prefix}/{skill_name}/SKILL.md: must link directly to {expected_rel}"
+                    )
+
+    for name in sorted(canonicals):
+        if name not in found:
+            errors.append(f"Missing {label} wrapper: {rel_prefix}/{name}/SKILL.md")
+    for alias_name in sorted(valid_aliases):
+        if alias_name not in aliases_found:
+            errors.append(f"Missing {label} alias wrapper: {rel_prefix}/{alias_name}/SKILL.md")
+
+    return errors
+
+
 def validate_wrappers(root: Path) -> list[str]:
     errors: list[str] = []
     processes_dir = root / "processes"
     claude_skills_dir = root / ".claude" / "skills"
+    agents_skills_dir = root / ".agents" / "skills"
     cursor_rules_dir = root / ".cursor" / "rules"
     agents_file = root / "AGENTS.md"
+    gemini_file = root / "GEMINI.md"
     copilot_file = root / ".github" / "copilot-instructions.md"
 
     if not processes_dir.is_dir():
@@ -123,69 +210,27 @@ def validate_wrappers(root: Path) -> list[str]:
                     f"processes/{target_name}.md"
                 )
 
-    # Claude Code wrappers
-    claude_found: set[str] = set()
-    claude_aliases_found: set[str] = set()
-    if claude_skills_dir.is_dir():
-        for skill_dir in sorted(p for p in claude_skills_dir.iterdir() if p.is_dir()):
-            skill_name = skill_dir.name
-            skill_file = skill_dir / "SKILL.md"
-            if not skill_file.is_file():
-                errors.append(f".claude/skills/{skill_name}: missing SKILL.md")
-                continue
-            content = skill_file.read_text(encoding="utf-8")
-            fm = parse_frontmatter(content)
-            if not fm or fm.get("name") != skill_name or not fm.get("description"):
-                errors.append(
-                    f".claude/skills/{skill_name}/SKILL.md: invalid or incomplete frontmatter"
-                )
-                continue
-
-            alias_of = fm.get("alias_of", "").strip()
-            if alias_of:
-                if skill_name not in canonical_aliases:
-                    errors.append(
-                        f".claude/skills/{skill_name}/SKILL.md: alias_of '{alias_of}' "
-                        f"has no canonical alias processes/{skill_name}.md"
-                    )
-                    continue
-                canonical_target = canonical_aliases[skill_name][1]
-                if alias_of != canonical_target:
-                    errors.append(
-                        f".claude/skills/{skill_name}/SKILL.md: alias_of '{alias_of}' "
-                        f"disagrees with processes/{skill_name}.md (expected '{canonical_target}')"
-                    )
-                    continue
-                if canonical_target not in canonicals:
-                    continue
-                claude_aliases_found.add(skill_name)
-                expected_rel = f"processes/{canonical_target}.md"
-                expected_target = canonicals[canonical_target].resolve()
-                if expected_target not in _resolved_local_targets(skill_file, content):
-                    errors.append(
-                        f".claude/skills/{skill_name}/SKILL.md: must link directly to {expected_rel}"
-                    )
-            else:
-                expected_rel = f"processes/{skill_name}.md"
-                if skill_name in canonical_aliases:
-                    canonical_target = canonical_aliases[skill_name][1]
-                    errors.append(
-                        f".claude/skills/{skill_name}/SKILL.md: must declare "
-                        f"alias_of: {canonical_target} to match processes/{skill_name}.md"
-                    )
-                elif skill_name not in canonicals:
-                    errors.append(
-                        f".claude/skills/{skill_name}/SKILL.md: no matching canonical {expected_rel}"
-                    )
-                else:
-                    claude_found.add(skill_name)
-                    expected_target = canonicals[skill_name].resolve()
-                    if expected_target not in _resolved_local_targets(skill_file, content):
-                        errors.append(
-                            f".claude/skills/{skill_name}/SKILL.md: must link directly to {expected_rel}"
-                        )
-    else:
-        errors.append("Missing required directory: .claude/skills/")
+    # Skill wrappers: Claude Code (.claude/skills) and open Agent Skills (.agents/skills)
+    errors.extend(
+        _validate_skill_dir(
+            claude_skills_dir,
+            ".claude/skills",
+            "Claude Code",
+            canonicals,
+            canonical_aliases,
+            valid_aliases,
+        )
+    )
+    errors.extend(
+        _validate_skill_dir(
+            agents_skills_dir,
+            ".agents/skills",
+            "Agent Skills",
+            canonicals,
+            canonical_aliases,
+            valid_aliases,
+        )
+    )
 
     # Cursor rule wrappers
     cursor_found: set[str] = set()
@@ -250,14 +295,29 @@ def validate_wrappers(root: Path) -> list[str]:
     agents_text = agents_file.read_text(encoding="utf-8") if agents_file.is_file() else ""
     if not agents_file.is_file():
         errors.append("Missing required file: AGENTS.md")
+    elif agents_file.stat().st_size > MAX_RULE_BYTES:
+        errors.append(
+            f"AGENTS.md: exceeds Antigravity {MAX_RULE_BYTES}-byte per-file rule cap"
+        )
+
+    if not gemini_file.is_file():
+        errors.append("Missing required file: GEMINI.md")
+    else:
+        gemini_text = gemini_file.read_text(encoding="utf-8")
+        if gemini_file.stat().st_size > MAX_RULE_BYTES:
+            errors.append(
+                f"GEMINI.md: exceeds Antigravity {MAX_RULE_BYTES}-byte per-file rule cap"
+            )
+        if agents_file.is_file() and agents_file.resolve() not in _resolved_local_targets(
+            gemini_file, gemini_text
+        ):
+            errors.append("GEMINI.md: must link to AGENTS.md")
 
     copilot_text = copilot_file.read_text(encoding="utf-8") if copilot_file.is_file() else ""
     if not copilot_file.is_file():
         errors.append("Missing required file: .github/copilot-instructions.md")
 
     for name in sorted(canonicals):
-        if name not in claude_found:
-            errors.append(f"Missing Claude Code wrapper: .claude/skills/{name}/SKILL.md")
         if name not in cursor_found:
             errors.append(f"Missing Cursor wrapper: .cursor/rules/{name}.mdc")
         if agents_file.is_file() and f"(processes/{name}.md)" not in agents_text:
@@ -268,8 +328,6 @@ def validate_wrappers(root: Path) -> list[str]:
             )
 
     for alias_name in sorted(valid_aliases):
-        if alias_name not in claude_aliases_found:
-            errors.append(f"Missing Claude Code alias wrapper: .claude/skills/{alias_name}/SKILL.md")
         if alias_name not in cursor_aliases_found:
             errors.append(f"Missing Cursor alias wrapper: .cursor/rules/{alias_name}.mdc")
 

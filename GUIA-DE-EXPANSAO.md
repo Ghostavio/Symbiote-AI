@@ -9,7 +9,7 @@ Como adaptar o kit a outras ferramentas: **Jira no lugar de Azure DevOps**, **To
 Tudo gira em torno de 4 peças:
 
 1. **Processos canônicos** (`processes/*.md`) — a lógica, neutra de ferramenta. **Raramente mudam.**
-2. **Wrappers por ferramenta de IA** (`.claude/skills/`, `.cursor/rules/`, `AGENTS.md`, `.github/copilot-instructions.md`) — apontadores finos.
+2. **Wrappers por ferramenta de IA** (`.agents/skills/`, `.claude/skills/`, `.cursor/rules/`, `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md`) — apontadores finos.
 3. **`ai-tools-matrix.md`** — tabela de equivalência de tool-calls de MCP entre ferramentas.
 4. **Placeholders** (`<AZURE_ORG>`, `<PROJECT_KEY>`, `<TEST_CMD>`, `<src>`, …) — o que é específico do projeto.
 
@@ -78,7 +78,7 @@ Siga [`processes/docs-target.md`](processes/docs-target.md):
 ## Receita F — Adicionar uma skill/processo novo
 
 1. Crie o canônico `processes/<name>.md` (com frontmatter `name`/`description`).
-2. Crie os wrappers: `.claude/skills/<name>/SKILL.md` e `.cursor/rules/<name>.mdc` (apontando para o canônico).
+2. Crie os wrappers: `.agents/skills/<name>/SKILL.md`, `.claude/skills/<name>/SKILL.md` e `.cursor/rules/<name>.mdc` (apontando para o canônico).
 3. Adicione a linha à tabela de processos em `AGENTS.md` **e** em `.github/copilot-instructions.md`.
 4. Se a skill usa um MCP, documente os tool-calls em `ai-tools-matrix.md`.
 

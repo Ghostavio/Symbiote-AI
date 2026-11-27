@@ -7,13 +7,14 @@
 
 ## Ferramentas suportadas
 
-| Ferramenta            | Local dos wrappers                       | Formato                              | Convenção de descoberta             |
-| --------------------- | ---------------------------------------- | ------------------------------------ | ----------------------------------- |
-| **Claude Code**       | `.claude/skills/<name>/SKILL.md`         | Markdown + frontmatter Claude        | `Skill` tool (auto-loaded)          |
-| **Cursor**            | `.cursor/rules/<name>.mdc`               | MDC + frontmatter Cursor             | Agent Requested rules               |
-| **Codex (OpenAI)**    | `AGENTS.md` (raiz)                       | Markdown único listando processos    | `AGENTS.md` na raiz do repo         |
-| **Antigravity (Google)** | `AGENTS.md` (mesmo do Codex)          | Markdown único                       | `AGENTS.md` na raiz                 |
-| **VSCode + Copilot**  | `.github/copilot-instructions.md`        | Markdown único (instructions globais)| `.github/copilot-instructions.md`   |
+| Ferramenta               | Local dos wrappers                                      | Formato                                   | Convenção de descoberta                      |
+| ------------------------ | ------------------------------------------------------- | ----------------------------------------- | -------------------------------------------- |
+| **Claude Code**          | `.claude/skills/<name>/SKILL.md`                        | Markdown + frontmatter Claude             | `Skill` tool (auto-loaded)                   |
+| **Antigravity (Google)** | `.agents/skills/<name>/SKILL.md` + `AGENTS.md`/`GEMINI.md` | Agent Skills (progressive) + Markdown  | Auto-discovery `.agents/skills/` + regras    |
+| **Gemini CLI (Google)**  | `.agents/skills/<name>/SKILL.md` + `GEMINI.md`          | Agent Skills (progressive) + Markdown     | `/skills` auto-discovery + `GEMINI.md`       |
+| **Codex (OpenAI)**       | `.agents/skills/<name>/SKILL.md` + `AGENTS.md`          | Agent Skills (progressive) + Markdown     | Auto-discovery `.agents/skills/` + `AGENTS.md` |
+| **Cursor**               | `.cursor/rules/<name>.mdc`                              | MDC + frontmatter Cursor                  | Agent Requested rules                        |
+| **VSCode + Copilot**     | `.github/copilot-instructions.md`                       | Markdown único (instructions globais)     | `.github/copilot-instructions.md`            |
 
 ---
 
@@ -25,17 +26,27 @@
 - Body do SKILL.md aponta para o canonical: `Follow [processes/<name>.md](...)`
 - Invocação pelo usuário: `/<name>` (slash command) ou via tool `Skill`
 
+### Antigravity (Google)
+- Descobre automaticamente skills em `.agents/skills/<name>/SKILL.md` (caminhando do diretório atual até a raiz git) usando **progressive disclosure** — apenas `name` e `description` entram no prompt inicial; o corpo e o canônico em `processes/<name>.md` só são carregados quando a skill é ativada
+- Também suporta `.agents/skills.json` para declarar diretórios externos de skills sem duplicação
+- Lê regras hierárquicas em `AGENTS.md` e `GEMINI.md` (limite de 24 KB por arquivo; regras são deduplicadas por caminho)
+- **MCP (`~/.gemini/config/mcp_config.json` ou plugin `mcp_config.json`):** suporta **Stdio** e **Streamable HTTP** (`/mcp`). O transporte legado HTTP+SSE (`/sse`) **não** é suportado diretamente — para servidores apenas SSE, use um bridge Stdio como `npx -y mcp-remote <url-sse>`
+
+### Gemini CLI (Google)
+- Descobre automaticamente skills em `.agents/skills/<name>/SKILL.md` (alias cross-tool nativo ao lado de `.gemini/skills/`) com **progressive disclosure**
+- Lê `GEMINI.md` na raiz do projeto como contexto persistente (que referencia `AGENTS.md` sem duplicar conteúdo)
+- Gerenciamento na sessão via `/skills list`, `/skills reload`, `/skills enable|disable` e no terminal via `gemini skills install`
+
+### Codex (OpenAI)
+- Lê `AGENTS.md` na raiz do projeto na inicialização e descobre skills no padrão aberto `.agents/skills/<name>/SKILL.md`
+- Conteúdo de `AGENTS.md` é tratado como instructions persistentes e lista todos os processos com link para o canônico
+- Invocação: usuário pede pelo nome (ex: "siga o processo `create-work-item`") ou ativa a skill em `.agents/skills/`
+
 ### Cursor
 - Lê `.cursor/rules/*.mdc` automaticamente
 - Frontmatter: `description` (decide quando ativar), `globs` (opcional), `alwaysApply` (default false)
 - Body aponta para o canonical
 - Invocação: agente decide com base na `description` (Agent Requested) ou usuário menciona explicitamente
-
-### Codex / Antigravity
-- Lêem `AGENTS.md` na raiz do projeto na inicialização
-- Conteúdo é tratado como instructions de sistema persistentes
-- Lista todos os processos com link para o canonical de cada um
-- Invocação: usuário pede pelo nome (ex: "siga o processo `create-work-item`")
 
 ### VSCode + Copilot
 - Lê `.github/copilot-instructions.md` quando GitHub Copilot Chat é aberto
@@ -111,12 +122,14 @@ No Claude Code os nomes ficam `mcp__figma-dev-mode__*` ou `mcp__figma__*` confor
 
 Vários processos sugerem "delegar para subagente". Equivalência por ferramenta:
 
-| Ferramenta            | Mecanismo equivalente                                                                  |
-| --------------------- | -------------------------------------------------------------------------------------- |
-| **Claude Code**       | Tool `Agent` com `subagent_type` (`general-purpose`, `Explore`, etc.) + skill `subagent-driven-development` |
-| **Cursor**            | Cursor Agents (Background Agents) ou sub-prompts em chat separado                      |
-| **Codex / Antigravity**| Sub-task tool ou worktree paralelo (depende da ferramenta)                            |
-| **VSCode + Copilot**  | Não há sub-agentes nativos — executar diretamente                                       |
+| Ferramenta               | Mecanismo equivalente                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| **Claude Code**          | Tool `Agent` com `subagent_type` (`general-purpose`, `Explore`, etc.) + skill `subagent-driven-development`               |
+| **Antigravity (Google)** | `invoke_subagent` / `define_subagent` com `Workspace: "share"` (worktree) ou `"branch"`; subagentes embutidos `research` e `browser` |
+| **Gemini CLI (Google)**  | Execução na sessão principal ou sub-agentes/extensões quando habilitados                                                  |
+| **Codex (OpenAI)**       | Sub-task tool ou worktree paralelo (`git worktree`)                                                                       |
+| **Cursor**               | Cursor Agents (Background Agents) ou sub-prompts em chat separado                                                         |
+| **VSCode + Copilot**     | Não há sub-agentes nativos — executar diretamente                                                                         |
 
 Quando o canonical menciona "despachar subagente", adapte para o mecanismo da sua ferramenta. Se não houver, execute na sessão principal.
 
@@ -126,12 +139,14 @@ Quando o canonical menciona "despachar subagente", adapte para o mecanismo da su
 
 Para processos que pedem "salvar na memória" (ex: Projeto/Área default do Azure DevOps):
 
-| Ferramenta            | Mecanismo equivalente                                                                  |
-| --------------------- | -------------------------------------------------------------------------------------- |
-| **Claude Code**       | Auto-memory em `~/.claude/projects/<project>/memory/` (ver instruções do system prompt)|
-| **Cursor**            | Adicionar a `.cursor/rules/<context>.mdc` com `alwaysApply: true`                       |
-| **Codex / Antigravity**| Editar `AGENTS.md` adicionando a seção de contexto                                    |
-| **VSCode + Copilot**  | Editar `.github/copilot-instructions.md`                                                |
+| Ferramenta               | Mecanismo equivalente                                                                  |
+| ------------------------ | -------------------------------------------------------------------------------------- |
+| **Claude Code**          | Auto-memory em `~/.claude/projects/<project>/memory/` (ver instruções do system prompt)|
+| **Antigravity (Google)** | Editar `AGENTS.md` (ou regra em `.agents/rules/`) adicionando a seção de contexto      |
+| **Gemini CLI (Google)**  | Editar `GEMINI.md` / `AGENTS.md` (ou memória do Gemini CLI via `/memory`)              |
+| **Codex (OpenAI)**       | Editar `AGENTS.md` adicionando a seção de contexto                                     |
+| **Cursor**               | Adicionar a `.cursor/rules/<context>.mdc` com `alwaysApply: true`                      |
+| **VSCode + Copilot**     | Editar `.github/copilot-instructions.md`                                               |
 
 ---
 
