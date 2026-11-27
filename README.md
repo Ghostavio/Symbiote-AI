@@ -47,7 +47,7 @@ Comece a trabalhar com `start-workflow` e use o Fluxo Express para mudanças peq
 | `start-workflow` | Ponto de entrada de uma sessão: Feature, Bug, Follow-up, Refatoração, Testes, **Express**, Freestyle |
 | `figma-requirements` | Levanta requisitos a partir de um design no **Figma** (MCP local ou online) |
 | `spec-builder` | Constrói a especificação de uma feature a partir do template |
-| `create-work-item` | Cria/vincula work item no tracker (Azure DevOps / Jira) |
+| `create-work-item` | Cria ou vincula item no board configurado no projeto |
 | `phase-code-review` | Code review com análise e testes proporcionais ao risco, com correções quando autorizadas |
 | `timesync` | Registra horas em uma ou mais ferramentas de controle de tempo configuradas no projeto |
 | `docs-target` | Define se a doc vai pro repo ou pra plataforma externa (Confluence/Outline/Notion) |
@@ -89,15 +89,15 @@ Symbiote-AI/
 ├── adapters/                     ← adaptadores opcionais (stacks/angular, stacks/react, cloud/cloudflare, cloud/aws, observability/opentelemetry)
 ├── i18n/                         ← manifesto multilíngue (i18n.json) e guias traduzidos (ex.: en/)
 ├── templates/                    ← spec-template, story.template, project-reference (template)
-├── docs/                         ← workflow, discovery (modelo a preencher), e2e, processo-work-items, aprendizados
+├── docs/                         ← workflow, discovery (modelo a preencher), e2e, integracoes, processo-work-items, aprendizados
 ├── scripts/                      ← validador (`validate-kit.py`) e timesync (`time-entry-interval.py`, `sync-7pace.sh`, `setup-7pace.*`)
-└── tests/                        ← testes automatizados do validador, adaptadores e scripts de timesync
+└── tests/                        ← testes automatizados do validador, adaptadores, i18n e scripts de timesync
 ```
 
 ## Ferramentas e integrações
 
 - **Ferramentas de IA:** suporte nativo para **Claude Code**, **Antigravity**, **Gemini CLI**, **Codex**, **Cursor** e **VSCode + Copilot** (via wrappers + `ai-tools-matrix.md`). Outras ferramentas entram pela Receita E do `GUIA-DE-EXPANSAO.md`.
-- **Tracker:** Azure DevOps **ou** Jira/Atlassian (`setup-jira`).
+- **Tracker / Board:** Azure DevOps, Jira/Atlassian (`setup-jira`) ou o board configurado em `.claude/PROJECT_REFERENCE.md` (ver [`docs/integracoes.md`](docs/integracoes.md); projetos sem board podem operar localmente via diário).
 - **Qualidade:** análise estática local, como [SonarJS via ESLint](https://github.com/SonarSource/SonarJS/blob/master/packages/analysis/src/jsts/rules/README.md) em JS/TS, com SonarQube via MCP quando já configurado.
 - **Time tracking:** 7pace e Clockify (timestamps ISO 8601 com fuso explícito normalizados para UTC), adaptável a **Toggl/Harvest** conforme as instruções do `GUIA-DE-EXPANSAO.md`.
 - **Documentação:** no repo **ou** externa (Confluence/Outline/Notion) via `docs-target` — para PRs limpos.
