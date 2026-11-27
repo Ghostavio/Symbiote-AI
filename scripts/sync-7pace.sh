@@ -30,29 +30,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Preferir env vars já exportadas; só carregar .env legado se nada estiver setado
-if [[ -z "${SEVENPACE_API_TOKEN:-}" ]] && [[ -f "$PROJECT_ROOT/.claude/integrations/timetracking/.env" ]]; then
-  set -a
-  source "$PROJECT_ROOT/.claude/integrations/timetracking/.env"
-  set +a
-fi
-
-# --- Activity Type IDs ---
-# Os IDs abaixo são específicos do SEU tenant 7pace. Obtenha-os via API:
-#   curl -s -H "Authorization: Bearer $SEVENPACE_API_TOKEN" \
-#     "$SEVENPACE_BASE_URL/api/rest/activityTypes?api-version=3.2" | python3 -m json.tool
-# Em seguida, substitua os placeholders abaixo. Os nomes são exemplos comuns —
-# ajuste à taxonomia de atividades do seu time.
-declare -A ACTIVITY_TYPES=(
-  ["Desenvolvimento"]="<7PACE_ACTIVITY_ID_DESENVOLVIMENTO>"
-  ["Operação"]="<7PACE_ACTIVITY_ID_OPERACAO>"
-  ["Reunião"]="<7PACE_ACTIVITY_ID_REUNIAO>"
-  ["Rituais Scrum"]="<7PACE_ACTIVITY_ID_RITUAIS_SCRUM>"
-  ["Planejamento"]="<7PACE_ACTIVITY_ID_PLANEJAMENTO>"
-  ["Homologação"]="<7PACE_ACTIVITY_ID_HOMOLOGACAO>"
-  ["Treinamento"]="<7PACE_ACTIVITY_ID_TREINAMENTO>"
-)
-
 # --- Parse argumentos ---
 DESCRIPTION=""
 START_TIME=""
@@ -112,8 +89,21 @@ if (( DURATION_SECONDS <= 0 )); then
   exit 1
 fi
 
-# Resolver activity type ID
-ACTIVITY_TYPE_ID="${ACTIVITY_TYPES[$ACTIVITY_TYPE]:-${ACTIVITY_TYPES[Desenvolvimento]}}"
+# --- Activity Type IDs ---
+# Os IDs abaixo são específicos do SEU tenant 7pace. Obtenha-os via API:
+#   curl -s -H "Authorization: Bearer $SEVENPACE_API_TOKEN" \
+#     "$SEVENPACE_BASE_URL/api/rest/activityTypes?api-version=3.2" | python3 -m json.tool
+# Em seguida, substitua os placeholders abaixo. Os nomes são exemplos comuns —
+# ajuste à taxonomia de atividades do seu time.
+case "$ACTIVITY_TYPE" in
+  "Operação") ACTIVITY_TYPE_ID="<7PACE_ACTIVITY_ID_OPERACAO>" ;;
+  "Reunião") ACTIVITY_TYPE_ID="<7PACE_ACTIVITY_ID_REUNIAO>" ;;
+  "Rituais Scrum") ACTIVITY_TYPE_ID="<7PACE_ACTIVITY_ID_RITUAIS_SCRUM>" ;;
+  "Planejamento") ACTIVITY_TYPE_ID="<7PACE_ACTIVITY_ID_PLANEJAMENTO>" ;;
+  "Homologação") ACTIVITY_TYPE_ID="<7PACE_ACTIVITY_ID_HOMOLOGACAO>" ;;
+  "Treinamento") ACTIVITY_TYPE_ID="<7PACE_ACTIVITY_ID_TREINAMENTO>" ;;
+  *) ACTIVITY_TYPE_ID="<7PACE_ACTIVITY_ID_DESENVOLVIMENTO>" ;;
+esac
 
 echo "=== Sync Time Entry ==="
 echo "  Descrição:     $DESCRIPTION"
@@ -127,15 +117,24 @@ echo ""
 # ============================================================
 # 7PACE TIMETRACKER
 # ============================================================
-if [[ -z "${SEVENPACE_API_TOKEN:-}" ]]; then
-  echo "[7pace] ERRO — SEVENPACE_API_TOKEN não configurado." >&2
-  echo "  Recomendado: rode a skill /setup-7pace que oferece macOS Keychain," >&2
-  echo "  1Password, Bitwarden ou export direto em ~/.zshrc (token nunca passa pelo AI)." >&2
-  echo "  Alternativa rápida (não-segura): export SEVENPACE_API_TOKEN='seu-token'." >&2
-  exit 1
-fi
+if ! $DRY_RUN; then
+  # Preferir env vars já exportadas; só carregar .env legado se nada estiver setado
+  if [[ -z "${SEVENPACE_API_TOKEN:-}" ]] && [[ -f "$PROJECT_ROOT/.claude/integrations/timetracking/.env" ]]; then
+    set -a
+    source "$PROJECT_ROOT/.claude/integrations/timetracking/.env"
+    set +a
+  fi
 
-SEVENPACE_BASE_URL="${SEVENPACE_BASE_URL:-https://<SEVENPACE_ORG>.timehub.7pace.com}"
+  if [[ -z "${SEVENPACE_API_TOKEN:-}" ]]; then
+    echo "[7pace] ERRO — SEVENPACE_API_TOKEN não configurado." >&2
+    echo "  Recomendado: rode a skill /setup-7pace que oferece macOS Keychain," >&2
+    echo "  1Password, Bitwarden ou export direto em ~/.zshrc (token nunca passa pelo AI)." >&2
+    echo "  Alternativa rápida (não-segura): export SEVENPACE_API_TOKEN='seu-token'." >&2
+    exit 1
+  fi
+
+  SEVENPACE_BASE_URL="${SEVENPACE_BASE_URL:-https://<SEVENPACE_ORG>.timehub.7pace.com}"
+fi
 
 BODY=$(WORK_ITEM_ID="$WORK_ITEM_ID" DURATION_SECONDS="$DURATION_SECONDS" \
   START_TIME="$START_TIME" DESCRIPTION="$DESCRIPTION" ACTIVITY_TYPE_ID="$ACTIVITY_TYPE_ID" \
