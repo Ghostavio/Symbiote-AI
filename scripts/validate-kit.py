@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Validate repository consistency for AI Workflow Kit.
+"""Validate repository consistency for Symbiote-AI.
 
 Checks:
 1. Wrapper parity & target integrity across:
-   - processes/<name>.md (canonical procedures)
+   - processes/<name>.md (canonical procedures, plus optional alias_of redirects)
    - .claude/skills/<name>/SKILL.md
    - .cursor/rules/<name>.mdc (excluding alwaysApply context rules)
    - AGENTS.md
@@ -64,6 +64,14 @@ def extract_local_links(text: str) -> list[str]:
     return links
 
 
+def _resolved_local_targets(source_file: Path, content: str) -> set[Path]:
+    return {
+        (source_file.parent / target.split("#", 1)[0]).resolve()
+        for target in extract_local_links(content)
+        if target.split("#", 1)[0] and not target.startswith("/")
+    }
+
+
 def validate_wrappers(root: Path) -> list[str]:
     errors: list[str] = []
     processes_dir = root / "processes"
@@ -76,10 +84,11 @@ def validate_wrappers(root: Path) -> list[str]:
         return ["Missing required directory: processes/"]
 
     canonicals: dict[str, Path] = {}
+    canonical_aliases: dict[str, tuple[Path, str, str]] = {}
     for md_file in sorted(processes_dir.glob("*.md")):
         name = md_file.stem
-        canonicals[name] = md_file
-        fm = parse_frontmatter(md_file.read_text(encoding="utf-8"))
+        content = md_file.read_text(encoding="utf-8")
+        fm = parse_frontmatter(content)
         if not fm:
             errors.append(f"processes/{md_file.name}: missing YAML frontmatter")
             continue
@@ -91,6 +100,27 @@ def validate_wrappers(root: Path) -> list[str]:
         if not fm.get("description"):
             errors.append(f"processes/{md_file.name}: missing frontmatter description")
 
+        alias_of = fm.get("alias_of", "").strip()
+        if alias_of:
+            canonical_aliases[name] = (md_file, alias_of, content)
+        else:
+            canonicals[name] = md_file
+
+    # Validate canonical alias_of entries point directly to a primary canonical
+    for alias_name, (alias_file, target_name, content) in sorted(canonical_aliases.items()):
+        if target_name not in canonicals:
+            errors.append(
+                f"processes/{alias_file.name}: alias_of '{target_name}' does not point "
+                f"to a primary canonical processes/{target_name}.md"
+            )
+        else:
+            expected_target = canonicals[target_name].resolve()
+            if expected_target not in _resolved_local_targets(alias_file, content):
+                errors.append(
+                    f"processes/{alias_file.name}: alias must link directly to "
+                    f"processes/{target_name}.md"
+                )
+
     # Claude Code wrappers
     claude_found: set[str] = set()
     if claude_skills_dir.is_dir():
@@ -100,26 +130,33 @@ def validate_wrappers(root: Path) -> list[str]:
             if not skill_file.is_file():
                 errors.append(f".claude/skills/{skill_name}: missing SKILL.md")
                 continue
-            claude_found.add(skill_name)
             content = skill_file.read_text(encoding="utf-8")
             fm = parse_frontmatter(content)
             if not fm or fm.get("name") != skill_name or not fm.get("description"):
                 errors.append(
                     f".claude/skills/{skill_name}/SKILL.md: invalid or incomplete frontmatter"
                 )
-            expected_rel = f"processes/{skill_name}.md"
-            if skill_name not in canonicals:
-                errors.append(
-                    f".claude/skills/{skill_name}/SKILL.md: no matching canonical {expected_rel}"
-                )
+                continue
+
+            alias_of = fm.get("alias_of", "").strip()
+            target_name = alias_of or skill_name
+            expected_rel = f"processes/{target_name}.md"
+
+            if target_name not in canonicals:
+                if alias_of:
+                    errors.append(
+                        f".claude/skills/{skill_name}/SKILL.md: alias_of '{alias_of}' "
+                        f"has no primary canonical {expected_rel}"
+                    )
+                else:
+                    errors.append(
+                        f".claude/skills/{skill_name}/SKILL.md: no matching canonical {expected_rel}"
+                    )
             else:
-                expected_target = canonicals[skill_name].resolve()
-                resolved_targets = {
-                    (skill_file.parent / target.split("#", 1)[0]).resolve()
-                    for target in extract_local_links(content)
-                    if target.split("#", 1)[0] and not target.startswith("/")
-                }
-                if expected_target not in resolved_targets:
+                if not alias_of:
+                    claude_found.add(skill_name)
+                expected_target = canonicals[target_name].resolve()
+                if expected_target not in _resolved_local_targets(skill_file, content):
                     errors.append(
                         f".claude/skills/{skill_name}/SKILL.md: must link directly to {expected_rel}"
                     )
@@ -138,18 +175,30 @@ def validate_wrappers(root: Path) -> list[str]:
             if fm.get("alwaysApply", "").lower() == "true":
                 continue
             rule_name = rule_file.stem
-            cursor_found.add(rule_name)
             if not fm.get("description"):
                 errors.append(f".cursor/rules/{rule_file.name}: missing frontmatter description")
-            expected_rel = f"processes/{rule_name}.md"
-            if rule_name not in canonicals:
-                errors.append(
-                    f".cursor/rules/{rule_file.name}: no matching canonical {expected_rel}"
-                )
-            elif expected_rel not in content:
-                errors.append(
-                    f".cursor/rules/{rule_file.name}: does not reference {expected_rel}"
-                )
+
+            alias_of = fm.get("alias_of", "").strip()
+            target_name = alias_of or rule_name
+            expected_rel = f"processes/{target_name}.md"
+
+            if target_name not in canonicals:
+                if alias_of:
+                    errors.append(
+                        f".cursor/rules/{rule_file.name}: alias_of '{alias_of}' "
+                        f"has no primary canonical {expected_rel}"
+                    )
+                else:
+                    errors.append(
+                        f".cursor/rules/{rule_file.name}: no matching canonical {expected_rel}"
+                    )
+            else:
+                if not alias_of:
+                    cursor_found.add(rule_name)
+                if expected_rel not in content:
+                    errors.append(
+                        f".cursor/rules/{rule_file.name}: does not reference {expected_rel}"
+                    )
     else:
         errors.append("Missing required directory: .cursor/rules/")
 
@@ -253,7 +302,7 @@ def validate_repo(root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate AI Workflow Kit repository.")
+    parser = argparse.ArgumentParser(description="Validate Symbiote-AI repository.")
     parser.add_argument(
         "--root",
         type=Path,

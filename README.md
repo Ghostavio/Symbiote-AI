@@ -2,7 +2,7 @@
 
 Um kit **portátil e neutro de marca** para desenvolvimento assistido por IA, com skills/processos que padronizam o fluxo de ponta a ponta: iniciar trabalho, levantar requisitos, especificar, revisar código, sincronizar horas e rastrear no board — funcionando em **várias ferramentas de IA** (Claude Code, Cursor, Codex, Copilot).
 
-> Extraído e generalizado de um workflow real de um time de produto. Todos os dados específicos de empresa/projeto foram trocados por **placeholders** (`<...>`) e por um stack de **exemplo** — use `/integrar` (projeto existente) ou `/scaffold` (projeto novo) para especializá-lo ao seu contexto.
+> Extraído e generalizado de um workflow real de um time de produto. Todos os dados específicos de empresa/projeto foram trocados por **placeholders** (`<...>`) e por um stack de **exemplo** — use `/integrar` (projeto existente) ou `/simbiose` (projeto novo; alias retrocompatível: `/scaffold`) para especializá-lo ao seu contexto.
 
 ## Filosofia (por que isto é portátil)
 
@@ -19,7 +19,7 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 
 ## Começando
 
-**Projeto novo (greenfield):** rode a skill **`/scaffold`** — escolhe o stack, gera o esqueleto com o scaffolder do ecossistema, instala o kit e já especializa.
+**Projeto novo (greenfield):** rode a skill **`/simbiose`** (alias retrocompatível: `/scaffold`) — escolhe o stack, gera o esqueleto com o scaffolder do ecossistema, instala o kit e já especializa.
 
 **Projeto existente:** copie o conteúdo do kit para a raiz do repo e rode a skill **`/integrar`** — ele detecta stack, gerenciador de pacotes, framework de teste, tracker, time tracking, plataforma de docs e convenções, propõe um plano e adapta tudo (com sua confirmação).
 
@@ -33,7 +33,7 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 
 | Skill | O que faz |
 |---|---|
-| `scaffold` | Bootstrap de projeto **novo** (greenfield) já com o kit |
+| `simbiose` *(alias: `scaffold`)* | Bootstrap de projeto **novo** (greenfield) já com o kit |
 | `integrar` | Adapta o kit a um projeto **existente** (stack, tracker, time tracking, docs, convenções) |
 | `start-workflow` | Ponto de entrada de uma sessão: Feature, Bug, Follow-up, Refatoração, Testes, **Express**, Freestyle |
 | `figma-requirements` | Levanta requisitos a partir de um design no **Figma** (MCP local ou online) |

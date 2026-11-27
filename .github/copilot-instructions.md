@@ -32,7 +32,8 @@ When the user requests one of these by name, open the corresponding canonical an
 | `setup-sonarqube-mcp`     | [processes/setup-sonarqube-mcp.md](../processes/setup-sonarqube-mcp.md) | Configurar MCP do SonarQube (via Docker)                                                |
 | `setup-7pace`             | [processes/setup-7pace.md](../processes/setup-7pace.md)       | Configurar integração com 7pace Timetracker                                             |
 | `full-setup`              | [processes/full-setup.md](../processes/full-setup.md)         | Setup completo do ambiente em uma nova máquina                                          |
-| `scaffold`                | [processes/scaffold.md](../processes/scaffold.md)             | Bootstrap de um projeto NOVO (greenfield) com o kit pré-configurado                     |
+| `simbiose`                | [processes/simbiose.md](../processes/simbiose.md)             | Bootstrap de um projeto NOVO (greenfield) com o Symbiote-AI pré-configurado (alias: `scaffold`) |
+| `scaffold` *(alias)*      | [processes/simbiose.md](../processes/simbiose.md)             | Alias retrocompatível de `simbiose`                                                     |
 | `integrar`                | [processes/integrar.md](../processes/integrar.md)             | Adaptar o kit ao projeto host (stack, tracker, time tracking, docs, convenções)         |
 | `figma-requirements`      | [processes/figma-requirements.md](../processes/figma-requirements.md) | Levantar requisitos a partir de um design no Figma (MCP local ou online)        |
 | `setup-jira`              | [processes/setup-jira.md](../processes/setup-jira.md)         | Configurar MCP do Jira (Atlassian) — alternativa ao `setup-azure-mcp`                    |
