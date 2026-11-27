@@ -24,7 +24,7 @@ When the user requests one of these by name, open the corresponding canonical an
 | Process                   | Canonical                                                                                  | Resumo                                                                                  |
 | ------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
 | `start-workflow`          | [processes/start-workflow.md](../processes/start-workflow.md) | Ponto de entrada para nova sessão de desenvolvimento                                    |
-| `create-work-item`        | [processes/create-work-item.md](../processes/create-work-item.md) | Criar/vincular work item no Azure DevOps Board                                          |
+| `create-work-item`        | [processes/create-work-item.md](../processes/create-work-item.md) | Criar ou vincular um item no board configurado no projeto |
 | `spec-builder`            | [processes/spec-builder.md](../processes/spec-builder.md)     | Construir especificação de feature                                                       |
 | `phase-code-review`  | [processes/phase-code-review.md](../processes/phase-code-review.md) | Revisão proporcional ao risco, com verificações locais e correções quando autorizadas                                  |
 | `timesync`                | [processes/timesync.md](../processes/timesync.md)             | Registrar horas em uma ou mais ferramentas de controle de tempo configuradas no projeto |

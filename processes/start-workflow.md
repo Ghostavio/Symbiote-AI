@@ -185,18 +185,9 @@ Criar/atualizar `docs/post-mortem/[work-item-id]-[nome-curto].md`:
 
 ### B.6 — Criar PR
 
-Antes: rodar a [validação pré-PR](#validação-pré-pr). Criar Pull Request via `gh`:
+Antes, rode a [validação pré-PR](#validação-pré-pr). Abra o PR ou MR pelo serviço Git configurado. Após confirmar a abertura, vincule o item e siga o mapeamento de revisão definido na referência do projeto, respeitando automações e transições manuais. Veja as [convenções do board](../docs/processo-work-items.md#35-ciclo-de-vida-e-transições-de-estadocoluna).
 
-> Após `gh pr create` retornar com sucesso, mover a US/Bug para a coluna de
-> revisão do tracker. Exemplo Azure DevOps (mantém `System.State` = `Active`,
-> muda só o `System.BoardColumn`):
->
-> ```
-> wit_update_work_item({
->   id: <US_ID>,
->   updates: [{ op: "replace", path: "/fields/System.BoardColumn", value: "Waiting PR Approve" }]
-> })
-> ```
+Exemplo de criação no GitHub com `gh`:
 
 ```bash
 gh pr create --title "[Work Item ID] - [título curto]" --body "$(cat <<'EOF'
@@ -236,7 +227,7 @@ Mesmo ciclo do workflow: subagentes → code review → timetracking → tracker
 
 Antes: rodar a [validação pré-PR](#validação-pré-pr). Criar PR via `gh` seguindo o template do projeto (se houver, ex. `.github/PULL_REQUEST_TEMPLATE/`). Incluir referência ao work item e items endereçados.
 
-> Após `gh pr create`, mover a US para a coluna de revisão do tracker (exemplo Azure DevOps no Fluxo B.6).
+> Após abrir o PR ou MR, vincule a entrega ao item e siga o mapeamento de revisão do projeto, conforme o fluxo B.6.
 
 ---
 
@@ -264,7 +255,7 @@ Para cada módulo/componente: validar estado atual (Playwright MCP) → aplicar 
 
 Antes: [validação pré-PR](#validação-pré-pr). Criar PR via `gh`. Para refatorações que decompõem PRs grandes, criar PRs menores por módulo quando possível.
 
-> Após `gh pr create`, mover o(s) work item(s) para a coluna de revisão do tracker.
+> Após abrir o PR ou MR, vincule a entrega aos itens e siga o mapeamento de revisão do projeto, conforme o fluxo B.6.
 
 ---
 
@@ -343,7 +334,7 @@ O orquestrador oferece, conforme o contexto: code review com análise estática 
 
 > **(a)** Criar PR **(b)** Apenas commitar e pushar **(c)** Encerrar sem ação
 
-Se (a): rodar a [validação pré-PR](#validação-pré-pr) e criar PR via `gh`; mover o(s) work item(s) para a coluna de revisão do tracker.
+Se (a), rode a [validação pré-PR](#validação-pré-pr), abra o PR ou MR e vincule os itens. Siga o mapeamento de revisão do projeto, conforme o fluxo B.6.
 
 ---
 

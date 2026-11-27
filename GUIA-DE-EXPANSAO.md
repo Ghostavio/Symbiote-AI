@@ -25,7 +25,7 @@ Expandir = mexer em (2), (3) e nos placeholders — quase nunca na lógica (1).
    - criar item → `createJiraIssue` (em vez de `wit_create_work_item`)
    - consultar → **JQL** `searchJiraIssuesUsingJql` (em vez de WIQL)
    - **mover de coluna → transição de workflow** `transitionJiraIssue` (Jira não tem "coluna livre" como o Azure)
-4. **Fluxos:** em [`processes/start-workflow.md`](processes/start-workflow.md), os passos "mover a US para `Waiting PR Approve`" (que no Azure alteram `System.BoardColumn`) viram a **transição** equivalente do seu workflow Jira (ex.: "In Review"). Em [`processes/create-work-item.md`](processes/create-work-item.md), Feature→User Story→Tasks viram Epic→Story→Sub-task.
+4. **Fluxos:** mapeie a etapa de revisão para a transição que o time usa no Jira, conforme [o procedimento de integração](processes/integrar.md#21-tracker-de-work-items). Use os tipos e vínculos configurados no projeto (por exemplo, Epic → Story → Sub-task).
 5. **Env:** `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN` (Opção B) — sempre de variável de ambiente.
 
 > O mesmo MCP oficial da Atlassian habilita publicar docs no **Confluence** (ver Receita C).

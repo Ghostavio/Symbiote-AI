@@ -11,6 +11,8 @@ Use primeiro a intenção explícita do usuário. Na ausência dela, inspecione 
 - **Projeto novo:** quando o usuário pedir para criar um projeto, ou já tiver indicado um destino vazio ou ainda inexistente para a criação, siga os passos abaixo. Uma chamada pelo alias legado `scaffold` indica criação de um projeto novo, salvo instrução em contrário.
 - **Contexto ambíguo:** um diretório que contém só `.git`, um README ou os arquivos do próprio kit pode ser um projeto começado ou um ponto de partida. Se a intenção e os sinais disponíveis não resolverem a dúvida, pergunte: “Você quer aplicar o Symbiote-AI a um projeto existente ou iniciar um projeto novo?” Aguarde a resposta antes de alterar arquivos.
 
+Nos dois caminhos, use as regras de [integração com o board](integrar.md#21-tracker-de-work-items): adapte o kit ao fluxo existente ou apresente um fluxo simples para aprovação se o time ainda não tiver um. Também é possível trabalhar sem board.
+
 ## Criar um projeto novo
 
 <HARD-GATE>
@@ -22,7 +24,7 @@ Confirme TODAS as escolhas (stack, nome, local) e mostre o plano antes de gerar 
 1. **Nome do projeto** e diretório destino.
 2. **Tipo/stack:** ex.: Frontend (Angular / React+Vite / Next.js / Vue), Backend (.NET / Spring / NestJS / FastAPI / Go), Mobile, CLI, lib. Ofereça opções comuns; aceite "outro".
 3. **Gerenciador de pacotes** preferido (yarn/npm/pnpm/bun, maven/gradle, uv/poetry…).
-4. **Tracker** (Azure DevOps / Jira / GitHub Issues / nenhum), **time tracking** (7pace / Clockify / Toggl / Harvest / nenhum) e **destino de docs** (repo / Confluence / Outline / Notion) — as mesmas dimensões do `integrar`.
+4. **Tracker e fluxo do board**, **time tracking** e **destino de docs**. Se o projeto novo já pertencer a um time com board, confirme se deve reaproveitar o fluxo. Caso contrário, inclua a proposta do `integrar` no plano ou registre a escolha de trabalhar sem board.
 5. **Ferramentas de IA** que o time usa (Claude Code / Cursor / Codex / Antigravity / Copilot / Gemini) → quais wrappers manter.
 6. **Adaptadores opcionais** (`adapters/` — ver `adapters/README.md` no kit): verifique se existem adaptadores compatíveis de stack, cloud ou observabilidade (ex.: `adapters/stacks/angular/`) e confirme quais acoplar ao projeto.
 

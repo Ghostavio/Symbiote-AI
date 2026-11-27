@@ -1,11 +1,12 @@
 # Processo de Work Items
 
-> Documento de referência canônico para criação e organização de work items no Azure DevOps Board do projeto.
-> Este processo é aplicado por humanos e pelas skills de AI (ver `processes/create-work-item.md`).
+> Referência para criação e organização de itens de trabalho no board configurado no projeto. Humanos e agentes seguem as mesmas convenções (ver [create-work-item](../processes/create-work-item.md)).
 
 ---
 
 ## 1. Hierarquia
+
+Use a estrutura abaixo como referência. Mapeie os níveis para os tipos e vínculos adotados no board do time. Quando a ferramenta não oferecer uma hierarquia equivalente, use os vínculos disponíveis ou referencie o item pai na descrição, conforme a convenção do projeto. Peça confirmação se o mapeamento estiver indefinido.
 
 ```
 Feature              ← Ticket de alto nível, define o escopo geral
@@ -28,7 +29,7 @@ Não deve entrar em detalhes técnicos sobre a implementação. **Nunca** serve 
 
 ## 3. Tickets de User Stories
 
-Um User Story é uma entrega que gera valor ao negócio. Obrigatoriamente deve pertencer a uma Feature. **Não deve ser usado para bugs** (use o tipo `Bug` próprio do Azure DevOps).
+Uma User Story descreve uma entrega que gera valor ao negócio. Vincule-a ao item que representa sua Feature quando essa hierarquia fizer parte do fluxo do time. Para correções, use o tipo ou a classificação de bug adotada no board.
 
 ### 3.1 Título
 
@@ -71,12 +72,9 @@ PROTÓTIPOS/LINKS IMPORTANTES:
 [Quando houver].
 ```
 
-> **Critérios de Aceite vão no campo dedicado `Acceptance Criteria`** do Azure
-> DevOps (referência interna `Microsoft.VSTS.Common.AcceptanceCriteria`),
-> **NÃO** no Description. Esse campo é first-class na US/Bug e permite filtros,
-> queries WIQL e relatórios baseados em ACs. Veja a seção 3.2.1 abaixo.
+### 3.2.1 Critérios de aceite
 
-### 3.2.1 Campo Acceptance Criteria (separado da descrição)
+Use o campo dedicado de critérios de aceite quando ele estiver disponível para o tipo de item no board configurado. Siga o nome e o formato definidos pelo projeto. Na ausência desse campo, registre os critérios em uma seção **Critérios de aceite** na descrição ou no local previsto pelo template do board. Registre a lista uma única vez.
 
 Listar critérios verificáveis, um por linha, em formato de lista. Exemplo:
 
@@ -92,12 +90,12 @@ Boas práticas:
 - Evitar critérios vagos ("a tela deve funcionar bem") — preferir métricas/comportamentos específicos;
 - Quando aplicável, usar o formato Gherkin (`Dado / Quando / Então`).
 
-### 3.3 Diretrizes de redação (Description + Acceptance Criteria)
+### 3.3 Diretrizes de redação (descrição e critérios de aceite)
 
 - A parte `Eu, como [Stakeholder], necessito que [...], para que [...]` precisa ser o mais resumida e sucinta possível;
 - Na parte `CONTEXTO`, deve ter o máximo de detalhes possíveis para que o time entenda o que precisa ser feito;
-- User Stories **não devem servir como diário da implementação** — quando necessário documentar detalhes adicionais relevantes, isso pode ser feito na seção de `Discussion` (comentários) do ticket;
-- Quando houver um esforço/ação que se encaixa melhor como Task, é melhor criar um Task ao invés de usar a seção de Discussion.
+- Use os comentários do item para detalhes adicionais relevantes e o diário para registrar a implementação;
+- Registre ações de trabalho como tarefas ou itens vinculados, conforme a convenção do board.
 
 ### 3.4 Comportamento conversacional ao montar uma User Story
 
@@ -113,33 +111,9 @@ Ao auxiliar na criação de uma US (humano ou AI):
 
 ### 3.5 Ciclo de vida e transições de estado/coluna
 
-Ao longo da implementação, a User Story passa pelos estados (`System.State`)
-e pelas colunas do board (`System.BoardColumn`). No board do projeto `<AZURE_PROJECT>`,
-algumas colunas são sub-divisões do mesmo estado base — por exemplo
-`Doing / Fixing / Testing` e `Waiting PR Approve` ambas mapeiam para
-`System.State = Active`.
+Use os estados, colunas e regras de transição do board do projeto. Algumas ferramentas tratam a coluna separadamente do estado do item.
 
-#### Transições automáticas (executadas pela AI via MCP)
-
-- **Ao abrir o Pull Request** que entrega a estória, mover a US para a
-  coluna `Waiting PR Approve` (state continua `Active`):
-
-  ```
-  wit_update_work_item({
-    id: <US_ID>,
-    updates: [
-      { op: "replace", path: "/fields/System.BoardColumn", value: "Waiting PR Approve" }
-    ]
-  })
-  ```
-
-  A AI deve fazer isso logo após `gh pr create` retornar com sucesso.
-
-#### Transições manuais (humano executa)
-
-- `Resolved` → `Closed`: permanecem manuais conforme convenção do time. A AI
-  **não** marca como Resolved automaticamente, apenas pode lembrar o usuário
-  ao final do fluxo se relevante.
+Após confirmar a abertura do pull request ou merge request, vincule-o ao item. Aplique a transição de revisão quando as condições do time forem atendidas (por exemplo, quando o PR sair de rascunho) e o fluxo atribuir a ação ao agente. Se a etapa estiver indefinida, registre o vínculo e confirme o destino antes de mover. Resolução e encerramento seguem a convenção do projeto e são manuais por padrão.
 
 ---
 
@@ -201,7 +175,7 @@ Quando um componente shared (ex: tabela paginada genérica, header genérico) é
 
 ## 7. Bugs
 
-Bugs **não são User Stories**. Devem usar o tipo nativo `Bug` do Azure DevOps. Convenções específicas:
+Para bugs, use o tipo nativo de defeito do board quando disponível. Caso contrário, use o tipo genérico com a classificação ou o rótulo de bug configurado pelo time. Convenções específicas:
 
 - Primeira Task: `Analisar problema`;
 - Última Task: `Gerar evidências de correção`;
@@ -211,9 +185,9 @@ Bugs **não são User Stories**. Devem usar o tipo nativo `Bug` do Azure DevOps.
 
 ## 8. Resumo do que NÃO fazer
 
-- Criar User Story para corrigir bug → use o tipo `Bug`;
+- Classificar correção de defeito como entrega de funcionalidade → use a classificação de bug do board;
 - Colocar contexto técnico extenso na descrição do Feature → manter macro;
-- Usar User Story como diário da implementação → use Discussion ou Tasks adicionais;
+- Usar User Story como diário da implementação → use o diário e registre comentários ou tarefas adicionais quando necessário;
 - Iniciar título de US com verbo no infinitivo (`Buscar X`) ou com `Tela de X`;
 - Ultrapassar 70 caracteres no título de US sem motivo claro;
 - Usar `Analisar problema` como primeira Task de uma User Story;
@@ -223,5 +197,5 @@ Bugs **não são User Stories**. Devem usar o tipo nativo `Bug` do Azure DevOps.
 
 ## 9. Referências
 
-- Skill `processes/create-work-item.md` — automação do processo via Claude Code;
-- Documento `docs/workflow.md` — workflow completo de implementação com AI (incluindo sincronização com o Board).
+- [Create Work Item](../processes/create-work-item.md) — procedimento para criar ou vincular itens;
+- [Workflow](workflow.md) — fluxo de implementação com agentes, incluindo sincronização com o board.

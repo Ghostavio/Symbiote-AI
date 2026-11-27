@@ -5,14 +5,14 @@
 > **Participantes:** Nome Completo (Papel), Nome Completo (Papel)
 > **Status:** Rascunho | Em revisão | Pronto para implementação
 > **Referência técnica do projeto:** [`project-reference.template.md`](project-reference.template.md)
-> **Azure DevOps Feature ID:** #XXXXX (ID do Feature no Board — usado para sincronização automática de work items via Azure MCP)
+> **Item no board:** [tracker e ID/chave ou URL do item vinculado]
 -->
 
 > **Fonte:** [link ou descrição da origem dos requisitos]
 > **Participantes:** [lista de participantes com papéis]
 > **Status:** Rascunho
 > **Referência técnica do projeto:** [`project-reference.template.md`](project-reference.template.md)
-> **Azure DevOps Feature ID:** [ID do Feature no Azure DevOps, ex: #XXXXX — usado para sincronização automática de work items via Azure MCP. Deixar em branco se não houver integração com Board]
+> **Item no board:** [tracker e ID/chave ou URL do item vinculado, "vínculo adiado" ou "sem vínculo"]
 
 ---
 

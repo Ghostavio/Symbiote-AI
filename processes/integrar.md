@@ -25,7 +25,7 @@ Inspecione o repositório host (sem alterar nada ainda):
 - **Layout:** monorepo? onde fica o código-fonte (`src/`), os testes, os e2e? convenção de módulos?
 - **Framework de teste:** Vitest/Jest/Playwright/Cypress, JUnit, pytest, go test, xUnit…
 - **VCS host:** GitHub / Azure DevOps / GitLab / Bitbucket (olhe `git remote -v`).
-- **Tracker (issues):** `.azure`/Azure remoto → Azure DevOps; `.github/` issues; Jira (link no README/CI); GitLab issues.
+- **Board e fluxo de trabalho:** procure links de itens e boards, templates de issues, instruções do time e automações de PR/MR. Se já houver uma integração autorizada, consulte o board em modo de leitura para identificar tipos, campos, estados e transições reais. O host Git é só um indício: um repositório no GitHub pode usar um board externo. Pergunte se houver conflito entre os sinais ou se o board não estiver acessível.
 - **Time tracking:** há scripts/menções a 7pace, Clockify, Toggl, Harvest? (default: perguntar).
 - **Qualidade de código:** `sonar-project.properties` → SonarQube; ESLint/etc.
 - **Plataforma de docs:** wiki do repo, Confluence, Outline, Notion? (ver Passo 2.4).
@@ -37,8 +37,12 @@ Resuma o que detectou e o que ficou incerto.
 ## Passo 2 — Mapear dimensões de adaptação (perguntar uma por vez o que não foi detectado)
 
 ### 2.1 Tracker de work items
-Azure DevOps · **Jira** · GitHub Issues · GitLab · nenhum.
-→ Define qual MCP/CLI usar e como `create-work-item`/`start-workflow` criam e movem itens. Para Jira, use a skill `setup-jira`; para Azure, `setup-azure-mcp`. Atualize a tabela de tool-calls na `ai-tools-matrix.md`.
+
+Confirme o tracker e o board quando ainda estiverem indefinidos. Exemplos de escolha incluem Azure DevOps, Jira, GitHub Issues/Projects, Linear, GitLab, outro tracker ou nenhum. Use o conector disponível para o projeto (MCP, CLI ou API). Para Jira, use `setup-jira`; para Azure, `setup-azure-mcp`. Se faltar uma integração, indique a operação manual no plano.
+
+- **Fluxo existente:** preserve os tipos de item, vínculos, campos de aceite, estados e regras do time. Mapeie os eventos de desenvolvimento (início, PR/MR aberto para revisão, merge e encerramento) às transições que já existem. Registre quais ações o agente pode executar e quais já são feitas por automação ou dependem de uma pessoa. Um PR/MR aberto como rascunho só entra em revisão quando o fluxo do time indicar.
+- **Sem fluxo definido:** proponha **A fazer → Em andamento → Em revisão → Concluído**. Para trabalho com PR/MR, vincule o item ao pedido de revisão, mova para **Em revisão** quando estiver pronto para review e proponha **Concluído** após merge e verificação dos critérios de aceite. Para trabalho sem PR/MR, proponha revisão ou validação conforme o risco. Ajuste a proposta ao tamanho da equipe e peça confirmação antes de aplicar.
+- **Sem board:** mantenha a tarefa e a evidência no plano ou diário local. Registre no plano de adaptação que os fluxos do projeto pulam `create-work-item` e a sincronização com o board. Se o time optar por remover a skill da instalação, ajuste também os wrappers e as referências ao processo.
 
 ### 2.2 Time tracking
 **7pace** · **Clockify** · **Toggl Track** · **Harvest** · 7pace+Clockify · nenhum.
@@ -72,6 +76,7 @@ Mostre, e peça aprovação explícita:
 4. **Skills a manter / remover / adicionar** (ex.: trocar `setup-azure-mcp`↔`setup-jira`; remover `timesync` se sem time tracking).
 5. **MCPs a configurar** (`.mcp.json`): tracker, qualidade, docs, Figma, Playwright.
 6. **Onde a documentação vai morar** (repo vs externo).
+7. **Fluxo do board:** mostre o mapeamento detectado ou sugerido, onde ficam os critérios de aceite e quem executa cada transição. Se depender de mudanças no board, liste-as separadamente para aprovação.
 
 ## Passo 4 — Aplicar (após aprovação)
 
@@ -81,7 +86,7 @@ Mostre, e peça aprovação explícita:
 4. Escrever/atualizar `.mcp.json` com os servidores escolhidos.
 5. Configurar o time tracking escolhido (script + chaves no `.env.example`).
 6. Configurar o destino de documentação (in-repo vs MCP externo).
-7. Preencher `templates/project-reference.template.md` → `.claude/PROJECT_REFERENCE.md` com a arquitetura/convenções detectadas.
+7. Preencher `templates/project-reference.template.md` → `.claude/PROJECT_REFERENCE.md` com a arquitetura, as convenções e o mapeamento aprovado do board. Aponte para a documentação existente do time quando ela já definir o fluxo. Atualize a `ai-tools-matrix.md` com as operações disponíveis. Configure o board apenas se isso fizer parte do plano aprovado.
 8. (Opcional) Gerar o domain pack para o stack.
 
 ## Passo 5 — Verificar e resumir
