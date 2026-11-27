@@ -161,12 +161,14 @@ Use o roteiro da skill na sessão atual ou envie-o a um reviewer autorizado.
 
 Após a revisão e a atualização do diário, consulte o fluxo registrado na referência do projeto e sincronize pelo conector do board.
 
+Use o campo **Item no board** da especificação, quando preenchido. Para specs anteriores com **Azure DevOps Feature ID**, use esse ID como referência de um item do Azure DevOps e confirme que ele corresponde ao board configurado. Quando o spec indicar vínculo adiado ou ausência de vínculo, siga pelo diário até o usuário optar por vincular o trabalho.
+
 1. Atualize o item vinculado ou, quando necessário, crie um item pelo procedimento [create-work-item](../processes/create-work-item.md). Use os tipos e vínculos adotados pelo time.
 2. Registre as ações como tarefas quando o fluxo do time pedir e vincule o PR ou MR quando houver.
 3. Aplique a transição do evento ocorrido apenas quando ela estiver configurada para o agente. Para transições manuais ou automáticas, registre a situação no diário.
 4. Anote o ID ou URL do item no documento da fase.
 
-Se não houver item vinculado, confirme se o time quer criá-lo. Em projetos sem board, registre o progresso no diário. Para registrar horas, siga a configuração do provedor escolhido.
+Se o vínculo estiver indefinido e houver um board configurado, confirme se o time quer criar ou vincular um item. Para registrar horas, siga a configuração do provedor escolhido.
 
 ### 5.5 Registrar horas no 7pace Timetracker
 

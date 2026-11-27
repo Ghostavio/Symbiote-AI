@@ -12,7 +12,7 @@ Guia o usuário na criação de um documento de especificação completo para no
 - **Template:** `templates/spec-template.md` — estrutura base que será preenchida
 - **Spec de exemplo:** um spec completo já existente no projeto (quando houver) — serve de referência de nível de detalhe
 - **Workflow:** `docs/workflow.md` — processo de desenvolvimento que o spec alimenta
-- **Referência técnica:** `templates/project-reference.template.md` — arquitetura, padrões e stack do projeto
+- **Referência técnica:** `.claude/PROJECT_REFERENCE.md` ou a referência indicada pelo projeto. Use `templates/project-reference.template.md` como modelo quando a referência ainda não existir.
 
 ## Hard Gate
 
@@ -25,10 +25,10 @@ NÃO comece a implementar nada — esta skill produz APENAS o documento de espec
 
 ## Checklist
 
-Você DEVE criar uma task para cada item e completá-los em ordem:
+Use os passos abaixo como checklist local e complete-os em ordem:
 
 1. **Preparar contexto** — ler o template, a referência técnica e o spec de exemplo (quando houver)
-2. **Entender o escopo** — qual feature, quantas telas, público-alvo, escopo (frontend-only?), integração com Azure DevOps Board
+2. **Entender o escopo** — qual feature, quantas telas, público-alvo, escopo (frontend-only?) e vínculo com um item do board, quando aplicável
 3. **Definir navegação** — onde no menu lateral, fluxo entre telas, rotas, breadcrumbs
 4. **Detalhar cada tela** — layout, formulários, campos, botões, regras, estados, modais
 5. **Definir componentes reutilizáveis** — componentes compartilhados entre telas
@@ -86,7 +86,7 @@ Salvar spec em docs/
 
 Antes de fazer qualquer pergunta, leia silenciosamente:
 1. O template em `templates/spec-template.md`
-2. A referência técnica em `templates/project-reference.template.md`
+2. A referência técnica do projeto, incluindo a seção **Board e Fluxo de Trabalho**, quando houver
 3. Se o projeto já tiver um spec completo, as primeiras 100 linhas dele, para relembrar o nível de detalhe esperado
 
 NÃO exiba o conteúdo destes arquivos ao usuário. Apenas use como contexto interno.
@@ -108,11 +108,11 @@ Depois, continue com perguntas individuais:
   - (c) Outro — descreva
 - **Existe algum módulo existente** no projeto que serve de referência ou que será integrado?
 - **Existem documentos de referência** (reuniões, protótipos, layouts)? Se sim, compartilhe os links.
-- **Integração com Azure DevOps Board:** Você quer sincronizar automaticamente os work items e tasks com o Board do Azure DevOps durante a implementação? Se sim, informe o **ID do Feature** que será o parent de todos os work items (ex: `#1234`). Isso permite que, ao final de cada fase de implementação, os work items e tasks sejam criados/atualizados automaticamente via Azure MCP, incluindo timetracking no formato 7pace. **Recomendado:** essa integração elimina o esforço retroativo de popular o Board e garante rastreamento bidirecional entre documentação e Azure DevOps.
-  - (a) Sim — informar o ID do Feature existente
-  - (b) Não — apenas documentação local (work items não serão criados no Board)
-  - (c) Ainda não tenho o Feature — criar depois (o spec será salvo sem o ID e pode ser atualizado)
-  - (d) Criar o Feature agora via Azure MCP — perguntar ao usuário qual é o **ID do work item pai** (obrigatório, ex: Epic ou outro Feature) e criar o Feature no Board com `mcp__azure-devops__wit_create_work_item({ project: "<AZURE_PROJECT>", ... })` + `mcp__azure-devops__wit_add_child_work_items`. O ID gerado será registrado nos metadados do spec.
+- **Vínculo com o board, quando aplicável:** consulte a referência do projeto. Se o board estiver indefinido, confirme qual usar antes de propor um vínculo. Quando o projeto trabalhar sem board, siga com a documentação local sem pedir um ID.
+  - **Vincular item existente:** aceite ID, chave ou URL e confirme o item no tracker configurado. Se o conector estiver indisponível, peça a referência manual e indique que ela ainda precisa de verificação.
+  - **Criar item:** somente a pedido do usuário, use [create-work-item](create-work-item.md) com os tipos, campos e vínculos do board. Solicite um item pai apenas quando o fluxo exigir.
+  - **Adiar ou seguir sem vínculo:** registre a escolha e continue a especificação.
+  - Registre o tracker, a referência do item e a URL, quando conhecida, nos metadados do spec. Use o item como pai somente quando o board e o fluxo do time definirem esse vínculo. O registro de horas é configurado separadamente.
 
 ### Etapa 3 — Definir Navegação
 
@@ -240,7 +240,7 @@ Apresentar um **resumo estruturado** do spec completo (não o documento final, m
 > Aqui está o resumo do spec que vamos gerar:
 >
 > **Feature:** [nome]
-> **Azure DevOps Feature ID:** [ID ou "não configurado"]
+> **Item no board:** [tracker, ID/chave ou URL, "vínculo adiado" ou "sem vínculo"]
 > **Telas:** [lista]
 > **Navegação:** [fluxo resumido]
 > **Roles:** [quantidade total]

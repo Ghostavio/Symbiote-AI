@@ -201,6 +201,8 @@ AUTH_CLIENT_ID=<client id público>
 - **Deploy / Runtime:** (preencha: containers, serverless, Workers, Kubernetes, etc.)
 - **IaC:** (preencha: Terraform / CDK / Pulumi / Wrangler, ou N/A)
 
+---
+
 ## Board e Fluxo de Trabalho
 
 - **Tracker e board:** (preencha: ferramenta, URL e conector, ou nenhum)

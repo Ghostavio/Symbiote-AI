@@ -42,7 +42,7 @@ Confirme o tracker e o board quando ainda estiverem indefinidos. Exemplos de esc
 
 - **Fluxo existente:** preserve os tipos de item, vínculos, campos de aceite, estados e regras do time. Mapeie os eventos de desenvolvimento (início, PR/MR aberto para revisão, merge e encerramento) às transições que já existem. Registre quais ações o agente pode executar e quais já são feitas por automação ou dependem de uma pessoa. Um PR/MR aberto como rascunho só entra em revisão quando o fluxo do time indicar.
 - **Sem fluxo definido:** proponha **A fazer → Em andamento → Em revisão → Concluído**. Para trabalho com PR/MR, vincule o item ao pedido de revisão, mova para **Em revisão** quando estiver pronto para review e proponha **Concluído** após merge e verificação dos critérios de aceite. Para trabalho sem PR/MR, proponha revisão ou validação conforme o risco. Ajuste a proposta ao tamanho da equipe e peça confirmação antes de aplicar.
-- **Sem board:** mantenha a tarefa e a evidência no plano ou diário local.
+- **Sem board:** mantenha a tarefa e a evidência no plano ou diário local. Registre no plano de adaptação que os fluxos do projeto pulam `create-work-item` e a sincronização com o board. Se o time optar por remover a skill da instalação, ajuste também os wrappers e as referências ao processo.
 
 ### 2.2 Time tracking
 **7pace** · **Clockify** · **Toggl Track** · **Harvest** · 7pace+Clockify · nenhum.
