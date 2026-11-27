@@ -4,7 +4,7 @@ This repository supports AI-assisted development across multiple tools. The proc
 
 ## Project context
 
-- **Project:** o projeto — stack definido via `/integrar` (exemplo do kit: Angular + Material, Clean Architecture, Vitest, Playwright)
+- **Project:** `<PROJECT_NAME>` — stack, arquitetura e comandos definidos via `/integrar` (ou `/simbiose` em projetos novos) e documentados em `.claude/PROJECT_REFERENCE.md`
 - **Repository:** `<ORG>/<PROJECT_KEY>`
 - **Tracker:** Azure DevOps nos exemplos; para Jira use `setup-jira`
 - **Architecture overview:** `templates/project-reference.template.md`
@@ -41,8 +41,7 @@ When the user requests one of these by name, open the corresponding canonical an
 
 ## Idioma e convenções de código
 
-- **Idioma da UI e mensagens:** Português brasileiro (pt-BR)
+- **Idioma da UI e mensagens:** Português brasileiro (pt-BR) por padrão (ajuste conforme o projeto)
 - **Commit messages:** Português brasileiro
 - **Sem `Co-Authored-By` em commits**
-- **Standalone components, `inject()`, Angular Signals, `OnPush`**
-- **Sem `fakeAsync`/`tick`, sem `TestBed.initTestEnvironment()`** — Vitest com `@angular/build:unit-test`
+- **Padrões da stack e testes:** siga a arquitetura, os linters e o framework de testes documentados em `.claude/PROJECT_REFERENCE.md` e `docs/discovery.md` (configurados via `/integrar` ou `/simbiose`)

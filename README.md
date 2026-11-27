@@ -69,7 +69,7 @@ Symbiote-AI/
 │       ├── timetracking/         ← wrapper 7pace+Clockify (com .env.example, sem .env)
 │       └── clockify-mcp/         ← (opcional, não vem no kit) criada pelo git clone do MCP do Clockify
 ├── .cursor/
-│   ├── settings.json             ← troque vitest.rootConfig por <APP_DIR>/vitest.config.ts
+│   ├── settings.json             ← preferências mínimas do editor (formatação/lint ficam a cargo do projeto)
 │   └── rules/<skill>.mdc         ← wrappers Cursor (+ PROJECT-REFERENCE-md.mdc)
 ├── processes/                    ← PROCESSOS CANÔNICOS (fonte de verdade)
 ├── templates/                    ← spec-template, story.template, project-reference (template)
