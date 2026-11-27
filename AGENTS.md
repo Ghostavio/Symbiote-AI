@@ -20,7 +20,7 @@ This repository supports AI-assisted development across multiple tools (Claude C
 
 ## Project context
 
-- **Project:** `<PROJECT_NAME>` — stack, arquitetura e comandos definidos via `/integrar` (ou `/simbiose` em projetos novos) e documentados em `.claude/PROJECT_REFERENCE.md`
+- **Project:** `<PROJECT_NAME>` — stack, arquitetura e comandos definidos pela skill `simbiose` e documentados em `.claude/PROJECT_REFERENCE.md`
 - **Repository:** `<ORG>/<PROJECT_KEY>`
 - **Tracker:** Azure DevOps por padrão nos exemplos; para Jira use `setup-jira` (os exemplos `mcp__azure-devops__*` viram chamadas do MCP Atlassian/Jira)
 - **Architecture overview:** `templates/project-reference.template.md`
@@ -38,7 +38,7 @@ When the user requests one of these by name (e.g., "rode o `phase-code-review`")
 | `start-workflow`          | [processes/start-workflow.md](processes/start-workflow.md) | Ponto de entrada para nova sessão de desenvolvimento (feature/bug/refactor/freestyle)   |
 | `create-work-item`        | [processes/create-work-item.md](processes/create-work-item.md) | Criar/vincular work item no Azure DevOps Board (Feature → User Story → Tasks)            |
 | `spec-builder`            | [processes/spec-builder.md](processes/spec-builder.md)     | Construir especificação de feature a partir do template padrão                          |
-| `phase-code-review`  | [processes/phase-code-review.md](processes/phase-code-review.md) | Code review com lint + typecheck + análise estática + testes + correções automáticas |
+| `phase-code-review`  | [processes/phase-code-review.md](processes/phase-code-review.md) | Code review com lint + typecheck + análise estática e testes, com correções quando autorizadas |
 | `timesync`                | [processes/timesync.md](processes/timesync.md)             | Registrar horas em uma ou mais ferramentas de controle de tempo configuradas no projeto |
 | `setup-azure-mcp`         | [processes/setup-azure-mcp.md](processes/setup-azure-mcp.md) | Configurar MCP do Azure DevOps na ferramenta de AI em uso                                |
 | `setup-sonarqube-mcp`     | [processes/setup-sonarqube-mcp.md](processes/setup-sonarqube-mcp.md) | Configurar MCP do SonarQube (via Docker)                                                |
@@ -56,7 +56,7 @@ When the user requests one of these by name (e.g., "rode o `phase-code-review`")
 - **Idioma da UI e mensagens:** Português brasileiro (pt-BR) por padrão (ajuste conforme o projeto)
 - **Commit messages:** Português brasileiro
 - **Sem `Co-Authored-By` em commits**
-- **Padrões da stack e testes:** siga a arquitetura, os linters e o framework de testes documentados em `.claude/PROJECT_REFERENCE.md` e `docs/discovery.md` (configurados via `/integrar` ou `/simbiose`)
+- **Padrões da stack e testes:** siga a arquitetura, os linters e o framework de testes documentados em `.claude/PROJECT_REFERENCE.md` e `docs/discovery.md` (configurados pela skill `simbiose`)
 
 ## Updates
 

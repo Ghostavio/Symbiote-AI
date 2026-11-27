@@ -4,7 +4,7 @@ This repository supports AI-assisted development across multiple tools. The proc
 
 ## Project context
 
-- **Project:** `<PROJECT_NAME>` — stack, arquitetura e comandos definidos via `/integrar` (ou `/simbiose` em projetos novos) e documentados em `.claude/PROJECT_REFERENCE.md`
+- **Project:** `<PROJECT_NAME>` — stack, arquitetura e comandos definidos pela skill `simbiose` e documentados em `.claude/PROJECT_REFERENCE.md`
 - **Repository:** `<ORG>/<PROJECT_KEY>`
 - **Tracker:** Azure DevOps nos exemplos; para Jira use `setup-jira`
 - **Architecture overview:** `templates/project-reference.template.md`
@@ -26,7 +26,7 @@ When the user requests one of these by name, open the corresponding canonical an
 | `start-workflow`          | [processes/start-workflow.md](../processes/start-workflow.md) | Ponto de entrada para nova sessão de desenvolvimento                                    |
 | `create-work-item`        | [processes/create-work-item.md](../processes/create-work-item.md) | Criar/vincular work item no Azure DevOps Board                                          |
 | `spec-builder`            | [processes/spec-builder.md](../processes/spec-builder.md)     | Construir especificação de feature                                                       |
-| `phase-code-review`  | [processes/phase-code-review.md](../processes/phase-code-review.md) | Code review com lint + typecheck + análise estática + testes                                  |
+| `phase-code-review`  | [processes/phase-code-review.md](../processes/phase-code-review.md) | Revisão proporcional ao risco, com verificações locais e correções quando autorizadas                                  |
 | `timesync`                | [processes/timesync.md](../processes/timesync.md)             | Registrar horas em uma ou mais ferramentas de controle de tempo configuradas no projeto |
 | `setup-azure-mcp`         | [processes/setup-azure-mcp.md](../processes/setup-azure-mcp.md) | Configurar MCP do Azure DevOps                                                           |
 | `setup-sonarqube-mcp`     | [processes/setup-sonarqube-mcp.md](../processes/setup-sonarqube-mcp.md) | Configurar MCP do SonarQube (via Docker)                                                |
@@ -44,4 +44,4 @@ When the user requests one of these by name, open the corresponding canonical an
 - **Idioma da UI e mensagens:** Português brasileiro (pt-BR) por padrão (ajuste conforme o projeto)
 - **Commit messages:** Português brasileiro
 - **Sem `Co-Authored-By` em commits**
-- **Padrões da stack e testes:** siga a arquitetura, os linters e o framework de testes documentados em `.claude/PROJECT_REFERENCE.md` e `docs/discovery.md` (configurados via `/integrar` ou `/simbiose`)
+- **Padrões da stack e testes:** siga a arquitetura, os linters e o framework de testes documentados em `.claude/PROJECT_REFERENCE.md` e `docs/discovery.md` (configurados pela skill `simbiose`)

@@ -1,50 +1,40 @@
 ---
 name: phase-code-review
-description: "Use when an implementation phase, feature chunk, or significant code change is complete in the project — after a subagent finishes a task, after a polish round, before committing or pushing work, or when the user asks to review recent changes. Invoke PROACTIVELY without waiting for the user to ask."
+description: "Use para revisar código quando solicitado ou após uma entrega que justifique revisão. Ajuste a profundidade ao risco e aplique correções somente dentro do escopo autorizado."
 ---
-
-You are an expert code reviewer specializing in clean architecture, maintainable software design, and the idioms of the project's configured stack. Your primary responsibility is to review code against project guidelines described below with high precision to minimize false positives.
 
 # Phase Code Review
 
-Review, verify, and fix code after each implementation phase in the project. This skill combines spec compliance review, code quality analysis, automated quality checks, and automatic correction into a single subagent execution.
+Compare a mudança com a intenção e as convenções do projeto. Use a profundidade necessária para identificar regressões e verificar o resultado.
 
-## Why this approach
+## Escolher o escopo da revisão
 
-Dispatching a single subagent that both reviews AND fixes saves a full round-trip compared to splitting review and correction into separate steps. The reviewer already has all the context from reading the code — having it also apply fixes means the orchestrator's context window stays clean for coordination decisions, not implementation details.
-
-## When to use
-
-- After a subagent delivers an implementation phase (FASE 0, 1, 2, etc.)
-- After a round of polishing/adjustments is complete
-- Before pushing to remote
-- When the user explicitly asks for a code review
+- **Avaliação:** quando o usuário pede uma revisão, auditoria ou parecer, inspecione o diff, rode verificações relevantes e reporte achados. Preserve os arquivos, commits e registros externos.
+- **Revisão de implementação:** quando o pedido já autoriza implementar ou corrigir, aplique correções focadas dentro desse escopo. Reporte decisões de produto ou mudanças de comportamento fora do escopo para avaliação.
+- **Profundidade:** revise mudanças pequenas, reversíveis e verificáveis na própria sessão. Para mudanças de alto impacto ou complexidade, busque revisão independente se disponível e autorizada. Siga a [estratégia de esforço e modelo](start-workflow.md#passo-15--esforço-e-seleção-de-modelo) e sugira ajustes conforme o risco da revisão. Se a revisão independente não estiver disponível, faça as verificações possíveis e sinalize a limitação.
 
 ## Process
 
 ### Step 1: Gather context
 
-Before dispatching the reviewer, the orchestrator collects:
+Antes de iniciar a revisão, reúna:
 
 1. **What changed** — list of commits since last review, or `git diff` summary
 2. **Reference documents** — `templates/project-reference.template.md`, paths to spec, design, discovery docs
 3. **Scope** — which phase/task was just completed
 4. **Exclusions** — files being modified by another agent concurrently (reviewer must NOT touch these)
 
-### Step 2: Dispatch the reviewer subagent
+### Step 2: Executar a revisão
 
-Dispatch a code-review sub-agent using your AI tool's mechanism, configured to use the most capable model available. **O code review SEMPRE usa o modelo mais capaz** (ex.: Opus), mesmo quando a sessão está em modo Adaptativo ou Sonnet (ver Passo 1.5 do `start-workflow`) — decisões de review propagam para todas as fases:
-
-- **Claude Code:** `Agent` tool with `model: "opus"`
-- **Cursor:** Background Agent (Cursor Agents) with the most capable model selected
-- **Codex / Antigravity:** sub-task / nested agent mechanism if available
-- **VSCode + Copilot:** Agent mode with the most capable model
-- **Without sub-agent support:** execute the steps inline in the current session
+Use o roteiro abaixo na sessão atual ou compartilhe-o com um reviewer autorizado. Se usar um reviewer, informe os arquivos protegidos, o modo de revisão e a autorização disponível para editar ou executar verificações.
 
 Use the following prompt structure:
 
 ````
-You are reviewing and fixing code for the project (follow the stack, architecture, and conventions documented in `.claude/PROJECT_REFERENCE.md` and `docs/discovery.md`).
+Review the proposed change using the stack and conventions documented in `.claude/PROJECT_REFERENCE.md` and `docs/discovery.md` when available.
+
+## Review mode
+[Assessment or implementation review, including any explicitly authorized edits]
 
 ## Scope
 [FASE/task that was just completed]
@@ -60,13 +50,13 @@ You are reviewing and fixing code for the project (follow the stack, architectur
 ## DO NOT modify these files (concurrent work)
 [List of files being edited by other agents, if any]
 
-## Your job (execute ALL steps in order)
+## Review checklist
 
-Read every file created or modified before opening any of the review areas below.
+Read the diff and open the relevant surrounding code. Select the checks that apply to the change; use the project’s own conventions.
 
-### 1. Spec Compliance Review (FIRST — most important)
+### 1. Spec Compliance Review
 
-This is the **plan alignment** step, modeled on the Superpowers `code-reviewer` agent. Compare the implementation against the original spec/plan/requirements before looking at code quality.
+This is the **plan alignment** step, modeled on the Superpowers `code-reviewer` agent. Compare the implementation against the original spec, plan or requirements when available. For a small change, use the stated intent and acceptance criteria.
 
 For each file, verify:
 
@@ -122,17 +112,14 @@ Identify actual bugs that will impact functionality:
 - Comments explain *why*, not *what* (the code already shows what)
 - README/diary updates if the implementation introduced a new pattern others should follow
 
-### 6. Apply fixes (do NOT need user decision)
+### 6. Tratar achados conforme a autorização
 
-For each issue found across steps 1-5:
-
-- If it can be fixed without changing behavior or requiring a design decision → fix it
-- If it requires user input (ambiguous spec, design choice, naming decision) → add to escalation list
+Na avaliação, reporte os achados e suas consequências. Na revisão de implementação, aplique as correções já autorizadas e encaminhe decisões fora do escopo ao responsável pela mudança.
 
 ### 7. Run quality checks
 Identifique os comandos na documentação, configuração ou CI do projeto. Rode lint, checagem de tipos e testes conforme a stack e o risco da mudança. Comece pelas verificações mais rápidas quando isso ajudar a obter feedback. Se um check aplicável estiver indisponível, registre a limitação e rode os demais.
 
-Preserve a saída completa (mensagens e arquivo:linha) para diagnosticar falhas. Use os comandos reais do projeto (substitua os marcadores abaixo via `/integrar`):
+Preserve a saída completa (mensagens e arquivo:linha) para diagnosticar falhas. Use os comandos reais do projeto (substitua os marcadores pelos comandos detectados ou configurados via `/simbiose`):
 
 Se o RTK estiver ativo (hook global na ferramenta de AI — ver `full-setup.md`),
 os comandos abaixo são reescritos transparentemente para `rtk <cmd>`,
@@ -162,7 +149,7 @@ TEST_STATUS=$?
 # inspecione /tmp/test-output.log com Read/Grep e confira TEST_STATUS (0 = sucesso)
 ```
 
-Fix any failures caused by the reviewed code. Do NOT fix pre-existing failures.
+Identifique quais falhas foram causadas pela mudança. Na revisão de implementação, corrija as falhas introduzidas que estiverem no escopo. Registre falhas preexistentes separadamente quando forem relevantes.
 
 ### 7.1 Validação raw antes de declarar OK (proxies de compressão de saída)
 
@@ -205,8 +192,8 @@ mcp__sonarqube__analyze_code_snippet({
 ```
 
 A resposta contém `issues[]` com `ruleKey`, `primaryMessage`, `severity`, `textRange.startLine`. Para cada issue:
-- **Severity BLOCKER/CRITICAL:** Corrigir obrigatoriamente
-- **Severity MAJOR:** Corrigir se possível sem mudar comportamento
+- **Severity BLOCKER/CRITICAL:** Reportar como bloqueio. Aplicar correção quando autorizada.
+- **Severity MAJOR:** Reportar impacto e corrigir se estiver no escopo autorizado.
 - **Severity MINOR/INFO:** Reportar mas não corrigir automaticamente
 
 Exemplos comuns:
@@ -214,18 +201,14 @@ Exemplos comuns:
 - `typescript:S1854` — Dead store → remover variável não utilizada
 - `typescript:S6544` — Promise returned but not awaited
 
-### 9. Commit fixes
-If any fixes were applied:
-```bash
-git add [fixed files]
-git commit -m "fix: correções do code review da [FASE/TASK]"
-```
-Do NOT add Co-Authored-By.
+### 9. Registrar correções
 
-### 10. Report
-Return a comprehensive report in this EXACT format. Use the same severity classification as the Superpowers `code-reviewer` agent: **Critical** (must fix before merge), **Important** (should fix), **Suggestion** (nice to have).
+Se a entrega já inclui commit, siga as convenções do projeto e inclua apenas as correções autorizadas. Na avaliação, entregue os achados sem alterar a branch.
 
----
+### 10. Reportar
+
+Apresente primeiro os achados por severidade, com arquivo e linha, impacto e verificação. Indique o que foi corrigido, o que ficou pendente e quais verificações foram executadas ou indisponíveis. Use o modelo abaixo quando o volume de trabalho justificar esse detalhamento.
+
 ## Code Review Report: [FASE/TASK]
 
 ### Files Reviewed
@@ -238,8 +221,8 @@ Return a comprehensive report in this EXACT format. Use the same severity classi
 - **Justified improvements over the plan:** [list or "none"]
 - **Spec problems detected:** [list issues with the spec itself, or "none"]
 
-### Issues Found and Fixed
-| # | Severity | Area | File:Line | Issue | Fix Applied |
+### Findings and fixes
+| # | Severity | Area | File:Line | Issue | Status |
 |---|----------|------|-----------|-------|-------------|
 | 1 | Critical | Spec compliance | path:42 | Field renamed without spec update | Renamed back to spec name |
 | 2 | Important | Code quality | path:99 | Uncleaned resource handle / missing error check | Fixed |
@@ -250,8 +233,8 @@ Return a comprehensive report in this EXACT format. Use the same severity classi
 | 1 | Spec ambiguity | path:42 | Description | Option A vs Option B |
 
 ### Quality Check Results
-- **Lint:** [PASS/FAIL — N errors fixed]
-- **Typecheck:** [PASS/FAIL — N errors fixed]
+- **Lint:** [resultado e limitações]
+- **Typecheck:** [resultado e limitações]
 - **Unit Tests:** [N passing / N total]
 - **E2E Tests:** [N passing / N total, or "not run"]
 - **Análise estática:** [ferramenta, resultado e limitações; inclua SonarQube quando usado]
@@ -259,29 +242,16 @@ Return a comprehensive report in this EXACT format. Use the same severity classi
 ### Summary
 [2-3 sentences covering: (a) overall spec compliance, (b) code quality observations, (c) anything that needs user decision]
 
-### ⚠️ Lembrete: Atualizar o diário de implementação (`docs/diario-implementacao.md`) com os detalhes da implementação e resultados deste code review.
 ---
 ````
 
-### Step 3: Process the report
+### Step 3: Encerrar
 
-When the reviewer returns:
-
-1. **Read the report** — check for issues requiring user decision
-2. **If there are escalated issues** → present them to the user, get decisions, apply
-3. **Update the implementation diary** (`docs/diario-implementacao.md`) with:
-   - All implementation details, decisions, and anything relevant during the delivery of the task
-   - Number of issues found and fixed
-   - Issues escalated to user and decisions made
-   - Quality check results
-   - Any lessons learned
-4. **Proceed to next phase**
+Entregue o relatório ou use os achados para continuar a implementação autorizada. Em uma entrega que já usa diário ou tracker, registre a evidência no local adotado pelo projeto quando isso fizer parte da entrega.
 
 ## Critical rules
 
-- **Never dispatch the reviewer in background** while making changes to the same files — this causes the reviewer to revert your work
-- **Never run tests concurrently** — multiple test runner instances in the same workspace cause timeouts and false failures
-- **The reviewer fixes, not just reports** — this is the key differentiator from generic code review skills
+- **Isole a revisão paralela** de arquivos que estão sendo editados para evitar alterações concorrentes.
+- **Isole verificações concorrentes** quando compartilharem arquivos, portas ou outros recursos de execução.
 - **Priorize verificações rápidas quando disponíveis** para antecipar falhas antes das suítes mais longas.
 - **Análise estática faz parte da revisão.** Use as verificações locais e registre se houve análise complementar no SonarQube.
-- **The diary update reminder is mandatory** — the orchestrator tends to skip documentation if not reminded

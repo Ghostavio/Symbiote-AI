@@ -15,16 +15,9 @@ O agente principal (orquestrador) coordena o trabalho, delegando implementação
 
 ---
 
-## 2. Modelo dos Subagentes
+## 2. Esforço e seleção de modelo
 
-A orquestração, o design técnico e o code review usam sempre o **modelo mais capaz disponível** na ferramenta de AI em uso. Os demais subagentes (implementação, testes, tasks mecânicas) seguem a estratégia escolhida no início da sessão (Passo 1.5 de `processes/start-workflow.md`: Adaptativo, Sempre Opus ou Sempre Sonnet).
-
-- **Claude Code:** Opus (`model: "opus"`) para orquestração, design e review; no modo Adaptativo, Sonnet (`model: "sonnet"`) para tasks mecânicas bem especificadas.
-- **Cursor:** Opus / GPT-5 / Gemini 2.5 Pro (o mais capaz disponível no plano)
-- **Codex / Antigravity:** o tier "max" / mais capaz da ferramenta
-- **VSCode + Copilot:** o modelo mais capaz na seleção do agent mode
-
-A qualidade do code review e do design depende fortemente do modelo. Não economizar aqui.
+Siga a [estratégia de esforço do workflow](../processes/start-workflow.md#passo-15--esforço-e-seleção-de-modelo). A preferência mais específica do usuário ou do projeto define o nível inicial. Use `medium` quando não houver preferência registrada e sugira um ajuste só quando o risco ou a complexidade justificar.
 
 ---
 
@@ -138,27 +131,13 @@ O orquestrador deve registrar **start time** e **end time** de cada fase diretam
 
 ---
 
-## 5. Code Review Obrigatório
+## 5. Code Review
 
-Após **cada fase** de implementação, invocar a skill **`phase-code-review`** (disponível em `.claude/skills/phase-code-review/SKILL.md` ou `processes/phase-code-review.md`).
+### 5.1 O que o reviewer faz
 
-Este é o passo mais crítico do workflow. A skill despacha um subagente único (Opus) que executa review, quality checks, SonarQube e correções automáticas numa única execução.
+Ao concluir uma fase de implementação, use [`phase-code-review`](../processes/phase-code-review.md) para comparar a entrega com os requisitos e verificar o diff com os comandos do projeto. Ajuste a profundidade ao risco e use revisão independente para mudanças de alto impacto quando disponível e autorizada.
 
-### 5.1 O que o reviewer faz (tudo numa única execução)
-
-1. **Lê TODOS os arquivos** criados/modificados na fase
-2. **Compara com spec e design** — spec compliance, features faltantes ou extras
-3. **Verifica consistência entre camadas** — entity → DTO → mapper → gateway → use case → facade → component
-4. **Verifica padrões** — OnPush, inject(), Signals, takeUntilDestroyed, pt-BR, dark mode, `data-testid`, acessibilidade
-5. **Corrige automaticamente** issues que NÃO precisem de decisão do usuário
-6. **Executa quality checks** (nesta ordem):
-   - `yarn lint`
-   - `npx tsc --noEmit` (typecheck)
-   - Análise SonarQube via **MCP** nos arquivos modificados (`mcp__sonarqube__analyze_code_snippet` com `projectKey: "<PROJECT_KEY>"`). **Não usar `sonar verify`** da CLI (requer SonarQube Cloud, não funciona com o server on-premise). O MCP Server do SonarQube requer **Docker** rodando.
-   - `yarn ng test --watch=false` (testes unitários)
-   - `npx playwright test` (testes E2E, quando aplicável)
-7. **Commita correções:** `fix: correções do code review da [FASE]`
-8. **Retorna relatório** com: arquivos revisados, issues corrigidos, issues escalados, resultados dos checks, lembrete para atualizar o diário de implementação
+Pedidos de avaliação recebem achados e evidências. Durante uma implementação, aplique as correções dentro do escopo autorizado. Inclua correções em commit quando a entrega já prevê commit.
 
 ### 5.2 Como invocar
 
@@ -166,7 +145,7 @@ Este é o passo mais crítico do workflow. A skill despacha um subagente único 
 Invoke a skill phase-code-review após completar [FASE X].
 ```
 
-Ou manualmente, despachar subagente seguindo o template completo na skill `phase-code-review.md`.
+Use o roteiro da skill na sessão atual ou envie-o a um reviewer autorizado.
 
 ### 5.3 Após o review
 
@@ -250,12 +229,12 @@ scripts/sync-7pace.sh \
 
 ### 5.6 Regras Críticas
 
-- **Nunca pular o code review** — mesmo para fases "simples"
+- **Revise cada fase com profundidade proporcional ao risco.**
 - **Nunca despachar reviewer em background** enquanto faz alterações nos mesmos arquivos — o reviewer pode reverter seu trabalho
 - **Nunca rodar testes concorrentemente** com outro agente — causa timeouts e falhas espúrias
-- **O reviewer corrige** — não apenas reporta. Isso economiza um round-trip e contexto
+- **Aplique correções somente no escopo autorizado.**
 - **Se o reviewer encontra algo que precisa de decisão** → escala ao orquestrador → orquestrador pergunta ao usuário
-- **Lint e typecheck antes de testes** — feedback mais rápido (3s vs 60s)
+- **Priorize verificações rápidas do projeto** quando ajudarem a antecipar falhas.
 
 ---
 
@@ -370,7 +349,7 @@ Trocar de sessão quando o contexto atingir ~80% de uso:
 Antes de prosseguir para a próxima fase, verificar:
 
 - [ ] Subagente implementador concluiu e commitou
-- [ ] Code review despachado e executado (lint + typecheck + SonarQube + testes + correções)
+- [ ] Revisão proporcional executada, com as verificações aplicáveis da stack e registro dos achados e das correções autorizadas
 - [ ] Issues que precisam de decisão do usuário resolvidos
 - [ ] Diário de implementação atualizado (com start time, end time e duração)
 - [ ] Board sincronizado via Azure MCP (work item + tasks)

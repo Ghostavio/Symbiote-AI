@@ -7,7 +7,7 @@ description: "Use quando o usuário iniciar uma nova sessão de desenvolvimento 
 
 Ponto de entrada para sessões de desenvolvimento assistido por IA. Escolha o fluxo conforme o risco e o escopo. Use as verificações do projeto e acione revisão independente, documentação, tracker e time tracking quando forem relevantes para a entrega.
 
-> **Adaptação ao projeto.** Os marcadores (`<TEST_CMD>`, `<LINT_CMD>`, `<src>`, …) e exemplos de tracker (Azure DevOps, Jira, GitHub Issues…) são especializados para o SEU projeto pela skill **`/integrar`** (ou **`/simbiose`** em projetos novos). Onde lê-se "o tracker", entenda a ferramenta configurada no projeto.
+> **Adaptação ao projeto.** Os marcadores (`<TEST_CMD>`, `<LINT_CMD>`, `<src>`, …) e exemplos de tracker (Azure DevOps, Jira, GitHub Issues…) são especializados para o SEU projeto pela skill **`simbiose`**. Onde lê-se "o tracker", entenda a ferramenta configurada no projeto.
 
 ---
 
@@ -17,15 +17,15 @@ Estes princípios moldam todos os fluxos abaixo. Detalhe e contexto em [`docs/ap
 
 1. **Edições em documentos gerados pela IA passam pelo orquestrador.** Editar manualmente um spec/design/plano deixa o orquestrador com uma versão velha em contexto e ele "corrige" suas mudanças. Peça a edição ao orquestrador — ou avise explicitamente o que mudou e por quê.
 2. **Higienize o codebase antes da implementação assistida.** Código morto/artefatos não usados poluem discovery, design e implementação — a IA trata tudo que encontra como relevante e propaga o ruído.
-3. **Nunca rode reviewer em background sobre arquivos que você está editando**, nem rode testes concorrentes (muitos test runners não suportam instâncias paralelas no mesmo projeto). Sequencial, ou isolado com lista explícita de arquivos a não tocar.
-4. **Code review por subagente dedicado após cada fase** — o orquestrador tende a revisar superficialmente. O mesmo reviewer deve corrigir o que não exige decisão do usuário.
+3. **Nunca rode reviewer em background sobre arquivos que você está editando**, nem rode testes concorrentes (test runners podem compartilhar recursos no mesmo projeto). Sequencial, ou isolado com lista explícita de arquivos a não tocar.
+4. **Dimensione a revisão pelo risco da fase.** Prefira uma revisão independente em entregas de alto impacto ou complexidade, quando disponível e autorizada. Aplique apenas correções que façam parte da entrega.
 5. **Após 2-3 tentativas falhas num ajuste visual/CSS, pare e delegue** a um subagente com validação visual (Playwright MCP) e o histórico das tentativas falhas.
 6. **Escolha o porte do fluxo pelo risco, escopo e reversibilidade.** A quantidade de arquivos ajuda a estimar o esforço. Uma mudança pequena em autorização ou cobrança ainda pode exigir revisão independente.
 7. **Cole o texto da task no prompt do subagente** em vez de mandá-lo ler um plano gigante — ele lê o arquivo inteiro e gasta contexto à toa.
 8. **Planeje um passo de integração explícito** entre fases paralelas com dependências cruzadas (worktrees são cópias isoladas; TODOs de uma fase não se resolvem na outra).
 9. **Dados mock devem passar nas regras de negócio do projeto** (validadores de CPF/CNPJ/email…). Cruze mock × validators no review.
 10. **Lint + typecheck ANTES da suíte de testes** — feedback de 3-12s contra 55-75s.
-11. **Roteie o modelo por complexidade** (ver Passo 1.5): o mais capaz para orquestração, design e review; modelos rápidos (Sonnet) para tasks mecânicas bem especificadas. A estratégia é escolhida no início da sessão, não fixada em "sempre Opus".
+11. **Dimensione modelo e esforço conforme a tarefa.** Respeite as preferências do usuário e use os critérios do Passo 1.5 para sugerir ajustes quando houver ganho claro.
 12. **Diário de implementação incremental, não retroativo** — atualize a cada entrega, não no fim.
 13. **Sincronize o tracker proativamente, não retroativamente** — crie/atualize work items durante a implementação.
 
@@ -55,35 +55,29 @@ Se o pedido já define o fluxo ou descreve uma mudança clara, fácil de verific
 
 No Express, vá direto ao [Fluxo G](#fluxo-g-express-mudança-pequena). Ele já cobre os passos de preparação aplicáveis.
 
-## Passo 1.5 — Estratégia de modelo dos subagentes
+## Passo 1.5 — Esforço e seleção de modelo
 
-Pergunte ao usuário (uma vez, no início da sessão) como escolher o modelo ao despachar subagentes — em vez de usar sempre o mais caro:
+Use a preferência mais específica disponível: a escolha explícita para a tarefa, a preferência da sessão, o padrão documentado do projeto e, por fim, **medium** como padrão do kit. O usuário pode mudar o nível a qualquer momento. Uma tarefa simples segue com o padrão, sem iniciar um questionário.
 
-> Como devo escolher o modelo dos subagentes nesta sessão?
-> **(a) Adaptativo (recomendado)** — eu decido por complexidade: Sonnet para tasks mecânicas, Opus para as complexas/críticas.
-> **(b) Sempre Opus** — máxima qualidade, maior custo.
-> **(c) Sempre Sonnet** — máxima economia/velocidade.
+| Esforço | Quando sugerir |
+| --- | --- |
+| `low` | Tarefa mecânica ou revisão de um diff pequeno, com critério de pronto claro e baixo impacto. |
+| `medium` | Implementação ou revisão comum, com contexto conhecido e verificações disponíveis. |
+| `high` | Regras de negócio complexas, investigação difícil, integrações ou mudanças com risco relevante de regressão. |
+| `max` | Planejamento ou validação de alto impacto em várias áreas, quando a análise adicional justificar custo e latência. |
 
-Guarde a escolha para a sessão e respeite overrides pontuais do usuário.
+Quando o risco ou a complexidade indicar outro nível, explique brevemente qual tarefa se beneficia, por quê e qual a contrapartida. Use a preferência vigente até o usuário aceitar a sugestão, salvo se ele já tiver delegado os ajustes. A sugestão pode se aplicar só à etapa que dela precisa, como a orquestração de uma mudança ampla.
 
-### Heurística de roteamento (modo Adaptativo)
+Trate **modelo** e **esforço** como escolhas separadas. Em Anthropic, OpenAI e Google, use o modelo escolhido pelo usuário ou pelo projeto e aplique o esforço aos controles disponíveis na ferramenta. Considere sugerir outro modelo separadamente quando houver benefício claro. Os quatro níveis são a escala do kit. Use o equivalente documentado pelo cliente, quando houver, e informe se a sessão não permitir alterar um parâmetro ou se for preciso ajustá-lo manualmente. Registre apenas o nível que de fato foi aplicado.
 
-Classifique cada subagente **antes** de despachar e anuncie a escolha (ex.: "despachando em Sonnet — task mecânica"):
+### Combinar modelos na mesma entrega
 
-**→ Sonnet (mecânico / bem especificado):**
-- Boilerplate seguindo padrão existente (entities, DTOs, mappers, barrels)
-- Edições repetitivas em muitos arquivos (renomes, formatação, migração simples)
-- Testes unitários diretos a partir de um plano detalhado
-- Extração/sumarização de informação já estruturada
+Quando houver escolha de modelos e autorização para delegar, considere dividir uma entrega em duas passagens:
 
-**→ Opus (complexo / alto impacto):**
-- **Code review** e **design técnico** (sempre — decisões propagam para todas as fases)
-- **Orquestração** (o thread principal)
-- Lógica de negócio não-trivial, integração entre camadas, algoritmos
-- Depuração de causa raiz, ajustes visuais difíceis, decisões de arquitetura
-- Qualquer task ambígua ou com requisitos incompletos
+1. **Primeira passagem com um modelo mais econômico.** Dê a ele o escopo, os critérios de aceitação e as verificações esperadas. Use-o para a maior parte da implementação bem especificada, como testes diretos, mudanças repetitivas e documentação. Peça o diff, os resultados dos checks e as dúvidas em aberto.
+2. **Revisão e refinamento com um modelo mais capaz.** Entregue o pedido original, o diff e as evidências. Peça que verifique a intenção e os casos de maior risco, refine o que tiver impacto no resultado e rode novamente os checks afetados por suas correções. Aplique correções dentro da autorização definida em [`phase-code-review`](phase-code-review.md).
 
-Na dúvida sobre a complexidade, **suba o tier** (prefira Opus) — o custo de retrabalho supera o de tokens.
+A proporção depende do trabalho. Use uma única passagem quando a revisão separada custar mais do que agrega. Em decisões de alto impacto ou requisitos ambíguos, envolva o modelo mais capaz desde o planejamento e delegue a execução depois que os critérios estiverem claros.
 
 ### Claude Code — sugerir `ultracode` em alta complexidade
 
@@ -125,7 +119,7 @@ Seguir as etapas do `docs/workflow.md`:
 3. **Design técnico** via subagente → `docs/design/design-tecnico.md`
 4. **Plano de implementação** via subagente → `docs/plano-implementacao.md` — **marque explicitamente quais tasks são "integração" e quais são "implementação pura"** (Princípio 8). Para cada task, use [`templates/story.template.md`](../templates/story.template.md) (contexto embutido — Princípio 7)
 5. **Implementação** em fases com subagentes — agrupe tasks relacionadas num subagente grande e **cole o texto da task no prompt** (Princípios 6 e 7)
-6. **Code review** obrigatório por subagente dedicado após cada fase (skill `phase-code-review`), que também corrige o que não exige decisão do usuário (Princípio 4)
+6. **Code review** ao concluir cada fase (skill `phase-code-review`), com profundidade e correções conforme risco e escopo (Princípio 4)
 7. **Timetracking** incremental no diário + 7pace; **tracker** sincronizado via MCP a cada fase (Princípios 12 e 13)
 
 ### A.4 — Conclusão

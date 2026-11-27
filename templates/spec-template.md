@@ -608,7 +608,7 @@ ESCOPO: [PREENCHER: escopo da implementação, o mesmo da seção 1 (frontend-on
 
 AMBIENTE DE DESENVOLVIMENTO: Durante a implementação o projeto estará rodando via `<DEV_CMD>` e disponível para acesso em <DEV_URL>. Os agentes podem utilizar este endereço para verificação visual das telas implementadas se necessário.
 
-MODELO DOS SUBAGENTES: Orquestração, design técnico e code review DEVEM usar o modelo mais capaz disponível na ferramenta de AI em uso (no Claude Code, model: "opus"). Os demais subagentes seguem a estratégia de modelo escolhida no início da sessão (Passo 1.5 de `processes/start-workflow.md`).
+ESFORÇO E MODELO: Use o padrão registrado pelo usuário ou pelo projeto e a escala low / medium / high / max do Passo 1.5 de `processes/start-workflow.md`. Sugira ajustes quando o risco ou a complexidade justificar.
 
 WORKFLOW: Seguir o processo documentado em `docs/workflow.md`. Em resumo:
 
@@ -622,7 +622,7 @@ WORKFLOW: Seguir o processo documentado em `docs/workflow.md`. Em resumo:
 
 3. **Implementação paralela:** Na fase de implementação, utilizar subagentes em paralelo com worktree isolation para tarefas independentes, sempre passando o discovery como contexto.
 
-4. **Code review obrigatório:** Após cada fase de implementação, despachar subagente de code review que: lê todos os arquivos, compara com spec/design, executa lint + typecheck + SonarQube + testes, corrige automaticamente issues que não precisem de decisão do usuário.
+4. **Code review:** Após cada fase, revise a entrega conforme o risco e com as verificações aplicáveis da stack. Use revisão independente quando fizer sentido e estiver disponível e autorizada. Aplique correções dentro do escopo autorizado.
 
 5. **Testes E2E:** Seguir o padrão POM (Page Object Model) com `data-testid` conforme documentado em `docs/e2e.md`.
 

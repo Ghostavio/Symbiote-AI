@@ -21,7 +21,7 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 
 ## Começando
 
-Com o kit disponível na ferramenta de IA, rode **`/simbiose`**. Se estiver trabalhando em outro diretório, informe o caminho de destino. O comando detecta um projeto existente e propõe a adaptação, ou prepara a criação de um projeto novo. Quando o contexto for ambíguo, ele pergunta antes de começar.
+Com o kit disponível na ferramenta de IA, invoque a skill **`simbiose`**. No Codex, use **`$simbiose`**. No Claude Code, use **`/simbiose`**. Se estiver trabalhando em outro diretório, informe o caminho de destino. A skill detecta um projeto existente e propõe a adaptação, ou prepara a criação de um projeto novo. Quando o contexto for ambíguo, ela pergunta antes de começar.
 
 Os comandos `/integrar` e `/scaffold` foram depreciados. Eles continuam disponíveis por compatibilidade. Use `/simbiose` para novos usos.
 
@@ -42,7 +42,7 @@ Para disponibilizar as skills diretamente em um repositório existente, copie o 
 | `figma-requirements` | Levanta requisitos a partir de um design no **Figma** (MCP local ou online) |
 | `spec-builder` | Constrói a especificação de uma feature a partir do template |
 | `create-work-item` | Cria/vincula work item no tracker (Azure DevOps / Jira) |
-| `phase-code-review` | Code review por subagente com verificação da especificação, análise estática, testes e correções |
+| `phase-code-review` | Code review com análise e testes proporcionais ao risco, com correções quando autorizadas |
 | `timesync` | Registra horas em uma ou mais ferramentas de controle de tempo configuradas no projeto |
 | `docs-target` | Define se a doc vai pro repo ou pra plataforma externa (Confluence/Outline/Notion) |
 | `setup-azure-mcp` / `setup-jira` | Configura o MCP do tracker (Azure DevOps ou Jira/Atlassian) |
@@ -97,7 +97,7 @@ Symbiote-AI/
 
 ## Princípios
 
-O kit embute lições de desenvolvimento assistido por IA "agressivo" — ver [`docs/aprendizados.md`](docs/aprendizados.md) e a seção *Princípios* em [`processes/start-workflow.md`](processes/start-workflow.md). Resumo: editar docs via orquestrador; review por subagente dedicado que corrige; nunca rodar testes/reviewer concorrentes nos mesmos arquivos; lint+typecheck antes de testes; porte do fluxo conforme o tamanho da demanda; tracker e diário proativos.
+O kit embute lições de desenvolvimento assistido por IA "agressivo" — ver [`docs/aprendizados.md`](docs/aprendizados.md) e a seção *Princípios* em [`processes/start-workflow.md`](processes/start-workflow.md). Resumo: editar docs via orquestrador; revisão proporcional ao risco, com correções autorizadas; nunca rodar testes/reviewer concorrentes nos mesmos arquivos; lint+typecheck antes de testes; porte do fluxo conforme o tamanho da demanda; tracker e diário proativos.
 
 ## Expandindo
 
