@@ -45,8 +45,8 @@ When the user requests one of these by name (e.g., "rode o `phase-code-review`")
 | `setup-7pace`             | [processes/setup-7pace.md](processes/setup-7pace.md)       | Configurar integração com 7pace Timetracker (token + .env)                              |
 | `full-setup`              | [processes/full-setup.md](processes/full-setup.md)         | Setup completo do ambiente em uma nova máquina                                          |
 | `simbiose`                | [processes/simbiose.md](processes/simbiose.md)             | Aplicar o Symbiote-AI a um projeto existente ou iniciar um novo |
-| `scaffold` *(alias)*      | [processes/simbiose.md](processes/simbiose.md)             | Alias retrocompatível de `simbiose`                                                     |
-| `integrar`                | [processes/integrar.md](processes/integrar.md)             | Procedimento de integração para projetos existentes, acionado por `simbiose`         |
+| `scaffold` *(depreciado)*      | [processes/simbiose.md](processes/simbiose.md)             | Use `simbiose` para iniciar um projeto novo                                                     |
+| `integrar` *(depreciado)*                | [processes/integrar.md](processes/integrar.md)             | Procedimento de integração para projetos existentes, acionado por `simbiose`         |
 | `figma-requirements`      | [processes/figma-requirements.md](processes/figma-requirements.md) | Levantar requisitos a partir de um design no Figma (MCP local ou online)                |
 | `setup-jira`              | [processes/setup-jira.md](processes/setup-jira.md)         | Configurar MCP do Jira (Atlassian) — alternativa ao `setup-azure-mcp`                    |
 | `docs-target`             | [processes/docs-target.md](processes/docs-target.md)       | Destino da documentação: repo ou plataforma externa (Confluence/Outline/Notion)         |

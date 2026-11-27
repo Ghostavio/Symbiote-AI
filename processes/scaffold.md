@@ -1,11 +1,11 @@
 ---
 name: scaffold
 alias_of: simbiose
-description: "Alias retrocompatível de `simbiose` — use para dar bootstrap/scaffold de um projeto NOVO (greenfield) já com o Symbiote-AI pré-configurado."
+description: "Depreciado. Use simbiose para iniciar um projeto novo com o Symbiote-AI."
 ---
 
-# Scaffold (alias retrocompatível de `simbiose`)
+# Scaffold (comando depreciado)
 
-> Esta skill foi renomeada para **[`simbiose`](simbiose.md)** para acompanhar a identidade do **Symbiote-AI**. Este arquivo é mantido para retrocompatibilidade com referências e invocações `/scaffold`.
+> Use **[`/simbiose`](simbiose.md)** para iniciar projetos novos. O alias `/scaffold` e este arquivo continuam disponíveis por compatibilidade.
 
 Follow the canonical procedure in [`processes/simbiose.md`](simbiose.md).

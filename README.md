@@ -23,6 +23,8 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 
 Com o kit disponível na ferramenta de IA, rode **`/simbiose`**. Se estiver trabalhando em outro diretório, informe o caminho de destino. O comando detecta um projeto existente e propõe a adaptação, ou prepara a criação de um projeto novo. Quando o contexto for ambíguo, ele pergunta antes de começar.
 
+Os comandos `/integrar` e `/scaffold` foram depreciados. Eles continuam disponíveis por compatibilidade. Use `/simbiose` para novos usos.
+
 Para disponibilizar as skills diretamente em um repositório existente, copie o conteúdo do kit para a raiz desse repositório, preservando os arquivos de configuração existentes.
 
 **Depois, em qualquer caso:**
