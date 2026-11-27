@@ -445,6 +445,7 @@ def _resolve_inside_adapter(root: Path, adapter_dir: Path, rel_path: object) -> 
 
 def validate_adapters(root: Path) -> list[str]:
     errors: list[str] = []
+    seen_adapter_skills: dict[str, str] = {}
     repo_root = root.resolve()
     adapters_dir = root / "adapters"
     if not adapters_dir.exists() and not adapters_dir.is_symlink():
@@ -639,8 +640,88 @@ def validate_adapters(root: Path) -> list[str]:
                             errors.append(
                                 f"{rel_adapter}/{raw_skill}/SKILL.md: invalid or incomplete frontmatter"
                             )
+                            continue
+                        skill_name = fm["name"]
+                        skill_ref = f"{rel_adapter}/{raw_skill}/SKILL.md"
+                        if skill_name in seen_adapter_skills:
+                            errors.append(
+                                f"{skill_ref}: skill name '{skill_name}' collides with "
+                                f"{seen_adapter_skills[skill_name]} (both target processes/{skill_name}.md)"
+                            )
+                        else:
+                            seen_adapter_skills[skill_name] = skill_ref
 
     return errors
+
+
+def find_adapter_skill_collisions(
+    root: Path, adapter_dirs: list[Path] | None = None
+) -> list[str]:
+    """Check selected adapters for skill name collisions against each other and processes/."""
+    collisions: list[str] = []
+    repo_root = root.resolve()
+    processes_dir = root / "processes"
+    existing_processes = (
+        {p.stem for p in processes_dir.glob("*.md") if p.is_file()}
+        if processes_dir.is_dir()
+        else set()
+    )
+
+    if adapter_dirs is None:
+        adapter_dirs = []
+        adapters_dir = root / "adapters"
+        if adapters_dir.is_dir() and not adapters_dir.is_symlink():
+            for cat_dir in sorted(adapters_dir.iterdir()):
+                if cat_dir.is_dir() and not cat_dir.is_symlink() and cat_dir.name in ADAPTER_CATEGORIES:
+                    for item in sorted(cat_dir.iterdir()):
+                        if item.is_dir() and not item.is_symlink():
+                            adapter_dirs.append(item)
+
+    seen_skills: dict[str, str] = {}
+    for adapter_dir in adapter_dirs:
+        if adapter_dir.is_symlink() or not adapter_dir.is_dir():
+            continue
+        if not adapter_dir.resolve().is_relative_to(repo_root):
+            continue
+        manifest_path = adapter_dir / "adapter.json"
+        if manifest_path.is_symlink() or not manifest_path.is_file():
+            continue
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(manifest, dict):
+            continue
+        files = manifest.get("files")
+        if not isinstance(files, dict) or not isinstance(files.get("skills"), list):
+            continue
+        rel_adapter = adapter_dir.resolve().relative_to(repo_root).as_posix()
+        for raw_skill in files["skills"]:
+            resolved_skill = _resolve_inside_adapter(root, adapter_dir, raw_skill)
+            if resolved_skill is None:
+                continue
+            skill_md = resolved_skill / "SKILL.md"
+            if skill_md.is_symlink() or not skill_md.is_file():
+                continue
+            fm = parse_frontmatter(skill_md.read_text(encoding="utf-8"))
+            if not fm or not fm.get("name"):
+                continue
+            skill_name = fm["name"]
+            skill_ref = f"{rel_adapter}/{raw_skill}/SKILL.md"
+            if skill_name in seen_skills:
+                collisions.append(
+                    f"{skill_ref}: skill name '{skill_name}' collides with "
+                    f"{seen_skills[skill_name]} (both target processes/{skill_name}.md)"
+                )
+            else:
+                seen_skills[skill_name] = skill_ref
+            if skill_name in existing_processes:
+                collisions.append(
+                    f"{skill_ref}: skill name '{skill_name}' collides with existing "
+                    f"processes/{skill_name}.md"
+                )
+
+    return collisions
 
 
 def validate_repo(root: Path) -> list[str]:

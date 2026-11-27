@@ -90,7 +90,7 @@ Para especializar o kit para uma tecnologia (ex.: React, Cloudflare, AWS, OpenTe
 
 1. Crie a pasta `adapters/<categoria_dir>/<id>/`, onde `<categoria_dir>` é `stacks`, `cloud` ou `observability`.
 2. Crie `adapter.json` com `id`, `name`, `category`, `description`, sinais `detect` (`files`, `packages` ou `directories`), `commands` opcionais e mapa `files` (`conventions`, `review_checks`, e opcionais `editor_settings`/`skills`).
-3. Escreva `conventions.md` (convenções para `.claude/PROJECT_REFERENCE.md`) e `review-checks.md` (checks para `phase-code-review`).
+3. Escreva os arquivos apontados em `files.conventions` (convenções para `.claude/PROJECT_REFERENCE.md`) e `files.review_checks` (checks para `phase-code-review`) — os nomes podem ser personalizados, desde que declarados no `adapter.json` e contidos na pasta do adaptador.
 4. Valide o manifesto e links com `python3 -B scripts/validate-kit.py` e `python3 -B -m unittest discover -s tests -v`.
 
 ---

@@ -587,6 +587,89 @@ class ValidateKitTests(unittest.TestCase):
             errors = validator.validate_repo(dst)
             self.assertEqual(errors, [], "\n".join(errors))
 
+    def test_adapter_with_custom_file_paths_passes_validation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root)
+            adapter_dir = root / "adapters" / "stacks" / "custom-stack"
+            (adapter_dir / "docs").mkdir(parents=True)
+            (adapter_dir / "checks").mkdir(parents=True)
+            (adapter_dir / "presets").mkdir(parents=True)
+            (adapter_dir / "docs" / "guidelines.md").write_text("# Guidelines\n", encoding="utf-8")
+            (adapter_dir / "checks" / "review.md").write_text("# Review\n", encoding="utf-8")
+            (adapter_dir / "presets" / "cursor.json").write_text(
+                json.dumps({"editor.tabSize": 2}), encoding="utf-8"
+            )
+            (adapter_dir / "adapter.json").write_text(
+                json.dumps(
+                    {
+                        "id": "custom-stack",
+                        "name": "Custom Stack",
+                        "category": "stack",
+                        "description": "Adapter using custom relative file paths",
+                        "detect": {"files": ["custom.toml"]},
+                        "files": {
+                            "conventions": "docs/guidelines.md",
+                            "review_checks": "checks/review.md",
+                            "editor_settings": "presets/cursor.json",
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual(validator.validate_repo(root), [])
+
+    def test_detects_adapter_skill_name_collisions_across_adapters_and_existing_processes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root, "demo")
+
+            for cat_dir, cat_name, adapter_id, skill_name in (
+                ("cloud", "cloud", "cloud-a", "shared-deploy"),
+                ("observability", "observability", "obs-b", "shared-deploy"),
+                ("stacks", "stack", "stack-c", "demo"),
+            ):
+                adapter_dir = root / "adapters" / cat_dir / adapter_id
+                skill_dir = adapter_dir / "skills" / skill_name
+                skill_dir.mkdir(parents=True)
+                (adapter_dir / "conventions.md").write_text("# Conv\n", encoding="utf-8")
+                (adapter_dir / "review-checks.md").write_text("# Checks\n", encoding="utf-8")
+                (skill_dir / "SKILL.md").write_text(
+                    f"---\nname: {skill_name}\ndescription: \"Skill {skill_name}\"\n---\n\n# {skill_name}\n",
+                    encoding="utf-8",
+                )
+                (adapter_dir / "adapter.json").write_text(
+                    json.dumps(
+                        {
+                            "id": adapter_id,
+                            "name": adapter_id,
+                            "category": cat_name,
+                            "description": "Collision test adapter",
+                            "detect": {"files": [f"{adapter_id}.cfg"]},
+                            "files": {
+                                "conventions": "conventions.md",
+                                "review_checks": "review-checks.md",
+                                "skills": [f"skills/{skill_name}"],
+                            },
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+
+            validator_errors = validator.validate_adapters(root)
+            self.assertTrue(
+                any(
+                    "skill name 'shared-deploy' collides with" in err
+                    for err in validator_errors
+                ),
+                validator_errors,
+            )
+
+            plan_collisions = validator.find_adapter_skill_collisions(root)
+            joined = "\n".join(plan_collisions)
+            self.assertIn("skill name 'shared-deploy' collides with", joined)
+            self.assertIn("skill name 'demo' collides with existing processes/demo.md", joined)
+
 
 if __name__ == "__main__":
     unittest.main()
