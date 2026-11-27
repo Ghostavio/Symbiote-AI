@@ -4,14 +4,14 @@
 > **Fonte:** Reunião de alinhamento - DD/MM/AAAA (link para documento/transcrição)
 > **Participantes:** Nome Completo (Papel), Nome Completo (Papel)
 > **Status:** Rascunho | Em revisão | Pronto para implementação
-> **Referência técnica do projeto:** [`project-reference.template.md`](/templates/project-reference.template.md)
+> **Referência técnica do projeto:** [`project-reference.template.md`](project-reference.template.md)
 > **Azure DevOps Feature ID:** #XXXXX (ID do Feature no Board — usado para sincronização automática de work items via Azure MCP)
 -->
 
 > **Fonte:** [link ou descrição da origem dos requisitos]
 > **Participantes:** [lista de participantes com papéis]
 > **Status:** Rascunho
-> **Referência técnica do projeto:** [`project-reference.template.md`](/templates/project-reference.template.md)
+> **Referência técnica do projeto:** [`project-reference.template.md`](project-reference.template.md)
 > **Azure DevOps Feature ID:** [ID do Feature no Azure DevOps, ex: #XXXXX — usado para sincronização automática de work items via Azure MCP. Deixar em branco se não houver integração com Board]
 
 ---
@@ -581,8 +581,8 @@ IMPORTANTE: Em caso de discrepância entre imagens e texto do spec, o TEXTO tem 
 
 Os layouts de referencia estao na mesma pasta `docs/` deste modulo:
 
-1. **[Nome da tela]** -- [`imagem-1.png`](imagem-1.png)
-   ![Descricao](imagem-1.png)
+1. **[Nome da tela]** -- `[<imagem-1.png>](<imagem-1.png>)`
+   `![Descricao](<imagem-1.png>)`
 
 > Os layouts sao referencia visual. As decisoes documentadas neste spec tem prioridade sobre detalhes visuais do prototipo.
 

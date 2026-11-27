@@ -1,100 +1,95 @@
 ---
 name: timesync
-description: "Use quando o usuário precisar sincronizar horas de trabalho com o 7pace Timetracker — tanto para o dia atual quanto para múltiplos dias passados."
+description: "Use quando o usuário precisar registrar horas em uma ou mais ferramentas de controle de tempo configuradas no projeto — seja para o dia atual ou para múltiplos dias passados."
 ---
 
-# Timesync — Sincronização com 7pace Timetracker
+# Timesync — Sincronização de Horas em Ferramentas de Controle de Tempo
 
-Registra horas de trabalho no 7pace Timetracker seguindo regras descobertas empiricamente para evitar relatórios distorcidos.
+Registra horas de trabalho em **uma ou mais** ferramentas de controle de tempo configuradas no projeto (ex.: **7pace Timetracker**, **Clockify**, **Toggl Track**, **Harvest**), seguindo regras operacionais descobertas empiricamente para evitar relatórios distorcidos.
 
-## Passo 0 — Identificar o WI de "Outras Atividades"
+---
 
-Daily Scrum, reuniões e atividades sem User Story específica precisam ser lançadas em um **work item container** (genericamente chamado "Outras Atividades" ou similar). Esse ID **varia por equipe/projeto** e não é hardcoded nesta skill.
+## Provedores: adaptadores prontos, exemplos e candidatos
 
-Antes de qualquer sincronização que envolva Daily ou reuniões:
+Leia os provedores configurados no projeto antes de sincronizar — um projeto pode usar **exatamente um** provedor ou **vários simultaneamente** (ex.: ferramenta interna do cliente + ferramenta da consultoria).
 
-1. Consultar o mecanismo de memória/contexto da ferramenta de AI em uso (auto-memory do Claude Code, `AGENTS.md`, `.cursor/rules/<context>.mdc` com `alwaysApply: true`, etc.) para verificar se o usuário tem um **Daily WI** já registrado.
-2. Se encontrar, usar esse ID e confirmar com o usuário (ex: "Vou usar o WI [ID] como Daily — confirma?").
-3. Se não encontrar, perguntar:
+| Provedor | Status no kit | Adaptador / referência | Instruções específicas do provedor |
+| --- | --- | --- | --- |
+| **7pace Timetracker** | **Pronto (enviado no kit)** | `scripts/sync-7pace.sh` | [`processes/setup-7pace.md`](setup-7pace.md) e [`scripts/README.md`](../scripts/README.md) |
+| **Clockify** | **Pronto (enviado no kit)** | `.claude/integrations/timetracking/sync-clockify.sh` | [`.claude/integrations/timetracking/README.md`](../.claude/integrations/timetracking/README.md) |
+| **7pace + Clockify (duplo)** | **Pronto (enviado no kit)** | `.claude/integrations/timetracking/sync.sh` | [`.claude/integrations/timetracking/README.md`](../.claude/integrations/timetracking/README.md) |
+| **Toggl Track** | **Exemplo documentado** | Molde em `GUIA-DE-EXPANSAO.md` (Receita B) | [`GUIA-DE-EXPANSAO.md`](../GUIA-DE-EXPANSAO.md) e [`processes/integrar.md`](integrar.md) |
+| **Harvest** | **Exemplo documentado** | Molde em `GUIA-DE-EXPANSAO.md` (Receita B) | [`GUIA-DE-EXPANSAO.md`](../GUIA-DE-EXPANSAO.md) e [`processes/integrar.md`](integrar.md) |
+| **Tempo Timesheets for Jira** | **Candidato (não implementado)** | [Atlassian Marketplace — Tempo Timesheets](https://marketplace.atlassian.com/apps/6572/timesheets-by-tempo-jira-time-tracking?hosting=cloud&tab=overview) | Listado como adaptador candidato para times Jira até o kit implementar e verificar a integração |
 
-   > Qual é o ID do work item que você usa como container de "Outras Atividades" no Azure DevOps Board (Daily, reuniões, atividades sem US específica)?
+### Como adicionar outro provedor
 
-4. Após receber o ID, oferecer salvá-lo no mecanismo de memória da ferramenta para reuso em futuras sessões.
+1. Crie um adaptador executável (ex.: `scripts/sync-<provedor>.sh`) seguindo o contrato comum do kit:
+   - Flags: `--description`, `--start` (ISO 8601), `--end` (ISO 8601), `[--work-item-id]`, `[--activity-type]`, `[--dry-run]`.
+   - Credenciais lidas **apenas** de variáveis de ambiente / secret manager (nunca hardcoded ou coladas no chat).
+   - Retornar código de saída diferente de zero em qualquer erro HTTP ou de validação, e suportar `--dry-run` sem enviar requisições.
+2. Documente setup, variáveis de ambiente e regras específicas (ex.: fuso horário, formato de descrição, IDs obrigatórios) num documento próprio do provedor.
+3. Se o time sincroniza em **mais de um provedor**, componha os adaptadores num wrapper (como `.claude/integrations/timetracking/sync.sh`) — ver [`GUIA-DE-EXPANSAO.md`](../GUIA-DE-EXPANSAO.md) (Receita B) e [`processes/integrar.md`](integrar.md).
 
-A partir daqui, este documento se refere a esse ID como `<DAILY_WI>`.
+---
 
-## Regras críticas
+## Passo 0 — Identificar provedores configurados e container de "Outras Atividades"
 
-### 1. Jornada padrão — sempre 8 horas por dia
+Antes de qualquer sincronização:
 
-Cada dia útil deve totalizar **exatamente 8h** de registros:
-- **7h 45min** de trabalho produtivo
-- **15 min** de Daily Scrum (`<DAILY_WI>`, Activity Type "Rituais Scrum")
+1. **Descobrir provedores ativos no projeto:** consulte a memória/contexto da ferramenta de IA, a configuração do projeto e os scripts/env vars configurados para identificar **qual(is)** ferramenta(s) de controle de tempo estão ativas (um único provedor ou múltiplos). Confirme com o usuário se houver dúvida.
+2. **Work item container (quando algum provedor vincula horas ao tracker):** Daily Scrum, reuniões e atividades sem User Story específica precisam ser lançadas num work item container ("Outras Atividades" ou equivalente). Esse ID varia por equipe/projeto e **não** é hardcoded nesta skill:
+   - Consulte o mecanismo de memória/contexto da ferramenta de IA (`AGENTS.md`, auto-memory, `.cursor/rules/`, etc.) por um `<DAILY_WI>` já registrado e confirme com o usuário.
+   - Se não houver registro, pergunte qual é o ID do container e ofereça salvá-lo para futuras sessões.
+
+---
+
+## Regras gerais (independentes de provedor)
+
+### 1. Jornada padrão do time (exemplo: 8h/dia útil)
+
+Alinhe o total diário à jornada do time. Exemplo comum: **8h por dia útil** (`7h 45min` produtivos + `15min` de Daily Scrum em `<DAILY_WI>`). Ajuste se o projeto tiver outra política.
 
 ### 2. Sessões individuais, nunca consolidadas
 
-**NUNCA** crie uma única entrada "consolidada" por work item somando todo o tempo. Isso quebra a distribuição diária porque:
-- A entrada usa um `timestamp` único + `length` total
-- O 7pace aloca tudo ao dia do `timestamp`
-- Um WI com 31h começando em 12/01 gera "31h no dia 12" ao invés de distribuir
+**NUNCA** crie uma única entrada "consolidada" somando vários dias em um único registro:
+- Uma entrada com `start` único e duração acumulada (ex.: 31h) é alocada integralmente ao primeiro dia na maioria das ferramentas, distorcendo relatórios diários.
+- **Sempre** registre **uma entrada por sessão** conforme a tabela de sessões / diário de implementação.
 
-**Sempre** registre **uma entrada por sessão** conforme o timetracking consolidado (tabela de sessões em algum doc do projeto).
+### 3. Convenção de descrição por provedor
 
-### 3. Formato de descrição
+Respeite como cada provedor representa vínculo com o tracker:
+- **Provedores com vínculo nativo a work item** (ex.: 7pace, Tempo/Jira): use apenas o nome da atividade, **sem prefixo `{ID}:`** (ex.: `Setup e Infraestrutura`).
+- **Provedores sem vínculo nativo ao tracker** (ex.: Clockify, Toggl, Harvest): inclua o prefixo `{WorkItemId}: ` quando houver item vinculado (ex.: `1234: Setup e Infraestrutura`), exceto atividades genéricas como `Daily`.
+- **Daily:** use exatamente `Daily` (sem "Scrum" e sem prefixo de work item).
 
-Descrição é apenas o nome da atividade, **sem prefixo `{ID}:`** — o `workItemId` já está nativamente vinculado ao worklog no 7pace.
+### 4. Fuso horário consistente
 
-```
-✅ Correto:   Setup e Infraestrutura
-❌ Errado:    1234: Setup e Infraestrutura
-```
+Cada adaptador pode interpretar o sufixo `Z` ou offsets explícitos de forma diferente (por exemplo, o adaptador de 7pace usa `timeZone` explícito enquanto o do Clockify exige offset como `-03:00`). Confira sempre as regras de fuso na documentação do provedor antes de enviar em lote.
 
-**Daily:** descrição exata é `Daily` (não "Daily Scrum").
+### 5. Segredos fora do contexto da IA
 
-### 4. Activity Types no 7pace
+Nunca peça nem cole tokens no chat. Use variáveis de ambiente carregadas via Keychain / 1Password / Bitwarden / arquivo local ignorado pelo git (ver instruções de setup de cada provedor).
 
-Os GUIDs de Activity Type são específicos do tenant do 7pace. Substitua os marcadores abaixo pelos GUIDs do seu tenant, consultando a configuração via API ou UI do 7pace.
-
-| Nome              | GUID                                   | Uso                                |
-| ----------------- | -------------------------------------- | ---------------------------------- |
-| `Desenvolvimento` | `<7PACE_ACTIVITY_ID_DESENVOLVIMENTO>`  | Implementação de código            |
-| `Operação`        | `<7PACE_ACTIVITY_ID_OPERACAO>`         | Docs, config, evidências           |
-| `Reunião`         | `<7PACE_ACTIVITY_ID_REUNIAO>`          | Reuniões                           |
-| `Rituais Scrum`   | `<7PACE_ACTIVITY_ID_RITUAIS_SCRUM>`    | Daily, planning, review            |
-| `Planejamento`    | `<7PACE_ACTIVITY_ID_PLANEJAMENTO>`     | Planejamento de tarefas            |
-| `Homologação`     | `<7PACE_ACTIVITY_ID_HOMOLOGACAO>`      | Testes e validação                 |
-| `Treinamento`     | `<7PACE_ACTIVITY_ID_TREINAMENTO>`      | Capacitação                        |
-
-### 5. Timezone — sempre BRT
-
-O 7pace usa `timestamp` em UTC (`Z`) + campo `timeZone: -180` para conversão. O script `sync-7pace.sh` já aplica isso automaticamente.
-
-### 6. WorkItem de "Outras Atividades"
-
-`<DAILY_WI>` (consultado/perguntado no Passo 0) é o container genérico para:
-- Daily Scrum (Activity Type: Rituais Scrum)
-- Reuniões (Activity Type: Reunião)
-- Qualquer atividade que não se encaixa em uma User Story específica
+---
 
 ## Fluxo
 
 ### Passo 1 — Ter a fonte de verdade
 
-A lista de sessões deve vir de um timetracking consolidado (ex: tabela "Tabela completa de sessões" em algum doc de scrum do projeto). Formato esperado de cada linha:
+A lista de sessões deve vir do diário de implementação ou de uma tabela consolidada de sessões do projeto:
 
-| Data       | Start Time | End Time | Duração  | WI      | Activity Type   |
-| ---------- | ---------- | -------- | -------- | ------- | --------------- |
-| 2026-01-14 | 14:00      | 16:00    | 2h 00min | #1235   | Desenvolvimento |
+| Data | Start Time | End Time | Duração | WI | Activity Type |
+| --- | --- | --- | --- | --- | --- |
+| 2026-01-14 | 14:00 | 16:00 | 2h 00min | #1235 | Desenvolvimento |
 
-Cada dia deve totalizar 8h contando:
-- Dailies (09:30-09:45, 15min)
-- Sessões produtivas (outras linhas)
-- Almoço 12:00-13:00 NÃO conta
+Confira se cada dia útil fecha na jornada esperada (descontando intervalos como almoço).
 
-### Passo 2 — Sincronizar
+### Passo 2 — Sincronizar nos provedores configurados
 
-Use o script compartilhado:
+Execute o adaptador correspondente aos provedores ativos do projeto (rode `--dry-run` antes quando testar uma configuração nova):
 
+**Exemplo — 1 provedor (7pace):**
 ```bash
 scripts/sync-7pace.sh \
   --description "Setup e Infraestrutura" \
@@ -104,114 +99,67 @@ scripts/sync-7pace.sh \
   --activity-type "Desenvolvimento"
 ```
 
-Para lotes grandes, use um script Python com HTTP direto (ver exemplo abaixo) ao invés de invocar o shell N vezes.
+**Exemplo — 1 provedor (Clockify):**
+```bash
+.claude/integrations/timetracking/sync-clockify.sh \
+  --description "1234: Setup e Infraestrutura" \
+  --start "2026-01-14T10:00:00Z" \
+  --end "2026-01-14T10:30:00Z"
+```
+
+**Exemplo — múltiplos provedores (wrapper 7pace + Clockify):**
+```bash
+.claude/integrations/timetracking/sync.sh \
+  --description "Setup e Infraestrutura" \
+  --start "2026-01-14T10:00:00Z" \
+  --end "2026-01-14T10:30:00Z" \
+  --work-item-id 1234 \
+  --activity-type "Desenvolvimento"
+```
+
+> Para lotes grandes, prefira um script de lote dedicado para a API do provedor (com dry-run e conferência de status HTTP) em vez de disparar dezenas de chamadas manuais sem verificação.
+> Se uma sincronização multi-provedor falhar parcialmente, **não reexecute o provedor que já teve sucesso** — reenvie apenas o provedor que falhou usando o script específico dele. Se um **timeout** ou erro de rede deixar o resultado de uma gravação incerto, **consulte e reconcilie os lançamentos existentes no provedor antes de tentar novamente**, para evitar duplicar uma entrada que já foi gravada com sucesso.
 
 ### Passo 3 — Validar distribuição diária
 
-Após sincronizar, verificar no 7pace que cada dia soma 8h:
+Após sincronizar, confira em cada provedor configurado se os dias úteis fecham no total esperado:
 
-```
+```text
 Daily (09:30-09:45)             15min
-Produtivo manhã (9-9:30)         0h 30min
+Produtivo manhã (09:00-09:30)    0h 30min
 Produtivo manhã (09:45-12:00)    2h 15min
 Produtivo tarde (13:00-18:00)    5h 00min
                                ─────────
                                  8h 00min ✓
 ```
 
-Se um dia tem mais que 8h (ex: 31h), significa que uma entrada foi criada como "consolidada" — deletar e refazer com sessões individuais.
+Se algum dia ultrapassar a jornada esperada, **não assuma automaticamente que houve entrada consolidada** — horas extras legítimas ou lançamentos sobrepostos também podem explicar o total. Inspecione os lançamentos existentes no provedor, confirme com o usuário qual registro (se algum) está incorreto e **obtenha aprovação explícita antes de deletar ou recriar qualquer lançamento**.
+
+---
 
 ## Anti-padrões
 
-### ❌ Entrada consolidada por work item
-```
-# ERRADO — 31h alocadas em um único dia
-sync-7pace.sh --start "2026-01-12T09:00Z" --end "2026-01-13T16:00Z" \
-  --description "consolidado" --work-item-id 1236
-```
+- **Entrada consolidada multi-dia:** nunca agrupe vários dias em um único lançamento.
+- **Misturar convenções entre provedores:** não envie prefixo `{ID}:` em provedores que já vinculam `workItemId` nativamente, nem omita `{ID}:` quando o provedor depende do texto para rastreabilidade.
+- **Usar `"Daily Scrum"` em vez de `"Daily"`** ou prefixar Daily com ID de work item.
+- **Ignorar falha silenciosa ou duplicar lançamento em falha parcial:** sempre confira o exit code de cada adaptador antes de tentar novamente.
 
-### ❌ Prefixo {ID}: na descrição
-```
-# ERRADO — o workItemId já está no vínculo
-comment: "1234: Setup e Infraestrutura"
-
-# CORRETO
-comment: "Setup e Infraestrutura"
-```
-
-### ❌ "Daily Scrum" ao invés de "Daily"
-```
-# ERRADO
-description: "Daily Scrum"
-
-# CORRETO
-description: "Daily"
-```
-
-## Script Python para sincronização em lote
-
-Quando registrar muitas sessões, usar Python com requests HTTP diretos é mais eficiente que invocar `sync-7pace.sh` em loop. Estrutura básica (substitua `<DAILY_WI>` pelo ID confirmado no Passo 0):
-
-```python
-import os, json, urllib.request
-
-# Pré-requisito: SEVENPACE_API_TOKEN e SEVENPACE_BASE_URL exportados
-# (ver setup-7pace para configuração via Keychain/1Password/etc)
-TOKEN = os.environ['SEVENPACE_API_TOKEN']
-BASE = os.environ['SEVENPACE_BASE_URL']
-
-ACT_DESENV = "<7PACE_ACTIVITY_ID_DESENVOLVIMENTO>"
-ACT_OPER = "<7PACE_ACTIVITY_ID_OPERACAO>"
-ACT_RITUAIS = "<7PACE_ACTIVITY_ID_RITUAIS_SCRUM>"
-ACT_REUNIAO = "<7PACE_ACTIVITY_ID_REUNIAO>"
-
-DAILY_WI = <DAILY_WI>  # ID confirmado no Passo 0
-
-def http(method, url, headers, body=None):
-    data = json.dumps(body).encode('utf-8') if body else None
-    req = urllib.request.Request(url, data=data, headers=headers, method=method)
-    with urllib.request.urlopen(req) as resp:
-        return resp.status, resp.read().decode('utf-8')
-
-def duration_seconds(start_hhmm, end_hhmm):
-    """Diferença em segundos entre dois horários no formato 'HH:MM'."""
-    sh, sm = map(int, start_hhmm.split(':'))
-    eh, em = map(int, end_hhmm.split(':'))
-    return (eh * 3600 + em * 60) - (sh * 3600 + sm * 60)
-
-# Lista de sessões (data, start, end, wi_id, activity_id, nome)
-SESSIONS = [
-    ('2026-01-14', '10:00', '10:30', 1234, ACT_DESENV, 'Setup e Infraestrutura'),
-    # ...
-]
-
-for date, st, en, wi_id, act_id, name in SESSIONS:
-    length = duration_seconds(st, en)
-    body = {
-        'workItemId': wi_id,
-        'length': length,
-        'timestamp': f"{date}T{st}:00Z",
-        'comment': name,
-        'activityTypeId': act_id,
-        'timeZone': -180,
-    }
-    http('POST', f"{BASE}/api/rest/workLogs?api-version=3.2",
-         {'Authorization': f'Bearer {TOKEN}', 'Content-Type': 'application/json'},
-         body)
-```
+---
 
 ## Checklist de sincronização
 
 Antes de considerar concluído:
 
-- [ ] Cada dia útil totaliza exatamente 8h no 7pace
-- [ ] Cada dia tem uma entrada de Daily de 15min (`<DAILY_WI>`, Activity Type "Rituais Scrum")
-- [ ] Descrições não têm prefixo `{ID}:`
-- [ ] Nenhuma entrada "consolidada" que ultrapasse um dia
-- [ ] Todos os worklogs têm `workItemId` válido no Azure DevOps
+- [ ] Todos os provedores configurados no projeto foram sincronizados (1 ou N)
+- [ ] Cada dia útil fecha na jornada configurada do time (ex.: 8h)
+- [ ] Nenhuma entrada consolidada ultrapassa um dia
+- [ ] Convenções de descrição, fuso horário e projeto/activity type de cada provedor foram respeitadas
+- [ ] Todos os work items referenciados existem no tracker (quando aplicável)
 
-## Referências
+---
 
-- **Script:** `scripts/sync-7pace.sh`
-- **Setup 7pace:** `/setup-7pace` skill
-- **Env vars (preferido):** `SEVENPACE_API_TOKEN`, `SEVENPACE_BASE_URL` (configurar via skill `/setup-7pace`)
+## Referências específicas por provedor
+
+- **7pace Timetracker:** [`processes/setup-7pace.md`](setup-7pace.md) · [`scripts/README.md`](../scripts/README.md) · `scripts/sync-7pace.sh`
+- **Clockify e wrapper multi-provedor:** [`.claude/integrations/timetracking/README.md`](../.claude/integrations/timetracking/README.md)
+- **Adicionar novos provedores (Toggl Track, Harvest, Tempo Timesheets for Jira, etc.):** [`GUIA-DE-EXPANSAO.md`](../GUIA-DE-EXPANSAO.md) (Receita B) · [`processes/integrar.md`](integrar.md)

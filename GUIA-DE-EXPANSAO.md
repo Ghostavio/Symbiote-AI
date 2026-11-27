@@ -44,6 +44,8 @@ O contrato dos scripts é comum (`--description --start --end [--work-item-id] [
 
 Passos: copie `sync-7pace.sh`/`sync-clockify.sh` como molde → ajuste auth/endpoint/payload → atualize `processes/timesync.md` com os exemplos da ferramenta → se houver MCP, adicione à matrix. (Clockify já vem pronto em `.claude/integrations/timetracking/`.)
 
+> **Adaptador candidato (Jira):** [Tempo Timesheets for Jira](https://marketplace.atlassian.com/apps/6572/timesheets-by-tempo-jira-time-tracking?hosting=cloud&tab=overview) está listado como candidato no kit para times que usam Jira, até que uma integração verificada seja entregue.
+
 ---
 
 ## Receita C — Docs no repo → plataforma externa (PRs limpos)
