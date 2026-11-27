@@ -1,0 +1,21 @@
+{
+  "id": "react",
+  "name": "React",
+  "category": "stack",
+  "version": "1.0.0",
+  "description": "Convenções, checks de revisão e preferências de editor para aplicações React modernas (componentes funcionais, Hooks, separação de estado cliente/servidor, testes de componente/E2E e TypeScript quando configurado).",
+  "detect": {
+    "packages": [
+      "react",
+      "react-dom",
+      "@vitejs/plugin-react",
+      "@vitejs/plugin-react-swc",
+      "next"
+    ]
+  },
+  "files": {
+    "conventions": "conventions.md",
+    "review_checks": "review-checks.md",
+    "editor_settings": "editor-settings.json"
+  }
+}

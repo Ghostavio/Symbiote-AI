@@ -569,23 +569,50 @@ class ValidateKitTests(unittest.TestCase):
         )
         self.assertIsNotNone(match)
         entries = match.group(1).split()
-        with tempfile.TemporaryDirectory() as tmp:
-            dst = Path(tmp)
-            for rel in entries:
-                clean = rel.rstrip("/")
-                src = REPO_ROOT / clean
-                target = dst / clean
-                if src.is_dir():
-                    shutil.copytree(src, target)
-                else:
-                    target.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(src, target)
-            shutil.copytree(
-                REPO_ROOT / "adapters" / "stacks" / "angular",
-                dst / "adapters" / "stacks" / "angular",
-            )
-            errors = validator.validate_repo(dst)
-            self.assertEqual(errors, [], "\n".join(errors))
+        official_adapters = sorted(
+            p for p in (REPO_ROOT / "adapters").glob("*/*") if p.is_dir()
+        )
+        self.assertTrue(official_adapters, "Expected at least one official adapter under adapters/")
+        for adapter_src in official_adapters:
+            rel_adapter = adapter_src.relative_to(REPO_ROOT)
+            with self.subTest(adapter=rel_adapter.as_posix()):
+                with tempfile.TemporaryDirectory() as tmp:
+                    dst = Path(tmp)
+                    for rel in entries:
+                        clean = rel.rstrip("/")
+                        src = REPO_ROOT / clean
+                        target = dst / clean
+                        if src.is_dir():
+                            shutil.copytree(src, target)
+                        else:
+                            target.parent.mkdir(parents=True, exist_ok=True)
+                            shutil.copy2(src, target)
+                    shutil.copytree(adapter_src, dst / rel_adapter)
+                    errors = validator.validate_repo(dst)
+                    self.assertEqual(errors, [], "\n".join(errors))
+
+    def test_react_adapter_manifest_and_scoped_editor_settings(self):
+        react_dir = REPO_ROOT / "adapters" / "stacks" / "react"
+        manifest = json.loads((react_dir / "adapter.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["id"], "react")
+        self.assertEqual(manifest["category"], "stack")
+        self.assertIn("react", manifest["detect"].get("packages", []))
+        self.assertIn("react-dom", manifest["detect"].get("packages", []))
+        # Avoid false-positive detection on non-React Vite projects
+        self.assertNotIn("vite.config.ts", manifest["detect"].get("files", []))
+        self.assertNotIn("vite.config.js", manifest["detect"].get("files", []))
+        # Avoid auto-filling unconfirmed tools (TS/Vitest/Playwright) or npx downloads
+        self.assertNotIn("commands", manifest)
+
+        editor_settings = json.loads(
+            (react_dir / manifest["files"]["editor_settings"]).read_text(encoding="utf-8")
+        )
+        self.assertIn("[typescriptreact]", editor_settings)
+        self.assertIn("[javascriptreact]", editor_settings)
+        self.assertTrue(
+            all(k.startswith("[") and k.endswith("]") for k in editor_settings),
+            f"Expected language-scoped editor settings only, got: {list(editor_settings)}",
+        )
 
     def test_adapter_with_custom_file_paths_passes_validation(self):
         with tempfile.TemporaryDirectory() as tmp:

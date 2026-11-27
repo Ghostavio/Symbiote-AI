@@ -18,8 +18,9 @@ adapters/
 | Categoria | ID | O que entrega |
 | --- | --- | --- |
 | `stack` | [`angular`](stacks/angular/conventions.md) | Convenções Angular modernas (standalone, Signals, `OnPush`, `inject()`, Vitest, Playwright), checks para `phase-code-review` e preset de editor |
+| `stack` | [`react`](stacks/react/conventions.md) | Convenções React modernas (componentes funcionais, Hooks, estado cliente/servidor, RSC, testes de componente/E2E e TypeScript quando configurado), checks para `phase-code-review` e preset de editor |
 
-> Próximos adaptadores previstos no roadmap: `stacks/react`, `cloud/cloudflare`, `cloud/aws` e `observability/`.
+> Próximos adaptadores previstos no roadmap: `cloud/cloudflare`, `cloud/aws` e `observability/`.
 
 ## Contrato de um adaptador
 
