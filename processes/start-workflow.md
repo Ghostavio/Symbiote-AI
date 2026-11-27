@@ -20,7 +20,7 @@ Estes princípios moldam todos os fluxos abaixo. Detalhe e contexto em [`docs/ap
 3. **Nunca rode reviewer em background sobre arquivos que você está editando**, nem rode testes concorrentes (muitos runners — ex. Vitest — não suportam instâncias paralelas no mesmo projeto). Sequencial, ou isolado com lista explícita de arquivos a não tocar.
 4. **Code review por subagente dedicado após cada fase** — o orquestrador tende a revisar superficialmente. O mesmo reviewer deve corrigir o que não exige decisão do usuário.
 5. **Após 2-3 tentativas falhas num ajuste visual/CSS, pare e delegue** a um subagente com validação visual (Playwright MCP) e o histórico das tentativas falhas.
-6. **Escolha o porte do fluxo pelo tamanho da demanda:** subagentes para trabalho grande (>50 arquivos); execução inline (**Fluxo Express**) para mudanças pequenas (<20 arquivos) — economiza tokens e cerimônia.
+6. **Escolha o porte do fluxo pelo risco, escopo e reversibilidade.** A quantidade de arquivos ajuda a estimar o esforço. Uma mudança pequena em autorização ou cobrança ainda pode exigir revisão independente.
 7. **Cole o texto da task no prompt do subagente** em vez de mandá-lo ler um plano gigante — ele lê o arquivo inteiro e gasta contexto à toa.
 8. **Planeje um passo de integração explícito** entre fases paralelas com dependências cruzadas (worktrees são cópias isoladas; TODOs de uma fase não se resolvem na outra).
 9. **Dados mock devem passar nas regras de negócio do projeto** (validadores de CPF/CNPJ/email…). Cruze mock × validators no review.
@@ -32,6 +32,8 @@ Estes princípios moldam todos os fluxos abaixo. Detalhe e contexto em [`docs/ap
 ---
 
 ## Passo 1 — Escolher fluxo
+
+Se o pedido já define o fluxo ou descreve uma mudança clara, fácil de verificar e de baixo risco, siga diretamente o fluxo adequado. Use o menu quando a intenção ainda não estiver clara.
 
 > Qual tipo de trabalho você vai realizar nesta sessão?
 >
@@ -47,11 +49,11 @@ Estes princípios moldam todos os fluxos abaixo. Detalhe e contexto em [`docs/ap
 
 | Sinais | Fluxo recomendado |
 |---|---|
-| < ~20 arquivos, escopo claro, 1 sessão, baixo risco | **(g) Express** |
-| Ambíguo, multi-fase, > ~50 arquivos, alto risco, precisa de design | **(a) Nova Feature** (subagentes) |
+| Escopo claro, baixo risco, mudança fácil de verificar e reverter | **(g) Express** |
+| Escopo ambíguo, dependências entre fases, alto impacto ou decisões de design | **Fluxo completo** conforme o tipo de trabalho |
 | Bug isolado e claro | **(g) Express** ou **(b) Bug** conforme complexidade |
 
-Na dúvida entre Express e Completo, pergunte ao usuário. Express prioriza velocidade e baixo consumo de tokens; Completo prioriza rigor e rastreabilidade para trabalho grande.
+No Express, vá direto ao [Fluxo G](#fluxo-g-express-mudança-pequena). Ele já cobre os passos de preparação aplicáveis.
 
 ## Passo 1.5 — Estratégia de modelo dos subagentes
 
@@ -89,7 +91,7 @@ No **Claude Code**, quando a task for de **alta complexidade** — feature grand
 
 ## Passo 2 — Vincular Work Item
 
-Invocar a skill **`create-work-item`** (em [`processes/create-work-item.md`](create-work-item.md)). Todos os fluxos passam por aqui para garantir rastreamento no tracker. No Express, isso pode ser uma única task leve (ver Fluxo G).
+Quando o fluxo usar o tracker do projeto, invocar a skill **`create-work-item`** (em [`processes/create-work-item.md`](create-work-item.md)). O Express trata o vínculo no próprio fluxo.
 
 ## Passo 3 — Registrar start time da sessão
 
@@ -311,37 +313,29 @@ Antes: [validação pré-PR](#validação-pré-pr). Criar PR focado nos testes a
 
 ## Fluxo G: Express (mudança pequena)
 
-Fluxo **enxuto** para mudanças pequenas e de escopo claro (< ~20 arquivos): tweaks, ajustes de UI, micro-features, correções óbvias. Execução **inline** (sem fan-out de subagentes, sem spec/design formais) — economiza tokens e cerimônia, mantendo as salvaguardas essenciais.
+Fluxo enxuto para mudanças claras, de baixo risco e fáceis de verificar, como ajustes de documentação, UI ou correções pontuais. Pode ser executado localmente em um projeto sem credenciais, MCPs ou setup global.
 
 ### G.1 — Capturar a intenção
 
-> O que precisa ser feito? (1-2 frases) E qual o critério de pronto?
-
-Criar **uma** task leve no tracker (skill `create-work-item`, modo rápido) ou anotar no diário. Não gerar spec/design/discovery formais.
+Use o pedido e o contexto para identificar a mudança e o critério de pronto. Pergunte apenas sobre dúvidas que afetem o resultado. Reaproveite o ticket ou diário quando já fizer parte do projeto. Para uma mudança local, o resumo da entrega é suficiente.
 
 ### G.2 — Confirmar que é mesmo "express"
 
-Se ao explorar o escopo crescer (ambiguidade, > ~20 arquivos, decisões de design, risco alto), **pare e proponha migrar** para o Fluxo A/B/D. Não force trabalho grande no fluxo enxuto.
+Reavalie o fluxo se a descoberta revelar risco alto, dependências entre fases ou decisões de design ainda em aberto. Explique o motivo e use o fluxo correspondente quando precisar de mais planejamento ou revisão independente.
 
 ### G.3 — Implementar inline
 
-1. Se for feature/bugfix com lógica, **escreva o teste primeiro** (`superpowers:test-driven-development`) e depois a implementação.
-2. Higienize o que tocar (Princípio 2). Mantenha o diff focado.
-3. Para ajuste visual: valide com Playwright MCP (screenshot). Se travar em 2-3 tentativas, **delegue a um subagente** com o histórico (Princípio 5) — é a única situação em que o Express despacha subagente.
+1. Para uma correção de comportamento, reproduza o problema. Use o framework de testes do projeto quando couber um teste de regressão.
+2. Mantenha o diff focado no pedido.
+3. Para ajuste visual, use o navegador ou a ferramenta visual disponível. Se a validação visual estiver indisponível, informe essa limitação.
 
-### G.4 — Verificar (ordem importa — Princípio 10)
+### G.4 — Verificar
 
-```bash
-yarn lint            # 1. lint
-npx tsc --noEmit     # 2. typecheck
-yarn ng test <alvo>  # 3. testes (escopados ao que mudou)
-```
-
-Review leve pelo próprio orquestrador é aceitável no Express; para qualquer trecho com lógica de negócio não-trivial, ainda assim invoque `phase-code-review`.
+Identifique os comandos disponíveis na documentação, configuração ou CI do projeto. Rode as verificações relevantes para o diff, começando pelas rápidas quando isso ajudar a obter feedback. Revise o diff e os resultados. Se uma verificação aplicável não estiver disponível, informe a limitação.
 
 ### G.5 — Concluir
 
-Commit pequeno e descritivo. Sincronizar a entrada de tempo (`scripts/sync-7pace.sh`) e atualizar a task no tracker. Criar PR via `gh` se aplicável (rodar a [validação pré-PR](#validação-pré-pr) antes).
+Resuma a mudança, as verificações executadas e eventuais limitações. Atualize o tracker ou registre horas quando a integração estiver configurada e a entrega pedir isso. Se a entrega incluir um PR, rode a [validação pré-PR](#validação-pré-pr).
 
 ---
 
@@ -372,7 +366,7 @@ Se (a): rodar a [validação pré-PR](#validação-pré-pr) e criar PR via `gh`;
 
 ## Validação pré-PR
 
-**Aplicável a todos os fluxos** (B.6, C.4, D.5, E.5, F.3, G.5). Antes de criar o PR, rode a suíte crítica e confira o estado do repositório:
+**Aplicável a todos os fluxos** (B.6, C.4, D.5, E.5, F.3, G.5). Antes de criar o PR, rode as verificações relevantes da stack do projeto e confira o estado do repositório. Exemplo para Angular:
 
 ```bash
 yarn ng test --watch=false        # testes
@@ -390,6 +384,8 @@ Confirmar: exit codes 0; `git status` mostra só o esperado (sem órfãos como `
 ---
 
 ## Passo Final — Encerrar sessão
+
+Para encerrar o Express, siga o passo G.5. Nos demais fluxos, use os passos abaixo conforme as integrações da sessão.
 
 1. **Registrar end time da sessão** — `git log -1 --format="%ai"` para marcar o final no diário
 2. **Verificar entregas pendentes** — se alguma entrega não foi sincronizada com 7pace/tracker durante a sessão, sincronizar agora
