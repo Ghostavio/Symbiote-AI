@@ -2,6 +2,7 @@
 
 > Mapeamento de convenções por ferramenta de AI suportada pelo kit.
 > Os processos canonicais em `processes/` são tool-neutral; cada ferramenta tem seu wrapper apontando para eles.
+> Para escolher serviços por operação e conferir a evidência disponível, use a [matriz de integrações](docs/integracoes.md).
 
 ---
 
