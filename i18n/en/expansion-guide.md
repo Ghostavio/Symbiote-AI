@@ -105,7 +105,7 @@ Symbiote-AI is **Brazil-first** (`pt-BR` remains the single canonical language i
 2. Add the link to `README.<locale>.md` in the language switcher at the top of `README.md`.
 3. Create `i18n/<locale>/` with translated companion guides matching the `## ` section structure of their canonical `pt-BR` sources.
 4. Register the new locale and its `source` → `target` mappings in `i18n/i18n.json`.
-5. Validate structural parity, bidirectional switcher links, and relative links with `python3 -B scripts/validate-kit.py` and `python3 -B -m unittest discover -s tests -v`.
+5. Run `python3 -B scripts/validate-kit.py` and `python3 -B -m unittest discover -s tests -v` to check H2 (`## `) section counts, reciprocal README links, and internal links (semantic correspondence of sections and top-of-file switcher placement remain part of content review).
 
 ---
 

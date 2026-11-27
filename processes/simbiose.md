@@ -66,7 +66,7 @@ Aplique [o procedimento de integração](integrar.md) ao projeto recém-criado, 
 - mantém só os wrappers das ferramentas de IA escolhidas;
 - configura os MCPs (tracker, qualidade, docs, Figma, Playwright);
 - preenche `templates/project-reference.template.md` → `.claude/PROJECT_REFERENCE.md`;
-- ajusta o idioma alvo do projeto (UI, docs e commits) em `.claude/PROJECT_REFERENCE.md` e `AGENTS.md`, mantendo `processes/` em `pt-BR` sem duplicação;
+- ajusta o idioma alvo do projeto (UI, docs e commits) em `.claude/PROJECT_REFERENCE.md`, `AGENTS.md` e `.github/copilot-instructions.md` (quando mantido), mantendo `processes/` em `pt-BR` sem duplicação;
 - ajusta o time tracking e o destino de docs.
 
 ## Passo 5 — Baseline + primeiro commit

@@ -69,7 +69,7 @@ Além dos adaptadores reutilizáveis em `adapters/`, pergunte se o usuário quer
 
 ### 2.8 Idioma do projeto (UI, docs e commits)
 **pt-BR** *(padrão canônico do kit)* · **en** · **es** · outro.
-→ Os processos canônicos em `processes/` permanecem em `pt-BR` como fonte única de verdade (sem duplicação); registre o idioma escolhido do projeto em `.claude/PROJECT_REFERENCE.md` e `AGENTS.md` para que os agentes escrevam UI, documentação, revisões e mensagens de commit nesse idioma. A pasta `i18n/` pertence apenas ao repositório do kit e não precisa ser copiada para o projeto host.
+→ Os processos canônicos em `processes/` permanecem em `pt-BR` como fonte única de verdade (sem duplicação); registre o idioma escolhido do projeto em `.claude/PROJECT_REFERENCE.md`, `AGENTS.md` e `.github/copilot-instructions.md` (quando mantido) para que os agentes escrevam UI, specs, documentação, revisões e mensagens de commit nesse idioma. A pasta `i18n/` pertence apenas ao repositório do kit e não precisa ser copiada para o projeto host.
 
 ## Passo 3 — Apresentar o PLANO de adaptação
 
@@ -82,7 +82,7 @@ Mostre, e peça aprovação explícita:
 5. **MCPs a configurar** (`.mcp.json`): tracker, qualidade, docs, Figma, Playwright.
 6. **Onde a documentação vai morar** (repo vs externo).
 7. **Fluxo do board:** mostre o mapeamento detectado ou sugerido, onde ficam os critérios de aceite e quem executa cada transição. Se depender de mudanças no board, liste-as separadamente para aprovação.
-8. **Idioma do projeto:** idioma configurado para UI, documentação e mensagens de commit em `.claude/PROJECT_REFERENCE.md` e `AGENTS.md`.
+8. **Idioma do projeto:** idioma configurado para UI, documentação e mensagens de commit em `.claude/PROJECT_REFERENCE.md`, `AGENTS.md` e `.github/copilot-instructions.md` (quando mantido).
 
 ## Passo 4 — Aplicar (após aprovação)
 
@@ -92,7 +92,7 @@ Mostre, e peça aprovação explícita:
 4. Escrever/atualizar `.mcp.json` com os servidores escolhidos.
 5. Configurar o time tracking escolhido (script + chaves no `.env.example`).
 6. Configurar o destino de documentação (in-repo vs MCP externo).
-7. Preencher `templates/project-reference.template.md` → `.claude/PROJECT_REFERENCE.md` com a arquitetura, as convenções, o idioma alvo do projeto (atualizando também a seção de idioma em `AGENTS.md`) e o mapeamento aprovado do board. Aponte para a documentação existente do time quando ela já definir o fluxo. Atualize a `ai-tools-matrix.md` com as operações disponíveis. Configure o board apenas se isso fizer parte do plano aprovado.
+7. Preencher `templates/project-reference.template.md` → `.claude/PROJECT_REFERENCE.md` com a arquitetura, as convenções, o idioma alvo do projeto (atualizando também a seção de idioma em `AGENTS.md` e `.github/copilot-instructions.md`, quando mantidos) e o mapeamento aprovado do board. Aponte para a documentação existente do time quando ela já definir o fluxo. Atualize a `ai-tools-matrix.md` com as operações disponíveis. Configure o board apenas se isso fizer parte do plano aprovado.
 8. (Opcional) Gerar o domain pack para o stack.
 
 ## Passo 5 — Verificar e resumir

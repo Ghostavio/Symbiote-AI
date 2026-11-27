@@ -41,7 +41,8 @@ When the user requests one of these by name, open the corresponding canonical an
 
 ## Idioma e convenções de código
 
-- **Idioma da UI e mensagens:** Português brasileiro (pt-BR) por padrão (ajuste conforme o projeto)
-- **Commit messages:** Português brasileiro
+- **Idioma canônico do kit:** Português brasileiro (`pt-BR`, Brazil-first) em `processes/`. Projetos em outros idiomas (`en`, `es`, etc.) configuram o idioma alvo via `simbiose` abaixo e em `.claude/PROJECT_REFERENCE.md` — o agente lê os processos canônicos e entrega no idioma do projeto.
+- **Idioma da UI, docs e mensagens:** Português brasileiro (`pt-BR`) por padrão (ajuste conforme o projeto)
+- **Commit messages:** idioma configurado para o projeto (Português brasileiro `pt-BR` por padrão na ausência de escolha)
 - **Sem `Co-Authored-By` em commits**
 - **Padrões da stack e testes:** siga a arquitetura, os linters e o framework de testes documentados em `.claude/PROJECT_REFERENCE.md` e `docs/discovery.md` (configurados pela skill `simbiose`)

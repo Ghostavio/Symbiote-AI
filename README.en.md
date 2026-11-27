@@ -106,7 +106,7 @@ Symbiote-AI/
 
 ## Local validation
 
-To validate wrapper parity, internal links, shell scripts, adapters, i18n structural parity, and unit tests:
+To validate wrapper parity, internal links, shell scripts, adapters, `i18n/` H2 counts and reciprocal README links, and unit tests:
 
 ```bash
 python3 -B scripts/validate-kit.py

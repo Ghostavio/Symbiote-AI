@@ -34,11 +34,13 @@ i18n/
 2. Adicione o link de `README.<codigo>.md` no seletor de idioma no topo de [`README.md`](../README.md).
 3. Crie `i18n/<codigo>/` com as traduções dos guias de entrada mantendo a mesma estrutura de seções (`## `) dos documentos canônicos em `pt-BR`.
 4. Registre o novo idioma e seus pares `source` → `target` em [`i18n/i18n.json`](i18n.json).
-5. Rode a validação local (também executada no CI) para verificar links, seletor bidirecional e paridade estrutural:
+5. Rode a validação local (também executada no CI) para verificar links internos, links recíprocos entre `README.md` e `README.<codigo>.md` e contagem de seções (`## ` H2):
 
 ```bash
 python3 -B scripts/validate-kit.py
 python3 -B -m unittest discover -s tests -v
 ```
+
+> **Alcance do validador:** o `scripts/validate-kit.py` confere schema do `i18n/i18n.json`, segurança de caminhos (sem symlinks ou saída do repositório), existência de links recíprocos entre os READMEs e contagem de cabeçalhos H2 (`## `). A correspondência semântica de cada seção e o posicionamento do seletor de idioma no topo do documento ficam a cargo da revisão de conteúdo.
 
 > Veja também a **Receita H** em [`GUIA-DE-EXPANSAO.md`](../GUIA-DE-EXPANSAO.md) (ou em [`i18n/en/expansion-guide.md`](en/expansion-guide.md)).

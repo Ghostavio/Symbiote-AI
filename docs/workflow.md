@@ -93,7 +93,7 @@ Cada subagente recebe:
 2. **Contexto** — quais arquivos já existem, dependências disponíveis
 3. **Referências** — paths para `docs/discovery.md`, design técnico, `.claude/PROJECT_REFERENCE.md` e adaptadores ativos em `adapters/`
 4. **Regras** — convenções da stack documentadas em `.claude/PROJECT_REFERENCE.md` (e adaptadores acoplados), idioma do projeto (padrão pt-BR), sem `Co-Authored-By`
-5. **Commit** — mensagem em português
+5. **Commit** — mensagem no idioma configurado para o projeto (português brasileiro `pt-BR` por padrão na ausência de escolha)
 
 ### 4.3 Agrupamento de Tasks
 

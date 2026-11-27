@@ -103,7 +103,7 @@ O Symbiote-AI mantém `pt-BR` como idioma canônico em `processes/` (fonte únic
 2. Adicione o link para `README.<codigo>.md` no seletor de idioma no topo de `README.md`.
 3. Crie `i18n/<codigo>/` com as traduções dos guias de entrada mantendo a mesma estrutura de seções (`## `) dos documentos canônicos em `pt-BR`.
 4. Registre o novo idioma e seus pares `source` → `target` em `i18n/i18n.json`.
-5. Valide paridade estrutural, links do seletor bidirecional e links internos com `python3 -B scripts/validate-kit.py` e `python3 -B -m unittest discover -s tests -v`.
+5. Rode `python3 -B scripts/validate-kit.py` e `python3 -B -m unittest discover -s tests -v` para checar contagem de seções `## ` (H2), links recíprocos entre os READMEs e links internos (a correspondência semântica das seções e a posição do seletor ficam para a revisão de conteúdo).
 
 ---
 

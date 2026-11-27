@@ -15,8 +15,9 @@ Checks:
 4. Optional adapters under adapters/<category>/<id>/: manifest schema, matching
    category/id, detection signals, referenced files, and optional JSON/skills.
 5. Optional i18n manifest under i18n/i18n.json: locale schema, non-symlink
-   paths inside the repo, bidirectional README language switcher links, and
-   H2 section structural parity against canonical pt-BR docs.
+   paths inside the repo, reciprocal links between canonical and translated
+   READMEs, and H2 section count checks against canonical pt-BR docs
+   (semantic section correspondence and switcher placement are checked in review).
 """
 
 from __future__ import annotations
