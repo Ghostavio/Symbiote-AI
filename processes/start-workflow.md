@@ -5,7 +5,7 @@ description: "Use quando o usuário iniciar uma nova sessão de desenvolvimento 
 
 # Start Workflow — Iniciar Sessão de Desenvolvimento
 
-Ponto de entrada para todas as sessões de desenvolvimento assistido por IA. Cada fluxo integra automaticamente: subagentes com code review, análise de qualidade (SonarQube), timetracking (diário + 7pace), sincronização com o tracker (Azure DevOps / Jira / etc.) e documentação contínua.
+Ponto de entrada para todas as sessões de desenvolvimento assistido por IA. Cada fluxo integra automaticamente: subagentes com code review, análise estática local, timetracking (diário + 7pace), sincronização com o tracker (Azure DevOps / Jira / etc.) e documentação contínua.
 
 > **Stack de exemplo.** Os comandos e caminhos abaixo usam um stack de exemplo (Angular + Vitest + Playwright, tracker Azure DevOps). Rode a skill **`/integrar`** para adaptar comandos, caminhos e ferramentas ao SEU projeto. Onde lê-se "o tracker", entenda a ferramenta configurada (Azure DevOps, Jira, GitHub Issues…).
 
@@ -352,7 +352,7 @@ Commit pequeno e descritivo. Sincronizar a entrada de tempo (`scripts/sync-7pace
 > **Sessão Freestyle iniciada.** Integrações disponíveis:
 >
 > **Skills:** `/spec-builder`, `/phase-code-review`, `/figma-requirements`, `/create-work-item`, `/integrar`
-> **MCP Servers:** Azure DevOps (`mcp__azure-devops__*`) ou Jira, SonarQube (`mcp__sonarqube__*`), Playwright (`mcp__plugin_playwright_playwright__*`)
+> **MCP Servers:** Azure DevOps (`mcp__azure-devops__*`) ou Jira, SonarQube quando configurado (`mcp__sonarqube__*`), Playwright (`mcp__plugin_playwright_playwright__*`)
 > **Scripts:** `scripts/sync-7pace.sh`
 > **Referências:** [`templates/project-reference.template.md`](../templates/project-reference.template.md), [`docs/workflow.md`](../docs/workflow.md), [`docs/aprendizados.md`](../docs/aprendizados.md)
 >
@@ -360,7 +360,7 @@ Commit pequeno e descritivo. Sincronizar a entrada de tempo (`scripts/sync-7pace
 
 ### F.2 — Iterar com o usuário
 
-O orquestrador oferece, conforme o contexto: code review com SonarQube ao modificar código; timetracking no diário ao concluir fases; validação visual com Playwright ao mexer em UI; sincronização com o tracker quando work items forem relevantes.
+O orquestrador oferece, conforme o contexto: code review com análise estática local ao modificar código; timetracking no diário ao concluir fases; validação visual com Playwright ao mexer em UI; sincronização com o tracker quando work items forem relevantes.
 
 ### F.3 — Concluir
 

@@ -27,7 +27,7 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 
 **Depois, em qualquer caso:**
 1. Preencha os `.env` a partir dos `.env.example` (no kit: `.claude/integrations/timetracking/.env.example`, usado pelo Clockify) (NUNCA versione segredos).
-2. Configure os MCPs necessários: `/setup-azure-mcp` **ou** `/setup-jira`, `/setup-sonarqube-mcp`, e o time tracking (`/setup-7pace`).
+2. Configure as integrações que o projeto usa, como `/setup-azure-mcp` ou `/setup-jira` para o tracker e `/setup-7pace` para registrar horas. Use `/setup-sonarqube-mcp` se o projeto já tiver uma instância SonarQube.
 3. (Opcional) Rode `/full-setup` para instalar ferramentas de sistema e plugins.
 4. Comece a trabalhar com `/start-workflow` (use o **Fluxo Express** para mudanças pequenas).
 
@@ -41,7 +41,7 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 | `figma-requirements` | Levanta requisitos a partir de um design no **Figma** (MCP local ou online) |
 | `spec-builder` | Constrói a especificação de uma feature a partir do template |
 | `create-work-item` | Cria/vincula work item no tracker (Azure DevOps / Jira) |
-| `phase-code-review` | Code review por subagente: spec compliance + qualidade + SonarQube + testes + correções |
+| `phase-code-review` | Code review por subagente com verificação da especificação, análise estática, testes e correções |
 | `timesync` | Registra horas em uma ou mais ferramentas de controle de tempo configuradas no projeto |
 | `docs-target` | Define se a doc vai pro repo ou pra plataforma externa (Confluence/Outline/Notion) |
 | `setup-azure-mcp` / `setup-jira` | Configura o MCP do tracker (Azure DevOps ou Jira/Atlassian) |
@@ -81,7 +81,7 @@ Symbiote-AI/
 
 - **Ferramentas de IA:** Claude Code, Cursor, Codex/Antigravity, VSCode + Copilot (via wrappers + `ai-tools-matrix.md`). Outras, como o Gemini CLI, entram pela Receita E do `GUIA-DE-EXPANSAO.md`.
 - **Tracker:** Azure DevOps **ou** Jira/Atlassian (`setup-jira`).
-- **Qualidade:** SonarQube via MCP (Docker).
+- **Qualidade:** análise estática local, como [SonarJS via ESLint](https://github.com/SonarSource/SonarJS/blob/master/packages/analysis/src/jsts/rules/README.md) em JS/TS, com SonarQube via MCP quando já configurado.
 - **Time tracking:** 7pace, Clockify, e adaptável a **Toggl/Harvest** via `integrar`.
 - **Documentação:** no repo **ou** externa (Confluence/Outline/Notion) via `docs-target` — para PRs limpos.
 - **Design:** Figma via MCP (local Dev Mode ou hospedado) na `figma-requirements`.

@@ -171,7 +171,7 @@ Fix any failures caused by the reviewed code. Do NOT fix pre-existing failures.
 
 Se você usa um proxy que comprime saídas de Bash (ex. RTK — Rust Token Killer),
 há risco residual de a heurística suprimir um warning legítimo. Antes de seguir
-para SonarQube/commit/PR, rode a suíte crítica em passthrough cru (ex.:
+para a análise complementar, o commit ou o PR, rode a suíte crítica em passthrough cru (ex.:
 `rtk proxy <cmd>`):
 
 ```bash
@@ -192,11 +192,15 @@ contexto, mas é barata comparada a aceitar um falso "tudo verde" do RTK.
 
 > Se RTK não estiver instalado, este passo é redundante — pular.
 
-### 8. SonarQube analysis
+### 8. Análise estática local e SonarQube opcional
 
-Usar o **MCP do SonarQube** (requer Docker rodando) para analisar cada arquivo modificado. **Não usar `sonar verify`** da CLI — requer SonarQube Cloud e não funciona com um server on-premise.
+Priorize as ferramentas de análise estática já configuradas no projeto e aproveite os resultados do lint do passo 7.
 
-Para cada arquivo modificado, chamar:
+- **JavaScript e TypeScript com ESLint:** recomende o [`eslint-plugin-sonarjs`](https://github.com/SonarSource/SonarJS/blob/master/packages/analysis/src/jsts/rules/README.md) para obter regras do SonarJS localmente, sem servidor. Quando já estiver configurado, use o comando de lint do projeto. Se estiver ausente, sugira a configuração compatível com a versão do ESLint, sem instalar dependências durante a revisão.
+- **Outras stacks:** use o analisador local configurado no projeto. Se nenhum estiver disponível, registre essa limitação e prossiga com as demais verificações.
+- **SonarQube:** use o MCP como complemento quando o projeto já tiver a integração e a análise centralizada for relevante. Se o MCP estiver indisponível, registre a limitação e prossiga com as verificações locais. As regras do plugin ESLint cobrem parte da análise JS/TS disponível no SonarQube.
+
+Se usar o MCP, analise os arquivos modificados:
 ```
 mcp__sonarqube__analyze_code_snippet({
   projectKey: "<PROJECT_KEY>",
@@ -256,7 +260,7 @@ Return a comprehensive report in this EXACT format. Use the same severity classi
 - **Typecheck:** [PASS/FAIL — N errors fixed]
 - **Unit Tests:** [N passing / N total]
 - **E2E Tests:** [N passing / N total, or "not run"]
-- **SonarQube:** [N issues found, N fixed, N remaining]
+- **Análise estática:** [ferramenta, resultado e limitações; inclua SonarQube quando usado]
 
 ### Summary
 [2-3 sentences covering: (a) overall spec compliance, (b) code quality observations, (c) anything that needs user decision]
@@ -285,5 +289,5 @@ When the reviewer returns:
 - **Never run tests concurrently** — multiple `yarn ng test` instances cause timeouts and false failures
 - **The reviewer fixes, not just reports** — this is the key differentiator from generic code review skills
 - **Always run lint and typecheck BEFORE tests** — faster feedback loop (3s vs 60s)
-- **SonarQube check is part of the review** — not a separate step
+- **Análise estática faz parte da revisão.** Use as verificações locais e registre se houve análise complementar no SonarQube.
 - **The diary update reminder is mandatory** — the orchestrator tends to skip documentation if not reminded
