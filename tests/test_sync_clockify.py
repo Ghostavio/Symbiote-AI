@@ -10,13 +10,19 @@ SCRIPT = (
     Path(__file__).resolve().parents[1]
     / ".claude/integrations/timetracking/sync-clockify.sh"
 )
+INTERVAL_HELPER = Path(__file__).resolve().parents[1] / "scripts/time-entry-interval.py"
 
 
 class ClockifySyncTests(unittest.TestCase):
     def run_sync(self, status, body, *flags):
         with tempfile.TemporaryDirectory() as directory:
             sandbox = Path(directory)
-            script = shutil.copyfile(SCRIPT, sandbox / SCRIPT.name)
+            script_dir = sandbox / ".claude/integrations/timetracking"
+            script_dir.mkdir(parents=True)
+            script = shutil.copyfile(SCRIPT, script_dir / SCRIPT.name)
+            helper_dir = sandbox / "scripts"
+            helper_dir.mkdir()
+            shutil.copyfile(INTERVAL_HELPER, helper_dir / INTERVAL_HELPER.name)
             curl = sandbox / "curl"
             curl.write_text(
                 '#!/bin/sh\nprintf "%s\\n%s\\n" "$MOCK_BODY" "$MOCK_STATUS"\n'

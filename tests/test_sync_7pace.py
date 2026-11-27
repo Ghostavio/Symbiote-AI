@@ -8,6 +8,7 @@ import unittest
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/sync-7pace.sh"
+INTERVAL_HELPER = Path(__file__).resolve().parents[1] / "scripts/time-entry-interval.py"
 
 
 class SevenPaceSyncTests(unittest.TestCase):
@@ -17,6 +18,7 @@ class SevenPaceSyncTests(unittest.TestCase):
             scripts = root / "scripts"
             scripts.mkdir()
             script = shutil.copyfile(SCRIPT, scripts / SCRIPT.name)
+            shutil.copyfile(INTERVAL_HELPER, scripts / INTERVAL_HELPER.name)
             curl = scripts / "curl"
             curl.write_text('#!/bin/sh\nprintf "%s\\n" "curl chamado" >&2\nexit 99\n')
             curl.chmod(0o755)

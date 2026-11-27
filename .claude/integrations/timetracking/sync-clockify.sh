@@ -39,11 +39,8 @@ if [[ -z "$DESCRIPTION" || -z "$START_TIME" || -z "$END_TIME" ]]; then
   echo "[Clockify] ERRO: --description, --start e --end são obrigatórios." >&2
   exit 1
 fi
-ISO_Z_REGEX='^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'
-if [[ ! "$START_TIME" =~ $ISO_Z_REGEX || ! "$END_TIME" =~ $ISO_Z_REGEX ]]; then
-  echo "[Clockify] ERRO: --start e --end devem estar no formato exato AAAA-MM-DDTHH:MM:SSZ (ex: 2026-01-14T14:00:00Z)." >&2
-  echo "  --start: '$START_TIME'" >&2
-  echo "  --end:   '$END_TIME'" >&2
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+if ! python3 "$PROJECT_ROOT/scripts/time-entry-interval.py" "$START_TIME" "$END_TIME" >/dev/null; then
   exit 1
 fi
 
@@ -58,13 +55,7 @@ fi
 
 PROJECT_ID="${CLOCKIFY_PROJECT_ID:-}"
 
-# Converter timestamps de Z (UTC) para -03:00 (BRT)
-# Os timestamps do workflow representam horário local, mas usam sufixo Z por convenção.
-# O 7pace corrige via timeZone:-180, mas o Clockify interpreta Z literalmente como UTC.
-CLOCKIFY_START=$(echo "$START_TIME" | sed 's/Z$/-03:00/')
-CLOCKIFY_END=$(echo "$END_TIME" | sed 's/Z$/-03:00/')
-
-BODY=$(CLOCKIFY_START="$CLOCKIFY_START" CLOCKIFY_END="$CLOCKIFY_END" \
+BODY=$(CLOCKIFY_START="$START_TIME" CLOCKIFY_END="$END_TIME" \
   DESCRIPTION="$DESCRIPTION" PROJECT_ID="$PROJECT_ID" \
   python3 -c '
 import json, os

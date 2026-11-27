@@ -370,6 +370,6 @@ Confirmar: exit codes 0; `git status` mostra só o esperado (sem órfãos como `
 
 Para encerrar o Express, siga o passo G.5. Nos demais fluxos, use os passos abaixo conforme as integrações da sessão.
 
-1. **Registrar end time da sessão** — `git log -1 --format="%ai"` para marcar o final no diário
+1. **Registrar end time da sessão** — `git log -1 --format=%aI` para obter ISO 8601 com offset e marcar o final no diário
 2. **Verificar entregas pendentes** — se alguma entrega não foi sincronizada com 7pace/tracker durante a sessão, sincronizar agora
 3. **Atualizar diário** com resumo (total de entregas, duração, observações)

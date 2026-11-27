@@ -4,6 +4,8 @@
 
 Registra entradas de tempo no [7pace Timetracker](https://www.7pace.com/) via REST API v3.2, integrado ao Azure DevOps Board.
 
+O helper `time-entry-interval.py`, usado pelos adaptadores 7pace e Clockify, valida timestamps com fuso explícito e calcula o tempo decorrido sem depender do timezone do sistema operacional.
+
 ### Configuração rápida (via skill)
 
 Se você usa uma ferramenta de AI compatível, invoque a skill **`/setup-7pace`** — ela guia todo o processo escolhendo onde armazenar o token (macOS Keychain, 1Password, Bitwarden ou shell config), de forma que **o token nunca passa pelo contexto do AI**.
@@ -42,16 +44,16 @@ Se você usa uma ferramenta de AI compatível, invoque a skill **`/setup-7pace`*
 # Registrar tempo em um work item
 ./scripts/sync-7pace.sh \
   --description "FASE 1: Camada de domínio" \
-  --start "2026-01-14T14:00:00Z" \
-  --end "2026-01-14T16:00:00Z" \
+  --start "2026-01-14T14:00:00-03:00" \
+  --end "2026-01-14T16:00:00-03:00" \
   --work-item-id 1234 \
   --activity-type "Desenvolvimento"
 
 # Dry run (mostra o que seria enviado, sem criar)
 ./scripts/sync-7pace.sh \
   --description "FASE 1: Camada de domínio" \
-  --start "2026-01-14T14:00:00Z" \
-  --end "2026-01-14T16:00:00Z" \
+  --start "2026-01-14T14:00:00-03:00" \
+  --end "2026-01-14T16:00:00-03:00" \
   --work-item-id 1234 \
   --dry-run
 ```
@@ -61,8 +63,8 @@ Se você usa uma ferramenta de AI compatível, invoque a skill **`/setup-7pace`*
 | Parâmetro         | Obrigatório | Descrição                                                   |
 | ----------------- | ----------- | ----------------------------------------------------------- |
 | `--description`   | Sim         | Descrição da atividade                                      |
-| `--start`         | Sim         | Início no formato ISO 8601 (ex: `2026-01-14T14:00:00Z`)     |
-| `--end`           | Sim         | Fim no formato ISO 8601                                     |
+| `--start`         | Sim         | Início ISO 8601 com fuso explícito (ex: `2026-01-14T14:00:00-03:00`) |
+| `--end`           | Sim         | Fim ISO 8601 com fuso explícito                             |
 | `--work-item-id`  | Sim         | ID do work item no Azure DevOps                             |
 | `--activity-type` | Não         | Tipo de atividade (default: `Desenvolvimento`)              |
 | `--dry-run`       | Não         | Mostra o JSON sem carregar credenciais nem chamar a API    |
@@ -84,6 +86,6 @@ Se você usa uma ferramenta de AI compatível, invoque a skill **`/setup-7pace`*
 Este script é chamado automaticamente pelo orquestrador durante o workflow de implementação (seções 4.4 e 5.5 do `docs/workflow.md`):
 
 1. Antes de despachar subagente → registra start time no diário
-2. Após entrega + code review → consulta `git log -1 --format="%ai"` para end time
+2. Após entrega + code review → consulta `git log -1 --format=%aI` para end time ISO 8601 com offset
 3. Chama `sync-7pace.sh` com os timestamps para registrar no 7pace
 

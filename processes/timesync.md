@@ -65,7 +65,7 @@ Respeite como cada provedor representa vínculo com o tracker:
 
 ### 4. Fuso horário consistente
 
-Cada adaptador pode interpretar o sufixo `Z` ou offsets explícitos de forma diferente (por exemplo, o adaptador de 7pace usa `timeZone` explícito enquanto o do Clockify exige offset como `-03:00`). Confira sempre as regras de fuso na documentação do provedor antes de enviar em lote.
+`--start` e `--end` são timestamps ISO 8601 com fuso explícito. `Z` significa UTC; para indicar horário local, use o offset válido naquela data (por exemplo, `-03:00`). Os scripts calculam a duração pelo instante representado e enviam os mesmos timestamps aos provedores, sem inferir o fuso do computador nem aplicar conversões fixas. Em regiões com horário de verão, informe o offset vigente na data da sessão.
 
 ### 5. Segredos fora do contexto da IA
 
@@ -93,8 +93,8 @@ Execute o adaptador correspondente aos provedores ativos do projeto (rode `--dry
 ```bash
 scripts/sync-7pace.sh \
   --description "Setup e Infraestrutura" \
-  --start "2026-01-14T10:00:00Z" \
-  --end "2026-01-14T10:30:00Z" \
+  --start "2026-01-14T10:00:00-03:00" \
+  --end "2026-01-14T10:30:00-03:00" \
   --work-item-id 1234 \
   --activity-type "Desenvolvimento"
 ```
@@ -103,16 +103,16 @@ scripts/sync-7pace.sh \
 ```bash
 .claude/integrations/timetracking/sync-clockify.sh \
   --description "1234: Setup e Infraestrutura" \
-  --start "2026-01-14T10:00:00Z" \
-  --end "2026-01-14T10:30:00Z"
+  --start "2026-01-14T10:00:00-03:00" \
+  --end "2026-01-14T10:30:00-03:00"
 ```
 
 **Exemplo — múltiplos provedores (wrapper 7pace + Clockify):**
 ```bash
 .claude/integrations/timetracking/sync.sh \
   --description "Setup e Infraestrutura" \
-  --start "2026-01-14T10:00:00Z" \
-  --end "2026-01-14T10:30:00Z" \
+  --start "2026-01-14T10:00:00-03:00" \
+  --end "2026-01-14T10:30:00-03:00" \
   --work-item-id 1234 \
   --activity-type "Desenvolvimento"
 ```
