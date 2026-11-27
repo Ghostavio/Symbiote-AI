@@ -31,6 +31,10 @@ Detecte/escolha **uma** das opções abaixo (a skill tenta a local primeiro, dep
    ```json
    { "mcpServers": { "figma-dev-mode": { "type": "sse", "url": "http://127.0.0.1:3845/sse" } } }
    ```
+   No **Antigravity** (`~/.gemini/config/mcp_config.json`), use o endpoint **Streamable HTTP** (`/mcp`):
+   ```json
+   { "mcpServers": { "figma-dev-mode": { "url": "http://127.0.0.1:3845/mcp" } } }
+   ```
    Ferramentas típicas: `get_code`, `get_variable_defs` (tokens/variáveis), `get_image`/`get_screenshot`, `get_metadata`, `get_code_connect_map`. Operam sobre a **seleção atual** no Figma ou sobre um `nodeId`.
 
 ### Opção B — Online (MCP hospedado da Figma) — recomendado se não usa o desktop
@@ -39,6 +43,10 @@ Detecte/escolha **uma** das opções abaixo (a skill tenta a local primeiro, dep
    ```bash
    claude mcp add --transport http figma https://mcp.figma.com/mcp
    # depois autentique com /mcp (fluxo OAuth no navegador)
+   ```
+   No **Antigravity** (`~/.gemini/config/mcp_config.json`):
+   ```json
+   { "mcpServers": { "figma": { "url": "https://mcp.figma.com/mcp" } } }
    ```
 2. Opera sobre **URLs de arquivo/nó** do Figma (cole o link do frame).
 

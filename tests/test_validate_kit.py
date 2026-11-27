@@ -20,6 +20,7 @@ validator = load_validator()
 def create_minimal_valid_repo(root: Path, process_name: str = "demo") -> None:
     (root / "processes").mkdir(parents=True)
     (root / ".claude" / "skills" / process_name).mkdir(parents=True)
+    (root / ".agents" / "skills" / process_name).mkdir(parents=True)
     (root / ".cursor" / "rules").mkdir(parents=True)
     (root / ".github").mkdir(parents=True)
     (root / "scripts").mkdir(parents=True)
@@ -28,10 +29,15 @@ def create_minimal_valid_repo(root: Path, process_name: str = "demo") -> None:
         f"---\nname: {process_name}\ndescription: \"Demo process\"\n---\n\n# Demo\n",
         encoding="utf-8",
     )
-    (root / ".claude" / "skills" / process_name / "SKILL.md").write_text(
+    skill_body = (
         f"---\nname: {process_name}\ndescription: \"Demo process\"\n---\n\n"
-        f"Follow [`processes/{process_name}.md`](../../../processes/{process_name}.md).\n",
-        encoding="utf-8",
+        f"Follow [`processes/{process_name}.md`](../../../processes/{process_name}.md).\n"
+    )
+    (root / ".claude" / "skills" / process_name / "SKILL.md").write_text(
+        skill_body, encoding="utf-8"
+    )
+    (root / ".agents" / "skills" / process_name / "SKILL.md").write_text(
+        skill_body, encoding="utf-8"
     )
     (root / ".cursor" / "rules" / f"{process_name}.mdc").write_text(
         f"---\ndescription: \"Demo process\"\n---\n\n"
@@ -44,6 +50,10 @@ def create_minimal_valid_repo(root: Path, process_name: str = "demo") -> None:
     )
     (root / "AGENTS.md").write_text(
         f"| `{process_name}` | [processes/{process_name}.md](processes/{process_name}.md) |\n",
+        encoding="utf-8",
+    )
+    (root / "GEMINI.md").write_text(
+        "See [`AGENTS.md`](AGENTS.md) and `.agents/skills/`.\n",
         encoding="utf-8",
     )
     (root / ".github" / "copilot-instructions.md").write_text(
@@ -77,6 +87,7 @@ class ValidateKitTests(unittest.TestCase):
             errors = validator.validate_wrappers(root)
             joined = "\n".join(errors)
             self.assertIn(".claude/skills/orphan-canonical/SKILL.md", joined)
+            self.assertIn(".agents/skills/orphan-canonical/SKILL.md", joined)
             self.assertIn(".cursor/rules/orphan-canonical.mdc", joined)
             self.assertIn("AGENTS.md: missing link to processes/orphan-canonical.md", joined)
             self.assertIn(
@@ -94,13 +105,18 @@ class ValidateKitTests(unittest.TestCase):
                 "---\nname: stale\ndescription: \"Stale\"\n---\n\nFollow processes/stale.md.\n",
                 encoding="utf-8",
             )
-            errors = validator.validate_wrappers(root)
-            self.assertTrue(
-                any("no matching canonical processes/stale.md" in e for e in errors),
-                errors,
+            stale_agents = root / ".agents" / "skills" / "stale-agent"
+            stale_agents.mkdir(parents=True)
+            (stale_agents / "SKILL.md").write_text(
+                "---\nname: stale-agent\ndescription: \"Stale\"\n---\n\nFollow processes/stale-agent.md.\n",
+                encoding="utf-8",
             )
+            errors = validator.validate_wrappers(root)
+            joined = "\n".join(errors)
+            self.assertIn("no matching canonical processes/stale.md", joined)
+            self.assertIn("no matching canonical processes/stale-agent.md", joined)
 
-    def test_detects_claude_wrapper_pointing_to_wrong_canonical(self):
+    def test_detects_skill_wrappers_pointing_to_wrong_canonical(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             create_minimal_valid_repo(root, "alpha")
@@ -108,16 +124,24 @@ class ValidateKitTests(unittest.TestCase):
                 "---\nname: beta\ndescription: \"Beta\"\n---\n\n# Beta\n",
                 encoding="utf-8",
             )
-            (root / ".claude" / "skills" / "alpha" / "SKILL.md").write_text(
+            wrong = (
                 "---\nname: alpha\ndescription: \"Alpha\"\n---\n\n"
-                "Follow [`processes/alpha.md`](../../../processes/beta.md).\n",
-                encoding="utf-8",
+                "Follow [`processes/alpha.md`](../../../processes/beta.md).\n"
             )
+            (root / ".claude" / "skills" / "alpha" / "SKILL.md").write_text(wrong, encoding="utf-8")
+            (root / ".agents" / "skills" / "alpha" / "SKILL.md").write_text(wrong, encoding="utf-8")
             errors = validator.validate_wrappers(root)
-            self.assertTrue(
-                any("must link directly to processes/alpha.md" in e for e in errors),
-                errors,
-            )
+            joined = "\n".join(errors)
+            self.assertIn(".claude/skills/alpha/SKILL.md: must link directly to processes/alpha.md", joined)
+            self.assertIn(".agents/skills/alpha/SKILL.md: must link directly to processes/alpha.md", joined)
+
+    def test_detects_missing_or_unlinked_gemini_md(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root)
+            (root / "GEMINI.md").write_text("# Gemini\nNo link here.\n", encoding="utf-8")
+            errors = validator.validate_wrappers(root)
+            self.assertTrue(any("GEMINI.md: must link to AGENTS.md" in e for e in errors), errors)
 
     def test_detects_broken_and_root_relative_links_but_ignores_code_and_comments(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -166,13 +190,14 @@ class ValidateKitTests(unittest.TestCase):
                 "Follow [`processes/simbiose.md`](simbiose.md).\n",
                 encoding="utf-8",
             )
-            alias_skill = root / ".claude" / "skills" / "scaffold"
-            alias_skill.mkdir(parents=True)
-            (alias_skill / "SKILL.md").write_text(
+            alias_body = (
                 "---\nname: scaffold\nalias_of: simbiose\ndescription: \"Alias\"\n---\n\n"
-                "Follow [`processes/simbiose.md`](../../../processes/simbiose.md).\n",
-                encoding="utf-8",
+                "Follow [`processes/simbiose.md`](../../../processes/simbiose.md).\n"
             )
+            for base in (root / ".claude" / "skills", root / ".agents" / "skills"):
+                alias_skill = base / "scaffold"
+                alias_skill.mkdir(parents=True)
+                (alias_skill / "SKILL.md").write_text(alias_body, encoding="utf-8")
             (root / ".cursor" / "rules" / "scaffold.mdc").write_text(
                 "---\nalias_of: simbiose\ndescription: \"Alias\"\n---\n\n"
                 "Follow `processes/simbiose.md`.\n",
@@ -219,7 +244,7 @@ class ValidateKitTests(unittest.TestCase):
                 "Follow [`processes/simbiose.md`](simbiose.md).\n",
                 encoding="utf-8",
             )
-            alias_skill = root / ".claude" / "skills" / "scaffold"
+            alias_skill = root / ".agents" / "skills" / "scaffold"
             alias_skill.mkdir(parents=True)
             (alias_skill / "SKILL.md").write_text(
                 "---\nname: scaffold\nalias_of: simbiose\ndescription: \"Alias\"\n---\n\n"
@@ -229,7 +254,8 @@ class ValidateKitTests(unittest.TestCase):
             errors = validator.validate_wrappers(root)
             self.assertTrue(
                 any(
-                    "scaffold/SKILL.md: must link directly to processes/simbiose.md" in e
+                    ".agents/skills/scaffold/SKILL.md: must link directly to processes/simbiose.md"
+                    in e
                     for e in errors
                 ),
                 errors,
@@ -239,21 +265,20 @@ class ValidateKitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             create_minimal_valid_repo(root, "simbiose")
-            # Add a second valid primary canonical (timesync) with full wrappers
             (root / "processes" / "timesync.md").write_text(
                 "---\nname: timesync\ndescription: \"Timesync\"\n---\n\n# Timesync\n",
                 encoding="utf-8",
             )
-            ts_skill = root / ".claude" / "skills" / "timesync"
-            ts_skill.mkdir(parents=True)
-            (ts_skill / "SKILL.md").write_text(
+            ts_body = (
                 "---\nname: timesync\ndescription: \"Timesync\"\n---\n\n"
-                "Follow [`processes/timesync.md`](../../../processes/timesync.md).\n",
-                encoding="utf-8",
+                "Follow [`processes/timesync.md`](../../../processes/timesync.md).\n"
             )
+            for base in (root / ".claude" / "skills", root / ".agents" / "skills"):
+                d = base / "timesync"
+                d.mkdir(parents=True)
+                (d / "SKILL.md").write_text(ts_body, encoding="utf-8")
             (root / ".cursor" / "rules" / "timesync.mdc").write_text(
-                "---\ndescription: \"Timesync\"\n---\n\n"
-                "Follow `processes/timesync.md`.\n",
+                "---\ndescription: \"Timesync\"\n---\n\nFollow `processes/timesync.md`.\n",
                 encoding="utf-8",
             )
             with (root / "AGENTS.md").open("a", encoding="utf-8") as f:
@@ -261,7 +286,6 @@ class ValidateKitTests(unittest.TestCase):
             with (root / ".github" / "copilot-instructions.md").open("a", encoding="utf-8") as f:
                 f.write("| `timesync` | [processes/timesync.md](../processes/timesync.md) |\n")
 
-            # Canonical alias and Cursor point to simbiose, while Claude points to timesync
             (root / "processes" / "scaffold.md").write_text(
                 "---\nname: scaffold\nalias_of: simbiose\ndescription: \"Alias\"\n---\n\n"
                 "Follow [`processes/simbiose.md`](simbiose.md).\n",
@@ -272,21 +296,23 @@ class ValidateKitTests(unittest.TestCase):
                 "Follow `processes/simbiose.md`.\n",
                 encoding="utf-8",
             )
-            alias_skill = root / ".claude" / "skills" / "scaffold"
-            alias_skill.mkdir(parents=True)
-            (alias_skill / "SKILL.md").write_text(
+            mismatch_body = (
                 "---\nname: scaffold\nalias_of: timesync\ndescription: \"Conflicting alias\"\n---\n\n"
-                "Follow [`processes/timesync.md`](../../../processes/timesync.md).\n",
-                encoding="utf-8",
+                "Follow [`processes/timesync.md`](../../../processes/timesync.md).\n"
             )
+            for base in (root / ".claude" / "skills", root / ".agents" / "skills"):
+                d = base / "scaffold"
+                d.mkdir(parents=True)
+                (d / "SKILL.md").write_text(mismatch_body, encoding="utf-8")
             errors = validator.validate_wrappers(root)
-            self.assertTrue(
-                any(
-                    "scaffold/SKILL.md: alias_of 'timesync' disagrees with processes/scaffold.md (expected 'simbiose')"
-                    in e
-                    for e in errors
-                ),
-                errors,
+            joined = "\n".join(errors)
+            self.assertIn(
+                ".claude/skills/scaffold/SKILL.md: alias_of 'timesync' disagrees with processes/scaffold.md (expected 'simbiose')",
+                joined,
+            )
+            self.assertIn(
+                ".agents/skills/scaffold/SKILL.md: alias_of 'timesync' disagrees with processes/scaffold.md (expected 'simbiose')",
+                joined,
             )
 
 

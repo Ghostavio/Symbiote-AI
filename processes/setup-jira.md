@@ -24,6 +24,10 @@ Servidor hospedado pela Atlassian (Rovo MCP), cobre **Jira + Confluence**, auten
   ```json
   { "mcpServers": { "atlassian": { "type": "sse", "url": "https://mcp.atlassian.com/v1/sse" } } }
   ```
+- **Antigravity (`~/.gemini/config/mcp_config.json`):** o Antigravity suporta **Stdio** e **Streamable HTTP** (`/mcp`), não HTTP+SSE legado (`/sse`) diretamente. Use o endpoint Streamable HTTP quando disponível ou o bridge Stdio `mcp-remote`:
+  ```json
+  { "mcpServers": { "atlassian": { "command": "npx", "args": ["-y", "mcp-remote", "https://mcp.atlassian.com/v1/sse"] } } }
+  ```
 
 ## Opção B — `mcp-atlassian` (community, API token) — Cloud ou Server/Data Center
 
