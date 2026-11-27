@@ -73,15 +73,15 @@ Use o wrapper `sync.sh` (nesta pasta) — registra no **7pace E no Clockify** de
 ```bash
 ./.claude/integrations/timetracking/sync.sh \
   --description "FASE 1: Camada de domínio" \
-  --start "2026-01-14T14:00:00Z" \
-  --end "2026-01-14T16:00:00Z" \
+  --start "2026-01-14T14:00:00-03:00" \
+  --end "2026-01-14T16:00:00-03:00" \
   --work-item-id 1234
 
 # Dry run (não envia nada)
 ./.claude/integrations/timetracking/sync.sh \
   --description "Teste" \
-  --start "2026-01-15T09:00:00Z" \
-  --end "2026-01-15T10:00:00Z" \
+  --start "2026-01-15T09:00:00-03:00" \
+  --end "2026-01-15T10:00:00-03:00" \
   --work-item-id 1234 \
   --dry-run
 ```
@@ -95,7 +95,7 @@ Salve uma preferência no seu assistente de IA indicando os provedores de contro
 ## Regras específicas do Clockify
 
 1. **Prefixo `{WorkItemId}:` na descrição:** como o Clockify não tem vínculo nativo com o tracker, use `{WorkItemId}: {nome}` (ex.: `1234: Setup e Infraestrutura`). **Exceção:** a Daily é sempre apenas `Daily` (sem prefixo e sem "Scrum").
-2. **Timezone explícito (`-03:00` / offset local):** o Clockify interpreta `Z` literalmente como UTC. O `sync-clockify.sh` converte o sufixo `Z` para `-03:00` (ajuste o offset se o time usar outro fuso).
+2. **Timezone explícito:** passe `--start` e `--end` com o offset local válido na data da sessão (por exemplo, `-03:00`). `Z` representa UTC e é enviado sem conversão.
 3. **`projectId` obrigatório:** configure `CLOCKIFY_PROJECT_ID` no `.env` para vincular todas as entradas ao projeto correto.
 4. **Endpoints essenciais da API v1** (`https://api.clockify.me/api/v1`, header `X-Api-Key`):
    - Criar: `POST /workspaces/{workspaceId}/time-entries`
@@ -106,6 +106,6 @@ Salve uma preferência no seu assistente de IA indicando os provedores de contro
 ### Checklist específico do Clockify
 
 - [ ] Cada entrada vinculada a item do tracker tem prefixo `{WorkItemId}: ` (exceto `Daily`)
-- [ ] Timestamps enviados à API usam offset explícito (nunca `Z` cru)
+- [ ] Timestamps representam o fuso pretendido (`Z` para UTC ou offset local explícito)
 - [ ] `projectId` preenchido corretamente em todas as entradas
 - [ ] Dailies registradas como `Daily` (sem prefixo)

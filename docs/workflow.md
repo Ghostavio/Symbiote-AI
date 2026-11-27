@@ -111,17 +111,17 @@ O orquestrador deve registrar **start time** e **end time** de cada fase diretam
 1. Registrar a data e hora atual no diário como **start time** da fase:
    ```markdown
    ## FASE X: [nome]
-   **Start:** 2026-01-14 14:00
+   **Start:** 2026-01-14T14:00:00-03:00
    ```
 
 **Após entrega + code review:**
 
-2. Consultar o timestamp do último commit do subagente via `git log -1 --format="%ai"` para obter o **end time** real
+2. Consultar o timestamp ISO 8601 do último commit do subagente via `git log -1 --format=%aI` para obter o **end time** real
 3. Atualizar o diário com o end time e a duração calculada:
    ```markdown
    ## FASE X: [nome]
-   **Start:** 2026-01-14 14:00
-   **End:** 2026-01-14 16:00 (via git log)
+   **Start:** 2026-01-14T14:00:00-03:00
+   **End:** 2026-01-14T16:00:00-03:00 (via git log)
    **Duração:** 2h 00min
    ```
 
@@ -151,7 +151,7 @@ Use o roteiro da skill na sessão atual ou envie-o a um reviewer autorizado.
 
 1. Ler o relatório do reviewer
 2. Resolver issues escalados (que precisam de decisão do usuário)
-3. **Registrar end time** — consultar `git log -1 --format="%ai"` para obter o timestamp do último commit e atualizar o diário com end time + duração (ver seção 4.4)
+3. **Registrar end time** — consultar `git log -1 --format=%aI` para obter ISO 8601 com offset do último commit e atualizar o diário com end time + duração (ver seção 4.4)
 4. **Atualizar o diário de implementação** (`docs/diario-implementacao.md`) com resultados do review
 5. **Sincronizar Board** (ver seção 5.4)
 6. **Registrar horas no 7pace** (ver seção 5.5)

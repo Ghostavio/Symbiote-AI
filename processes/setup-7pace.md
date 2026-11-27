@@ -217,18 +217,17 @@ Antes de rodar, identificar um **work item de teste** (`<TEST_WI>`):
 # e <7PACE_ACTIVITY_ID_DESENVOLVIMENTO> pelo GUID do seu tenant (ver Activity Types abaixo)
 TEST_WI=<TEST_WI>
 
-# Criar (timestamp em UTC, length em segundos)
+# Criar (timestamp ISO 8601 com fuso explícito, length em segundos)
 RESPONSE=$(curl -s -X POST \
   -H "Authorization: Bearer $SEVENPACE_API_TOKEN" \
   -H "Content-Type: application/json" \
   "$SEVENPACE_BASE_URL/api/rest/workLogs?api-version=3.2" \
   -d "{
     \"workItemId\": $TEST_WI,
-    \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+    \"timeStamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
     \"length\": 60,
     \"activityTypeId\": \"<7PACE_ACTIVITY_ID_DESENVOLVIMENTO>\",
-    \"comment\": \"TESTE AUTOMATICO - deletar\",
-    \"timeZone\": -180
+    \"comment\": \"TESTE AUTOMATICO - deletar\"
   }")
 ID=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('data',{}).get('id',''))")
 echo "Worklog criado: $ID"
@@ -255,8 +254,8 @@ Se tudo passou:
 > ```bash
 > scripts/sync-7pace.sh \
 >   --description "Descrição da atividade" \
->   --start "2026-01-14T14:00:00Z" \
->   --end "2026-01-14T16:00:00Z" \
+>   --start "2026-01-14T14:00:00-03:00" \
+>   --end "2026-01-14T16:00:00-03:00" \
 >   --work-item-id 1234
 > ```
 
@@ -291,5 +290,5 @@ Os GUIDs são do seu tenant do 7pace. Substitua os marcadores pelos valores de `
 - **REST (atualização):** `PATCH /api/rest/workLogs/{id}?api-version=3.2`
 - **REST (deleção):** `DELETE /api/rest/workLogs/{id}?api-version=3.2`
 - **Auth:** `Authorization: Bearer {token}`
-- **Campos obrigatórios (POST):** `workItemId`, `length` (segundos), `timestamp` (ISO 8601)
-- **Campos opcionais:** `comment`, `activityTypeId`, `timeZone` (-180 para BRT)
+- **Campos obrigatórios (POST):** `workItemId`, `length` (segundos), `timeStamp` (ISO 8601)
+- **Campos opcionais:** `comment`, `activityTypeId`

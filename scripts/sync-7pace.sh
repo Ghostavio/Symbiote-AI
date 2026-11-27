@@ -6,8 +6,8 @@
 # Uso:
 #   ./scripts/sync-7pace.sh \
 #     --description "FASE 1: Camada de domínio" \
-#     --start "2026-01-14T14:00:00Z" \
-#     --end "2026-01-14T16:00:00Z" \
+#     --start "2026-01-14T14:00:00-03:00" \
+#     --end "2026-01-14T16:00:00-03:00" \
 #     --work-item-id 1234 \
 #     [--activity-type "Desenvolvimento"] \
 #     [--dry-run]
@@ -64,30 +64,11 @@ if [[ ! "$WORK_ITEM_ID" =~ ^[0-9]+$ ]]; then
   echo "  --work-item-id: '$WORK_ITEM_ID'" >&2
   exit 1
 fi
-ISO_Z_REGEX='^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'
-if [[ ! "$START_TIME" =~ $ISO_Z_REGEX || ! "$END_TIME" =~ $ISO_Z_REGEX ]]; then
-  echo "ERRO: --start e --end devem estar no formato exato AAAA-MM-DDTHH:MM:SSZ (ex: 2026-01-14T14:00:00Z)." >&2
-  echo "  --start: '$START_TIME'" >&2
-  echo "  --end:   '$END_TIME'" >&2
+if ! INTERVAL=$(python3 "$SCRIPT_DIR/time-entry-interval.py" "$START_TIME" "$END_TIME"); then
   exit 1
 fi
-
-# --- Calcular duração em segundos ---
-# Tenta BSD date (macOS) primeiro; fallback pra GNU date (Linux). Se ambos falharem,
-# a string passada não está no formato esperado — encerrar com erro claro.
-START_EPOCH=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${START_TIME%Z}" "+%s" 2>/dev/null || date -d "${START_TIME}" "+%s" 2>/dev/null || true)
-END_EPOCH=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${END_TIME%Z}" "+%s" 2>/dev/null || date -d "${END_TIME}" "+%s" 2>/dev/null || true)
-if [[ -z "$START_EPOCH" || -z "$END_EPOCH" ]]; then
-  echo "ERRO: --start ou --end em formato inválido. Esperado ISO 8601 com sufixo Z (ex: 2026-01-14T14:00:00Z)." >&2
-  echo "  --start: '$START_TIME'" >&2
-  echo "  --end:   '$END_TIME'" >&2
-  exit 1
-fi
-DURATION_SECONDS=$((END_EPOCH - START_EPOCH))
-if (( DURATION_SECONDS <= 0 )); then
-  echo "ERRO: duração inválida ($DURATION_SECONDS s) — --end deve ser posterior a --start." >&2
-  exit 1
-fi
+DURATION_SECONDS=$(INTERVAL_JSON="$INTERVAL" python3 -c 'import json, os; print(json.loads(os.environ["INTERVAL_JSON"])["duration_seconds"])')
+START_UTC=$(INTERVAL_JSON="$INTERVAL" python3 -c 'import json, os; print(json.loads(os.environ["INTERVAL_JSON"])["start_utc"])')
 
 # --- Activity Type IDs ---
 # Os IDs abaixo são específicos do SEU tenant 7pace. Obtenha-os via API:
@@ -137,16 +118,15 @@ if ! $DRY_RUN; then
 fi
 
 BODY=$(WORK_ITEM_ID="$WORK_ITEM_ID" DURATION_SECONDS="$DURATION_SECONDS" \
-  START_TIME="$START_TIME" DESCRIPTION="$DESCRIPTION" ACTIVITY_TYPE_ID="$ACTIVITY_TYPE_ID" \
+  START_TIME="$START_UTC" DESCRIPTION="$DESCRIPTION" ACTIVITY_TYPE_ID="$ACTIVITY_TYPE_ID" \
   python3 -c '
 import json, os
 body = {
     "workItemId": int(os.environ["WORK_ITEM_ID"]),
     "length": int(os.environ["DURATION_SECONDS"]),
-    "timestamp": os.environ["START_TIME"],
+    "timeStamp": os.environ["START_TIME"],
     "comment": os.environ["DESCRIPTION"],
     "activityTypeId": os.environ["ACTIVITY_TYPE_ID"],
-    "timeZone": -180,
 }
 print(json.dumps(body))
 ')
