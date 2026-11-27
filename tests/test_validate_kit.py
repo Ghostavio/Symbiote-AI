@@ -656,19 +656,79 @@ class ValidateKitTests(unittest.TestCase):
                     encoding="utf-8",
                 )
 
-            validator_errors = validator.validate_adapters(root)
-            self.assertTrue(
-                any(
-                    "skill name 'shared-deploy' collides with" in err
-                    for err in validator_errors
-                ),
-                validator_errors,
-            )
-
             plan_collisions = validator.find_adapter_skill_collisions(root)
             joined = "\n".join(plan_collisions)
             self.assertIn("skill name 'shared-deploy' collides with", joined)
             self.assertIn("skill name 'demo' collides with existing processes/demo.md", joined)
+
+    def test_resolved_adapter_skill_collision_with_both_adapters_passes_validation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root, "demo")
+
+            for cat_dir, cat_name, adapter_id, body_text in (
+                ("cloud", "cloud", "cloud-a", "# Deploy from cloud-a\n"),
+                ("observability", "observability", "obs-b", "# Deploy from obs-b\n"),
+            ):
+                adapter_dir = root / "adapters" / cat_dir / adapter_id
+                skill_dir = adapter_dir / "skills" / "shared-deploy"
+                skill_dir.mkdir(parents=True)
+                (adapter_dir / "conventions.md").write_text("# Conv\n", encoding="utf-8")
+                (adapter_dir / "review-checks.md").write_text("# Checks\n", encoding="utf-8")
+                (skill_dir / "SKILL.md").write_text(
+                    "---\nname: shared-deploy\ndescription: \"Shared deploy skill\"\n---\n\n"
+                    + body_text,
+                    encoding="utf-8",
+                )
+                (adapter_dir / "adapter.json").write_text(
+                    json.dumps(
+                        {
+                            "id": adapter_id,
+                            "name": adapter_id,
+                            "category": cat_name,
+                            "description": "Adapter kept after skipping colliding skill",
+                            "detect": {"files": [f"{adapter_id}.cfg"]},
+                            "files": {
+                                "conventions": "conventions.md",
+                                "review_checks": "review-checks.md",
+                                "skills": ["skills/shared-deploy"],
+                            },
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+
+            # Planning detects the collision before writing
+            plan_collisions = validator.find_adapter_skill_collisions(root)
+            self.assertTrue(
+                any("skill name 'shared-deploy' collides with" in err for err in plan_collisions),
+                plan_collisions,
+            )
+
+            # User keeps both adapters and installs only cloud-a's skill (skipping obs-b's)
+            chosen_skill = (
+                root / "adapters" / "cloud" / "cloud-a" / "skills" / "shared-deploy" / "SKILL.md"
+            ).read_text(encoding="utf-8")
+            (root / "processes" / "shared-deploy.md").write_text(chosen_skill, encoding="utf-8")
+            wrapper = (
+                "---\nname: shared-deploy\ndescription: \"Shared deploy skill\"\n---\n\n"
+                "Follow [`processes/shared-deploy.md`](../../../processes/shared-deploy.md).\n"
+            )
+            for base in (root / ".claude" / "skills", root / ".agents" / "skills"):
+                d = base / "shared-deploy"
+                d.mkdir(parents=True)
+                (d / "SKILL.md").write_text(wrapper, encoding="utf-8")
+            (root / ".cursor" / "rules" / "shared-deploy.mdc").write_text(
+                "---\ndescription: \"Shared deploy skill\"\n---\n\nFollow `processes/shared-deploy.md`.\n",
+                encoding="utf-8",
+            )
+            with (root / "AGENTS.md").open("a", encoding="utf-8") as f:
+                f.write("| `shared-deploy` | [processes/shared-deploy.md](processes/shared-deploy.md) |\n")
+            with (root / ".github" / "copilot-instructions.md").open("a", encoding="utf-8") as f:
+                f.write("| `shared-deploy` | [processes/shared-deploy.md](../processes/shared-deploy.md) |\n")
+
+            # Final validation passes with both adapters present and only one skill installed
+            self.assertEqual(validator.validate_repo(root), [])
 
 
 if __name__ == "__main__":

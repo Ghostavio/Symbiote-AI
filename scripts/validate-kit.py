@@ -445,7 +445,6 @@ def _resolve_inside_adapter(root: Path, adapter_dir: Path, rel_path: object) -> 
 
 def validate_adapters(root: Path) -> list[str]:
     errors: list[str] = []
-    seen_adapter_skills: dict[str, str] = {}
     repo_root = root.resolve()
     adapters_dir = root / "adapters"
     if not adapters_dir.exists() and not adapters_dir.is_symlink():
@@ -617,6 +616,7 @@ def validate_adapters(root: Path) -> list[str]:
                 if not isinstance(raw_skills, list):
                     errors.append(f"{rel_manifest}: files.skills must be a list of relative paths")
                 else:
+                    seen_in_adapter: dict[str, str] = {}
                     for raw_skill in raw_skills:
                         resolved_skill = _resolve_inside_adapter(root, adapter_dir, raw_skill)
                         if resolved_skill is None:
@@ -643,13 +643,13 @@ def validate_adapters(root: Path) -> list[str]:
                             continue
                         skill_name = fm["name"]
                         skill_ref = f"{rel_adapter}/{raw_skill}/SKILL.md"
-                        if skill_name in seen_adapter_skills:
+                        if skill_name in seen_in_adapter:
                             errors.append(
-                                f"{skill_ref}: skill name '{skill_name}' collides with "
-                                f"{seen_adapter_skills[skill_name]} (both target processes/{skill_name}.md)"
+                                f"{skill_ref}: duplicate skill name '{skill_name}' within adapter "
+                                f"(already declared at {seen_in_adapter[skill_name]})"
                             )
                         else:
-                            seen_adapter_skills[skill_name] = skill_ref
+                            seen_in_adapter[skill_name] = skill_ref
 
     return errors
 
