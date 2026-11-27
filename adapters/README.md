@@ -2,7 +2,7 @@
 
 O core do **Symbiote-AI** (`processes/`, `AGENTS.md`, `GEMINI.md`, wrappers e `.cursor/settings.json`) é **neutro de stack**. Especializações por tecnologia, nuvem ou observabilidade vivem aqui como **adaptadores opcionais e composíveis**, acoplados seletivamente via `simbiose` (e seu procedimento de integração em [`processes/integrar.md`](../processes/integrar.md)).
 
-Um mesmo projeto pode combinar adaptadores ortogonais (por exemplo: `stacks/angular` + `cloud/aws` + `observability/<id>`, ou `stacks/react` + `cloud/cloudflare`).
+Um mesmo projeto pode combinar adaptadores ortogonais (por exemplo: `stacks/angular` + `cloud/aws` + `observability/opentelemetry`, ou `stacks/react` + `cloud/cloudflare` + `observability/opentelemetry`).
 
 ## Estrutura de categorias
 
@@ -19,8 +19,11 @@ adapters/
 | --- | --- | --- |
 | `stack` | [`angular`](stacks/angular/conventions.md) | Convenções Angular modernas (standalone, Signals, `OnPush`, `inject()`, Vitest, Playwright), checks para `phase-code-review` e preset de editor |
 | `stack` | [`react`](stacks/react/conventions.md) | Convenções React modernas (componentes funcionais, Hooks, estado cliente/servidor, RSC, testes de componente/E2E e TypeScript quando configurado), checks para `phase-code-review` e preset de editor |
+| `cloud` | [`cloudflare`](cloud/cloudflare/conventions.md) | Convenções Cloudflare Workers/Pages (bindings, segredos, KV/D1/R2/Durable Objects/Queues, cache de borda e runtime isolado) e checks para `phase-code-review` |
+| `cloud` | [`aws`](cloud/aws/conventions.md) | Convenções AWS e IaC (IAM de menor privilégio, segredos, Lambda/ECS, SQS/SNS/EventBridge, S3/DynamoDB/RDS, resiliência e custo) e checks para `phase-code-review` |
+| `observability` | [`opentelemetry`](observability/opentelemetry/conventions.md) | Convenções OpenTelemetry neutras de fornecedor (logs estruturados correlacionados, tracing W3C, métricas RED/USE sem explosão de cardinalidade, redação de PII e SLOs) e checks para `phase-code-review` |
 
-> Próximos adaptadores previstos no roadmap: `cloud/cloudflare`, `cloud/aws` e `observability/`.
+> Novos adaptadores (outras stacks, nuvens ou ferramentas de observabilidade) seguem o contrato abaixo e a Receita F em [`GUIA-DE-EXPANSAO.md`](../GUIA-DE-EXPANSAO.md).
 
 ## Contrato de um adaptador
 

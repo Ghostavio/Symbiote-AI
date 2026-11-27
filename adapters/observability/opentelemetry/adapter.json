@@ -1,0 +1,25 @@
+{
+  "id": "opentelemetry",
+  "name": "OpenTelemetry",
+  "category": "observability",
+  "version": "1.0.0",
+  "description": "Convenções e checks de revisão para observabilidade neutra de fornecedor com OpenTelemetry (logs estruturados correlacionados, tracing distribuído W3C, métricas RED/USE com cardinalidade controlada, redação de PII e SLOs).",
+  "detect": {
+    "files": [
+      "otel-collector-config.yaml",
+      "otel-collector-config.yml"
+    ],
+    "packages": [
+      "@opentelemetry/api",
+      "@opentelemetry/sdk-node",
+      "@opentelemetry/sdk-trace-web",
+      "opentelemetry-api",
+      "opentelemetry-sdk",
+      "go.opentelemetry.io/otel"
+    ]
+  },
+  "files": {
+    "conventions": "conventions.md",
+    "review_checks": "review-checks.md"
+  }
+}
