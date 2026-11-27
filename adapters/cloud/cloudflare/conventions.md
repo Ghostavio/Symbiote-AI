@@ -28,6 +28,17 @@ Convenções recomendadas para projetos executados na plataforma **Cloudflare** 
 - **Cache consciente:** defina `Cache-Control` e uso da Cache API explicitamente; nunca armazene respostas autenticadas, personalizadas ou com PII em cache público compartilhado (valide `Vary` e bypass para cookies/headers de autenticação).
 - **Fronteira de entrada:** valide payload, cabeçalhos, assinaturas de webhook (em tempo constante via Web Crypto) e política CORS estrita.
 
+## Conectores oficiais (MCP) e Wrangler CLI
+
+Combine os conectores oficiais da Cloudflare com o **Wrangler CLI** instalado no projeto, separando consulta/diagnóstico de operações de escrita:
+
+- **MCP oficial da Cloudflare (remoto via Streamable HTTP `/mcp`):**
+  - **API unificada (`cloudflare/mcp`):** `https://mcp.cloudflare.com/mcp` (repositório: https://github.com/cloudflare/mcp) — cobre a API Cloudflare e busca de documentação oficial via *Code Mode*.
+  - **Servidores especializados (`cloudflare/mcp-server-cloudflare`):** https://github.com/cloudflare/mcp-server-cloudflare — inclui endpoints dedicados como documentação (`https://docs.mcp.cloudflare.com/mcp`), contêineres (`https://containers.mcp.cloudflare.com/mcp`) e navegador (`https://browser.mcp.cloudflare.com/mcp`), conforme a necessidade do projeto.
+  - Quando a ferramenta de IA oferecer o plugin/conector oficial da Cloudflare, prefira-o em vez de scripts ad-hoc contra a API REST.
+- **Wrangler CLI (`wrangler`):** complementar ao MCP para execução local com Miniflare, geração de tipos de `Env` (`wrangler types`), validação local (`wrangler deploy --dry-run`) e operações de ambiente. Invoque o binário instalado no projeto (`./node_modules/.bin/wrangler` ou script do `package.json`), evitando `npx` sem `--no-install`.
+- **Escopo mínimo e aprovação de escrita:** configure tokens com o menor escopo necessário (somente leitura para discovery, documentação e diagnóstico) e exija aprovação explícita do usuário antes de qualquer mutação na conta Cloudflare (deploy, alteração de DNS/rotas, gestão de secrets ou escrita em KV/D1/R2 de produção).
+
 ## Testes e verificações locais
 
 - **Isolamento da lógica:** separe regras de domínio do handler `fetch`/`queue`/`scheduled` para permitir testes unitários rápidos e portáteis.

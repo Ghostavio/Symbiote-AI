@@ -30,6 +30,14 @@ Convenções recomendadas para projetos com workloads ou Infraestrutura como Có
 - **DynamoDB e bancos relacionais (RDS/Aurora):** evite `Scan` sem paginação em DynamoDB (prefira `Query` com índices e limites explícitos); sempre trate tokens de paginação (`NextToken`/`LastEvaluatedKey`); em workloads serverless acessando RDS, use pooling adequado (ex.: RDS Proxy) para evitar exaustão de conexões.
 - **Prevenção de loops recursivos:** nunca permita que uma função acionada por evento (S3, SQS, DynamoDB Streams) grave no mesmo recurso/prefixo que dispara a própria função sem condição de parada explícita.
 
+## Conectores oficiais (MCP) e CLIs (AWS CLI / IaC)
+
+Combine os servidores MCP oficiais da AWS com a **AWS CLI** e a CLI de IaC adotada pelo projeto, mantendo credenciais temporárias e escopo mínimo:
+
+- **Servidores MCP oficiais da AWS (`awslabs/mcp`):** consulte o catálogo oficial em https://github.com/awslabs/mcp (documentação: https://awslabs.github.io/mcp/), priorizando o **AWS MCP Server** unificado ou servidores especializados compatíveis com o projeto (ex.: documentação oficial `awslabs.aws-documentation-mcp-server` e `awslabs.cdk-mcp-server` para projetos CDK).
+- **AWS CLI e ferramentas de IaC:** use o MCP para consulta de documentação e diagnóstico, e mantenha `aws` + a CLI de IaC instalada no projeto (`cdk`, `terraform`, `sam`, `sst`) para validações locais e mudanças rastreadas em código.
+- **Menor privilégio e leitura vs. escrita:** autentique via AWS SSO / IAM Roles temporárias (preferencialmente somente leitura durante discovery e revisão) e exija aprovação explícita do usuário antes de qualquer operação mutante na conta AWS (`deploy`, `apply`, edição de políticas IAM ou criação/exclusão de recursos).
+
 ## Verificações locais e segurança operacional
 
 - **Comandos confirmados:** registre no `.claude/PROJECT_REFERENCE.md` apenas ferramentas e scripts instalados no host (`cdk`, `terraform`, `sam`, `cfn-lint`, testes unitários de IaC).
