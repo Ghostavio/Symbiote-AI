@@ -157,47 +157,16 @@ Use o roteiro da skill na sessão atual ou envie-o a um reviewer autorizado.
 6. **Registrar horas no 7pace** (ver seção 5.5)
 7. Prosseguir para a próxima fase
 
-### 5.4 Sincronizar Board via Azure MCP
+### 5.4 Sincronizar o board do projeto
 
-Após o code review e atualização do diário, sincronizar o Azure DevOps Board com o trabalho entregue na fase. Este passo é **obrigatório** quando o usuário forneceu um ID de Feature no spec.
+Após a revisão e a atualização do diário, consulte o fluxo registrado na referência do projeto e sincronize pelo conector do board.
 
-**Pré-requisito:** O ID do Feature parent deve estar definido nos metadados do spec (seção 1, campo `Azure DevOps Feature ID`). Se não estiver, perguntar ao usuário antes da primeira sincronização.
+1. Atualize o item vinculado ou, quando necessário, crie um item pelo procedimento [create-work-item](../processes/create-work-item.md). Use os tipos e vínculos adotados pelo time.
+2. Registre as ações como tarefas quando o fluxo do time pedir e vincule o PR ou MR quando houver.
+3. Aplique a transição do evento ocorrido apenas quando ela estiver configurada para o agente. Para transições manuais ou automáticas, registre a situação no diário.
+4. Anote o ID ou URL do item no documento da fase.
 
-**Fluxo:**
-
-1. **Criar/atualizar work item da fase** no Azure DevOps via MCP, seguindo o padrão de hierarquia (Feature → User Story → Task) e os formatos definidos em `docs/processo-work-items.md` e na skill `processes/create-work-item.md`:
-
-   ```
-   mcp__azure-devops__wit_create_work_item({
-     project: "<AZURE_PROJECT>",
-     workItemType: "User Story",
-     title: "FASE X: [descrição]",
-     // ... campos
-   })
-   mcp__azure-devops__wit_add_child_work_items({
-     parentId: [Feature ID],
-     childIds: [work item criado]
-   })
-   ```
-
-2. **Criar tasks** para cada ação concreta realizada na fase, no infinitivo (ex: "Criar serviço xpto", "Implementar tela xyz", "Realizar testes unitários", "Gerar evidência da estória")
-
-3. **Registrar timetracking** no formato compatível com 7pace Timetracker:
-
-   ```markdown
-   | Start Date | Start Time | End Time | Activity Type   |
-   | ---------- | ---------- | -------- | --------------- |
-   | 2026-01-14 | 14:00      | 16:00    | Desenvolvimento |
-   ```
-
-4. **Atualizar estado** do work item para Done/Resolved
-
-5. **Registrar IDs** no documento .md da fase para rastreamento bidirecional:
-   ```markdown
-   ### Task 3: Criar estrutura de pastas (Azure DevOps #1234)
-   ```
-
-**Quando o Feature ID não foi fornecido:** O orquestrador deve perguntar ao usuário se deseja criar work items no Board. Se não, pular esta etapa e registrar apenas no diário.
+Se não houver item vinculado, confirme se o time quer criá-lo. Em projetos sem board, registre o progresso no diário. Para registrar horas, siga a configuração do provedor escolhido.
 
 ### 5.5 Registrar horas no 7pace Timetracker
 
@@ -350,7 +319,7 @@ Antes de prosseguir para a próxima fase, verificar:
 - [ ] Revisão proporcional executada, com as verificações aplicáveis da stack e registro dos achados e das correções autorizadas
 - [ ] Issues que precisam de decisão do usuário resolvidos
 - [ ] Diário de implementação atualizado (com start time, end time e duração)
-- [ ] Board sincronizado via Azure MCP (work item + tasks)
+- [ ] Board sincronizado conforme o fluxo do time, quando aplicável
 - [ ] Horas registradas no 7pace via `sync-7pace.sh`
 - [ ] Testes unitários passando (todos, não só os novos)
 - [ ] Testes E2E passando (quando aplicável)

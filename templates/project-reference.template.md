@@ -201,6 +201,14 @@ AUTH_CLIENT_ID=<client id público>
 - **Deploy / Runtime:** (preencha: containers, serverless, Workers, Kubernetes, etc.)
 - **IaC:** (preencha: Terraform / CDK / Pulumi / Wrangler, ou N/A)
 
+## Board e Fluxo de Trabalho
+
+- **Tracker e board:** (preencha: ferramenta, URL e conector, ou nenhum)
+- **Tipos e vínculos:** (preencha: como o time representa iniciativas, entregas, tarefas e bugs)
+- **Critérios de aceite:** (preencha: campo, seção da descrição ou template usado por tipo de item)
+- **Estados e transições:** (preencha: etapa inicial, início do trabalho, revisão e conclusão)
+- **Responsáveis pelas transições:** (preencha: agente, automação ou pessoa, incluindo condições para concluir)
+
 ---
 
 ## Integrações e Serviços Relacionados

@@ -1,6 +1,6 @@
 ---
 name: create-work-item
-description: "Use quando precisar criar ou vincular um work item no Azure DevOps Board antes de iniciar qualquer trabalho no projeto."
+description: "Use quando precisar criar ou vincular um item de trabalho no board configurado no projeto."
 model: opus
 ---
 

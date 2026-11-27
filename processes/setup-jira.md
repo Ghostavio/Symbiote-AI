@@ -69,7 +69,7 @@ Use ao adaptar `create-work-item`/`start-workflow` (ver `ai-tools-matrix.md` e `
 | Consultar | `wit_query_by_wiql` (WIQL) | **JQL** (`searchJiraIssuesUsingJql`) |
 | Comentar | `wit_add_work_item_comment` | `addCommentToJiraIssue` |
 
-> Diferença conceitual importante: no Azure você move um cartão entre colunas do board (`System.BoardColumn`); no Jira você executa uma **transição de workflow** (ex.: "In Review"), que pode ter condições/validações. Ajuste os passos "mover para Waiting PR Approve" dos fluxos do `start-workflow` para a transição equivalente do seu workflow Jira.
+> No Jira, a movimentação usa uma **transição de workflow** que pode ter condições e validações. Registre a transição de revisão que o time já usa, conforme [o procedimento de integração](integrar.md#21-tracker-de-work-items).
 
 ## Próximos passos
 

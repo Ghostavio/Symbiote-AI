@@ -1,15 +1,17 @@
 ---
 name: create-work-item
-description: "Use quando precisar criar ou vincular um work item no Azure DevOps Board antes de iniciar qualquer trabalho no projeto."
+description: "Use quando precisar criar ou vincular um item de trabalho no board configurado no projeto."
 ---
 
-# Create Work Item — Vincular ou Criar Work Item no Azure DevOps
+# Create Work Item — Vincular ou Criar Item de Trabalho
 
-Sub-skill invocada no início de qualquer fluxo de trabalho para garantir rastreamento no Board, seguindo rigorosamente o processo definido em `docs/processo-work-items.md`.
+Consulte o fluxo do board registrado em `.claude/PROJECT_REFERENCE.md` ou na documentação do time. Siga as [convenções de itens de trabalho](../docs/processo-work-items.md) e use o conector configurado para o tracker. Se não houver board, ofereça acompanhamento local. Se a configuração estiver indefinida, confirme antes de criar ou mover itens.
 
 ---
 
-## 1. Hierarquia obrigatória
+## 1. Hierarquia de referência
+
+Mapeie estes papéis para os tipos e vínculos disponíveis no fluxo do time.
 
 ```
 Feature              ← Ticket de alto nível, define o escopo geral
@@ -20,9 +22,9 @@ Feature              ← Ticket de alto nível, define o escopo geral
 Regras:
 
 - **Feature:** contextualização macro do problema (quem é afetado, como pretendemos solucionar). Não entra em detalhes técnicos. Não serve como diário da implementação;
-- **User Story:** uma entrega que gera valor ao negócio. **Obrigatoriamente** deve pertencer a uma Feature. **Nunca** deve ser usada para bugs (use o tipo `Bug`);
+- **User Story:** entrega que gera valor ao negócio. Vincule à Feature equivalente quando o fluxo do time usar esse nível;
 - **Task:** atividade concreta para que a User Story chegue em produção. Descrição opcional quando o título for suficiente;
-- **Bug:** correções não viram User Story — usam o tipo `Bug` próprio do Azure DevOps.
+- **Bug:** use o tipo ou a classificação de defeito adotada no board.
 
 ---
 
@@ -71,12 +73,11 @@ Título descritivo do problema observado. Exemplo: `[APP][API] Falha ao gerar re
 
 ---
 
-## 3. Template da User Story (Description + Acceptance Criteria)
+## 3. Template da User Story (descrição e critérios de aceite)
 
-A User Story tem **dois campos textuais** que devem ser preenchidos separadamente
-no Azure DevOps:
+Organize a demanda e os critérios de aceite em blocos distintos, usando os campos ou o template do board.
 
-### 3.1 Description (`System.Description`)
+### 3.1 Descrição
 
 ```
 DEMANDA
@@ -94,20 +95,15 @@ PROTÓTIPOS/LINKS IMPORTANTES:
 [Quando houver].
 ```
 
-### 3.2 Acceptance Criteria (`Microsoft.VSTS.Common.AcceptanceCriteria`)
+### 3.2 Critérios de aceite
 
-Campo dedicado no Azure DevOps — preenchido como rich text (Markdown ou HTML).
-Lista de critérios verificáveis, idealmente em formato Gherkin:
+Use o campo dedicado se estiver disponível para o tipo de item. Na ausência dele, use a seção **Critérios de aceite** da descrição ou o local previsto no template do board. Liste critérios verificáveis, de preferência em Gherkin quando aplicável:
 
 ```
 - Dado [pré-condição], quando [ação], então [resultado esperado];
 - O botão "Salvar" só fica habilitado quando todos os campos obrigatórios estão preenchidos;
 - Mensagem de erro X aparece quando o CPF é inválido.
 ```
-
-**Por que separar?** O campo `Acceptance Criteria` é first-class no Azure DevOps:
-permite queries WIQL específicas, relatórios baseados em ACs, e dashboards
-filtrando por presença/ausência de critérios.
 
 Regras de redação:
 
@@ -176,7 +172,7 @@ Ao montar work items com o usuário:
 
 Perguntar ao usuário:
 
-> Antes de começar, precisamos vincular este trabalho a um work item no Azure DevOps.
+> Quer vincular este trabalho a um item no board do projeto?
 >
 > 1. Já tenho o ID do work item — informar o ID;
 > 2. Criar um novo work item agora seguindo o processo (Feature/User Story/Task/Bug);
@@ -184,7 +180,7 @@ Perguntar ao usuário:
 
 ### Opção 1 — Work item existente
 
-Pedir o ID e validar via MCP:
+Pedir o ID ou URL e validar pelo conector configurado. Exemplo para Azure DevOps:
 
 ```
 mcp__azure-devops__wit_get_work_item({ project: "<AZURE_PROJECT>", id: [ID] })
@@ -198,20 +194,21 @@ Perguntar **uma pergunta por vez**, numerando:
 
 1. Tipo do work item (`Feature`, `User Story`, `Task`, `Bug`);
 2. Título (validar contra os padrões da seção 2 acima);
-3. Parent (Feature ID se for User Story; User Story ID se for Task; Feature ou Bug pai se for Bug). Validar via MCP que existe e é compatível;
-4. Para User Story: redigir Description e Acceptance Criteria seguindo o template da seção 3 — perguntar stakeholder (sugerindo um provável), necessidade, contexto e critérios de aceite (que vão no campo `Microsoft.VSTS.Common.AcceptanceCriteria`, separado do Description);
+3. Item pai ou vínculo equivalente, quando o fluxo exigir. Validar pelo conector que o item existe e é compatível;
+4. Para User Story: redigir descrição e critérios de aceite conforme a seção 3. Para Bug, registrar o comportamento esperado e como verificar a correção;
 5. Para Task: descrição opcional (perguntar se necessária);
-6. Área (`<AREA_PATH>` é o default — confirmar);
-7. Iteração (perguntar se aplicável).
+6. Campos obrigatórios no board, como área, time ou iteração, quando aplicáveis.
 
 #### Validações antes de criar
 
-- User Story sem Feature pai: bloquear e pedir Feature ID;
-- User Story para correção de bug: redirecionar para tipo `Bug`;
+- Item sem vínculo exigido pelo board: pedir o item pai ou a referência equivalente;
+- Correção de bug: usar a classificação adotada pelo board;
 - Título de US começando com verbo no infinitivo ou contendo "Tela de": sugerir reformulação;
 - Título com mais de 70 caracteres: sugerir decompor.
 
-#### Criar via MCP
+#### Criar pelo conector configurado
+
+Use os campos e operações do board. Os exemplos abaixo são de Azure DevOps. Inclua `Microsoft.VSTS.Common.AcceptanceCriteria` apenas quando o campo existir no tipo configurado.
 
 ```
 mcp__azure-devops__wit_create_work_item({
@@ -232,7 +229,7 @@ mcp__azure-devops__wit_create_work_item({
 > ações concretas (não entregas de valor verificáveis). Inclua AC apenas em
 > User Stories e Bugs.
 
-Para User Story, criar também as Tasks antecipadas como filhas via:
+Quando fizer parte do fluxo do time, crie também as tarefas antecipadas como filhas ou vinculadas. Exemplo para Azure DevOps:
 
 ```
 mcp__azure-devops__wit_add_child_work_items({
@@ -257,7 +254,7 @@ mcp__azure-devops__wit_add_child_work_items({
 
 ### Opção 3 — Pular
 
-Registrar que não há work item vinculado. O timetracking será apenas no diário de implementação, sem sincronização com 7pace (que exige work item ID).
+Registrar que não há item vinculado. Para registro de horas, aplique as regras do provedor configurado e registre no diário quando um vínculo obrigatório estiver ausente.
 
 ---
 
@@ -269,23 +266,9 @@ Componentes shared (ex: tabela paginada, header genérico) devem ter como **pare
 ### Discussão vs. Tasks
 Quando houver um esforço/ação, criar uma **Task** ao invés de usar a seção `Discussion` do ticket. Comentários da Discussion são para detalhes adicionais relevantes que não comportam um Task próprio.
 
-### Estado da US ao abrir PR
-Ao abrir o Pull Request que entrega a estória, a AI deve mover a US para
-a coluna `Waiting PR Approve` via MCP (state base continua `Active` —
-`Waiting PR Approve` é uma sub-coluna do board que mapeia para `Active`):
+### Estado do item ao abrir PR ou MR
 
-```
-wit_update_work_item({
-  id: <US_ID>,
-  updates: [
-    { op: "replace", path: "/fields/System.BoardColumn", value: "Waiting PR Approve" }
-  ]
-})
-```
-
-Executar logo após `gh pr create` retornar com sucesso. Transições para
-`Resolved` e `Closed` continuam manuais — a AI **não** marca a US como
-Resolved automaticamente.
+Vincule o PR/MR ao item após confirmar a abertura e siga as [transições do board](../docs/processo-work-items.md#35-ciclo-de-vida-e-transições-de-estadocoluna). Consulte o mapeamento do projeto para saber o estado de destino, quando um rascunho entra em revisão e se a transição cabe ao agente, a uma automação ou a uma pessoa.
 
 ---
 
