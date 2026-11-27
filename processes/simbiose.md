@@ -24,6 +24,7 @@ Confirme TODAS as escolhas (stack, nome, local) e mostre o plano antes de gerar 
 3. **Gerenciador de pacotes** preferido (yarn/npm/pnpm/bun, maven/gradle, uv/poetry…).
 4. **Tracker** (Azure DevOps / Jira / GitHub Issues / nenhum), **time tracking** (7pace / Clockify / Toggl / Harvest / nenhum) e **destino de docs** (repo / Confluence / Outline / Notion) — as mesmas dimensões do `integrar`.
 5. **Ferramentas de IA** que o time usa (Claude Code / Cursor / Codex / Antigravity / Copilot / Gemini) → quais wrappers manter.
+6. **Adaptadores opcionais** (`adapters/` — ver `adapters/README.md` no kit): verifique se existem adaptadores compatíveis de stack, cloud ou observabilidade (ex.: `adapters/stacks/angular/`) e confirme quais acoplar ao projeto.
 
 ## Passo 2 — Gerar o esqueleto da aplicação (use o scaffolder do ecossistema)
 
@@ -52,12 +53,13 @@ Copie a estrutura do kit para a raiz do projeto recém-criado (sem `.env`):
 processes/   templates/   docs/   scripts/   ai-tools-matrix.md   GUIA-DE-EXPANSAO.md
 ```
 
-Crie um `.gitignore` que ignore `.env` e segredos (e adicione as entradas do stack geradas pelo scaffolder).
+Crie um `.gitignore` que ignore `.env` e segredos (e adicione as entradas do stack geradas pelo scaffolder). Se adaptadores em `adapters/` tiverem sido selecionados no Passo 1, copie apenas as pastas dos adaptadores aprovados (ex.: `adapters/stacks/angular/`) — sem carregar adaptadores de outras stacks.
 
 ## Passo 4 — Especializar com `integrar`
 
 Aplique [o procedimento de integração](integrar.md) ao projeto recém-criado, reaproveitando as escolhas do Passo 1. Ele:
 - substitui os placeholders (`<PROJECT_KEY>`, `<TEST_CMD>`, `<src>`, …) pelos valores reais do projeto recém-criado;
+- acopla os adaptadores selecionados (convenções em `.claude/PROJECT_REFERENCE.md`, checks em `phase-code-review` e presets opcionais de editor/skills);
 - mantém só os wrappers das ferramentas de IA escolhidas;
 - configura os MCPs (tracker, qualidade, docs, Figma, Playwright);
 - preenche `templates/project-reference.template.md` → `.claude/PROJECT_REFERENCE.md`;

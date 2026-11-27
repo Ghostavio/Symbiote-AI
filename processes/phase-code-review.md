@@ -20,7 +20,7 @@ Compare a mudança com a intenção e as convenções do projeto. Use a profundi
 Antes de iniciar a revisão, reúna:
 
 1. **What changed** — list of commits since last review, or `git diff` summary
-2. **Reference documents** — `templates/project-reference.template.md`, paths to spec, design, discovery docs
+2. **Reference documents** — `.claude/PROJECT_REFERENCE.md` (ou `templates/project-reference.template.md`), paths to spec, design, discovery docs, and `review-checks.md` of any active adapters under `adapters/`
 3. **Scope** — which phase/task was just completed
 4. **Exclusions** — files being modified by another agent concurrently (reviewer must NOT touch these)
 
@@ -75,7 +75,7 @@ If the spec itself has problems (gaps, contradictions, outdated info), recommend
 
 ### 2. Code Quality & Patterns
 
-> Verifique contra os padrões da stack configurada no projeto (`.claude/PROJECT_REFERENCE.md` e `docs/discovery.md`).
+> Verifique contra os padrões da stack configurada no projeto (`.claude/PROJECT_REFERENCE.md` e `docs/discovery.md`). Quando houver adaptadores acoplados em `adapters/` (ex.: `adapters/stacks/angular/review-checks.md`), aplique também os checks específicos de cada adaptador ativo.
 
 - Idiomatic use of the project's language, framework, and state/reactivity patterns
 - Proper dependency injection, error handling, and resource cleanup (connections, timers, listeners, subscriptions, file handles)

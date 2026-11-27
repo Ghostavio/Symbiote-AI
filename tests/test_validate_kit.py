@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 import re
 import shutil
@@ -341,6 +342,135 @@ class ValidateKitTests(unittest.TestCase):
                 ".agents/skills/scaffold/SKILL.md: alias_of 'timesync' disagrees with processes/scaffold.md (expected 'simbiose')",
                 joined,
             )
+
+    def test_valid_adapter_passes_validation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root)
+            adapter_dir = root / "adapters" / "stacks" / "sample-stack"
+            skill_dir = adapter_dir / "skills" / "sample-helper"
+            skill_dir.mkdir(parents=True)
+            (root / "adapters" / "README.md").write_text("# Adapters\n", encoding="utf-8")
+            (adapter_dir / "conventions.md").write_text("# Conventions\n", encoding="utf-8")
+            (adapter_dir / "review-checks.md").write_text("# Checks\n", encoding="utf-8")
+            (adapter_dir / "editor-settings.json").write_text(
+                json.dumps({"editor.formatOnSave": True}), encoding="utf-8"
+            )
+            (skill_dir / "SKILL.md").write_text(
+                "---\nname: sample-helper\ndescription: \"Helper skill\"\n---\n\n# Helper\n",
+                encoding="utf-8",
+            )
+            (adapter_dir / "adapter.json").write_text(
+                json.dumps(
+                    {
+                        "id": "sample-stack",
+                        "name": "Sample Stack",
+                        "category": "stack",
+                        "version": "1.0.0",
+                        "description": "Sample stack adapter",
+                        "detect": {"files": ["sample.config.json"], "packages": ["sample-pkg"]},
+                        "commands": {"test": "sample test"},
+                        "files": {
+                            "conventions": "conventions.md",
+                            "review_checks": "review-checks.md",
+                            "editor_settings": "editor-settings.json",
+                            "skills": ["skills/sample-helper"],
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual(validator.validate_repo(root), [])
+
+    def test_detects_invalid_adapter_manifest_and_category_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root)
+            (root / "adapters" / "unknown-axis").mkdir(parents=True)
+            adapter_dir = root / "adapters" / "cloud" / "demo-cloud"
+            adapter_dir.mkdir(parents=True)
+            (adapter_dir / "conventions.md").write_text("# Conventions\n", encoding="utf-8")
+            (adapter_dir / "review-checks.md").write_text("# Checks\n", encoding="utf-8")
+            (adapter_dir / "adapter.json").write_text(
+                json.dumps(
+                    {
+                        "id": "wrong-id",
+                        "name": "Demo Cloud",
+                        "category": "stack",
+                        "description": "Mismatched category and empty detect",
+                        "detect": {"files": []},
+                        "files": {
+                            "conventions": "conventions.md",
+                            "review_checks": "review-checks.md",
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            errors = validator.validate_adapters(root)
+            joined = "\n".join(errors)
+            self.assertIn("adapters/unknown-axis: unsupported category directory", joined)
+            self.assertIn("id 'wrong-id' does not match directory 'demo-cloud'", joined)
+            self.assertIn("category 'stack' does not match parent directory 'cloud'", joined)
+            self.assertIn("detect must declare at least one signal", joined)
+
+    def test_detects_missing_or_escaping_adapter_files_and_bad_editor_settings(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root)
+            adapter_dir = root / "adapters" / "observability" / "otel"
+            adapter_dir.mkdir(parents=True)
+            (root / "adapters" / "escape.md").write_text("# Outside\n", encoding="utf-8")
+            (adapter_dir / "editor-settings.json").write_text("{not valid json", encoding="utf-8")
+            (adapter_dir / "adapter.json").write_text(
+                json.dumps(
+                    {
+                        "id": "otel",
+                        "name": "OpenTelemetry",
+                        "category": "observability",
+                        "description": "Broken file references",
+                        "detect": {"packages": ["@opentelemetry/api"]},
+                        "files": {
+                            "conventions": "../../escape.md",
+                            "review_checks": "missing.md",
+                            "editor_settings": "editor-settings.json",
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            errors = validator.validate_adapters(root)
+            joined = "\n".join(errors)
+            self.assertIn("files.conventions must be a relative path inside the adapter directory", joined)
+            self.assertIn("files.review_checks target 'missing.md' does not exist", joined)
+            self.assertIn("editor-settings.json: invalid JSON", joined)
+
+    def test_installed_layout_with_selected_adapter_passes_validation(self):
+        simbiose_text = (REPO_ROOT / "processes" / "simbiose.md").read_text(encoding="utf-8")
+        match = re.search(
+            r"## Passo 3 — Instalar o kit no projeto novo.*?```\n(.*?)\n```",
+            simbiose_text,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(match)
+        entries = match.group(1).split()
+        with tempfile.TemporaryDirectory() as tmp:
+            dst = Path(tmp)
+            for rel in entries:
+                clean = rel.rstrip("/")
+                src = REPO_ROOT / clean
+                target = dst / clean
+                if src.is_dir():
+                    shutil.copytree(src, target)
+                else:
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src, target)
+            shutil.copytree(
+                REPO_ROOT / "adapters" / "stacks" / "angular",
+                dst / "adapters" / "stacks" / "angular",
+            )
+            errors = validator.validate_repo(dst)
+            self.assertEqual(errors, [], "\n".join(errors))
 
 
 if __name__ == "__main__":

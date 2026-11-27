@@ -2,7 +2,7 @@
 
 Como adaptar o kit a outras ferramentas: **Jira no lugar de Azure DevOps**, **Toggl/Harvest no lugar de 7pace**, **Confluence/Outline no lugar de docs no repo**, e como **adicionar uma nova ferramenta de IA** ou uma **skill nova**.
 
-> **Atalho:** a skill **`/integrar`** automatiza a maior parte deste guia (detecta o contexto, propõe um plano e reescreve os arquivos com sua confirmação). Use este documento para entender o que ela faz — ou para ajustes manuais.
+> **Atalho:** a skill **`simbiose`** automatiza a maior parte deste guia (detecta o contexto e adaptadores compatíveis, propõe um plano e adapta os arquivos com sua confirmação). Use este documento para entender o que ela faz — ou para ajustes manuais.
 
 ## Modelo mental
 
@@ -81,6 +81,17 @@ Siga [`processes/docs-target.md`](processes/docs-target.md):
 2. Crie os wrappers: `.agents/skills/<name>/SKILL.md`, `.claude/skills/<name>/SKILL.md` e `.cursor/rules/<name>.mdc` (apontando para o canônico).
 3. Adicione a linha à tabela de processos em `AGENTS.md` **e** em `.github/copilot-instructions.md`.
 4. Se a skill usa um MCP, documente os tool-calls em `ai-tools-matrix.md`.
+
+---
+
+## Receita G — Adicionar um novo adaptador (stack, cloud ou observabilidade)
+
+Para especializar o kit para uma tecnologia (ex.: React, Cloudflare, AWS, OpenTelemetry) sem acoplar o core neutro, siga o contrato em `adapters/README.md` (no repositório do kit):
+
+1. Crie a pasta `adapters/<categoria_dir>/<id>/`, onde `<categoria_dir>` é `stacks`, `cloud` ou `observability`.
+2. Crie `adapter.json` com `id`, `name`, `category`, `description`, sinais `detect` (`files`, `packages` ou `directories`), `commands` opcionais e mapa `files` (`conventions`, `review_checks`, e opcionais `editor_settings`/`skills`).
+3. Escreva `conventions.md` (convenções para `.claude/PROJECT_REFERENCE.md`) e `review-checks.md` (checks para `phase-code-review`).
+4. Valide o manifesto e links com `python3 -B scripts/validate-kit.py` e `python3 -B -m unittest discover -s tests -v`.
 
 ---
 
