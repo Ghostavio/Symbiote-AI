@@ -1,11 +1,17 @@
 ---
 name: simbiose
-description: "Use para dar bootstrap/scaffold de um projeto NOVO (greenfield) já com o Symbiote-AI pré-configurado — escolhe o stack, gera o esqueleto da aplicação com o scaffolder do ecossistema, instala o kit e roda o integrar para especializá-lo. Par do integrar (que adapta o kit a um projeto JÁ existente). Alias retrocompatível: scaffold."
+description: "Use para aplicar o Symbiote-AI a um projeto existente ou iniciar um projeto novo com o kit."
 ---
 
-# Simbiose — Bootstrap de Projeto Novo (greenfield)
+# Simbiose — Aplicar o Symbiote-AI
 
-Cria um projeto novo do zero com o **Symbiote-AI** já embutido e adaptado. Enquanto a skill `integrar` **adapta o kit a um projeto existente**, a `simbiose` (anteriormente `scaffold`) **cria o projeto e já o entrega integrado**.
+Use primeiro a intenção explícita do usuário. Na ausência dela, inspecione o diretório **de destino** indicado no pedido, ou o diretório atual como contexto. Faça essa inspeção sem alterar arquivos. Se dois sinais apontarem para caminhos diferentes, dê preferência ao pedido explícito.
+
+- **Projeto existente:** quando o usuário quiser adotar o kit em um projeto existente ou o destino tiver sinais claros de um projeto, como código, manifestos de dependências ou configuração de build, siga [o procedimento de integração](integrar.md) no destino. Se o kit ainda estiver em outro diretório, inclua no plano de integração os arquivos a copiar e como preservar as configurações existentes. Use a lista de instalação do Passo 3 como referência e aplique a cópia após a aprovação do plano.
+- **Projeto novo:** quando o usuário pedir para criar um projeto, ou já tiver indicado um destino vazio ou ainda inexistente para a criação, siga os passos abaixo. Uma chamada pelo alias legado `scaffold` indica criação de um projeto novo, salvo instrução em contrário.
+- **Contexto ambíguo:** um diretório que contém só `.git`, um README ou os arquivos do próprio kit pode ser um projeto começado ou um ponto de partida. Se a intenção e os sinais disponíveis não resolverem a dúvida, pergunte: “Você quer aplicar o Symbiote-AI a um projeto existente ou iniciar um projeto novo?” Aguarde a resposta antes de alterar arquivos.
+
+## Criar um projeto novo
 
 <HARD-GATE>
 Confirme TODAS as escolhas (stack, nome, local) e mostre o plano antes de gerar qualquer coisa. NUNCA gere dentro de um diretório não-vazio sem confirmação explícita. Rode `git init` cedo para que tudo seja revisável/reversível.
@@ -50,7 +56,7 @@ Crie um `.gitignore` que ignore `.env` e segredos (e adicione as entradas do sta
 
 ## Passo 4 — Especializar com `integrar`
 
-Invoque a skill **`integrar`** passando as escolhas do Passo 1. Ela:
+Aplique [o procedimento de integração](integrar.md) ao projeto recém-criado, reaproveitando as escolhas do Passo 1. Ele:
 - substitui os placeholders (`<PROJECT_KEY>`, `<TEST_CMD>`, `<src>`, …) pelos valores reais do projeto recém-criado;
 - mantém só os wrappers das ferramentas de IA escolhidas;
 - configura os MCPs (tracker, qualidade, docs, Figma, Playwright);

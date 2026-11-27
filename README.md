@@ -4,7 +4,7 @@
 
 O Symbiote-AI se integra a projetos novos ou existentes e amplia o que a equipe já faz com desenvolvimento assistido por IA. O kit oferece processos portáteis para iniciar trabalho, levantar requisitos, escrever especificações, revisar código, sincronizar horas e acompanhar tarefas no board. Funciona com Claude Code, Cursor, Codex e Copilot.
 
-> Extraído e generalizado de um workflow real de um time de produto. Todos os dados específicos de empresa/projeto foram trocados por **placeholders** (`<...>`) e por um stack de **exemplo** — use `/integrar` (projeto existente) ou `/simbiose` (projeto novo; alias retrocompatível: `/scaffold`) para especializá-lo ao seu contexto.
+> Extraído e generalizado de um workflow real de um time de produto. Os dados específicos foram substituídos por **placeholders** (`<...>`) e uma stack de exemplo.
 
 ## Filosofia (por que isto é portátil)
 
@@ -21,9 +21,9 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 
 ## Começando
 
-**Projeto novo (greenfield):** rode a skill **`/simbiose`** (alias retrocompatível: `/scaffold`) — escolhe o stack, gera o esqueleto com o scaffolder do ecossistema, instala o kit e já especializa.
+Com o kit disponível na ferramenta de IA, rode **`/simbiose`**. Se estiver trabalhando em outro diretório, informe o caminho de destino. O comando detecta um projeto existente e propõe a adaptação, ou prepara a criação de um projeto novo. Quando o contexto for ambíguo, ele pergunta antes de começar.
 
-**Projeto existente:** copie o conteúdo do kit para a raiz do repo e rode a skill **`/integrar`** — ele detecta stack, gerenciador de pacotes, framework de teste, tracker, time tracking, plataforma de docs e convenções, propõe um plano e adapta tudo (com sua confirmação).
+Para disponibilizar as skills diretamente em um repositório existente, copie o conteúdo do kit para a raiz desse repositório, preservando os arquivos de configuração existentes.
 
 **Depois, em qualquer caso:**
 1. Preencha os `.env` a partir dos `.env.example` (no kit: `.claude/integrations/timetracking/.env.example`, usado pelo Clockify) (NUNCA versione segredos).
@@ -35,8 +35,7 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 
 | Skill | O que faz |
 |---|---|
-| `simbiose` *(alias: `scaffold`)* | Bootstrap de projeto **novo** (greenfield) já com o kit |
-| `integrar` | Adapta o kit a um projeto **existente** (stack, tracker, time tracking, docs, convenções) |
+| `simbiose` | Aplica o kit a um projeto existente ou cria um projeto novo já integrado |
 | `start-workflow` | Ponto de entrada de uma sessão: Feature, Bug, Follow-up, Refatoração, Testes, **Express**, Freestyle |
 | `figma-requirements` | Levanta requisitos a partir de um design no **Figma** (MCP local ou online) |
 | `spec-builder` | Constrói a especificação de uma feature a partir do template |
@@ -100,7 +99,7 @@ O kit embute lições de desenvolvimento assistido por IA "agressivo" — ver [`
 
 ## Expandindo
 
-Para trocar Azure DevOps por Jira, 7pace por Toggl, repo por Confluence, ou adicionar uma nova ferramenta de IA: ver [`GUIA-DE-EXPANSAO.md`](GUIA-DE-EXPANSAO.md). Na prática, o `/integrar` automatiza a maior parte.
+Para trocar Azure DevOps por Jira, 7pace por Toggl, repo por Confluence, ou adicionar uma nova ferramenta de IA: ver [`GUIA-DE-EXPANSAO.md`](GUIA-DE-EXPANSAO.md). O `/simbiose` ajuda a adaptar o kit a essas escolhas.
 
 ## Metodologias relacionadas (prior art)
 
@@ -110,7 +109,7 @@ Este kit é uma síntese leve e neutra de ferramenta. Ele se inspira em — e co
 - **[BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)** (MIT) — framework agêntico de dev ágil com planejamento *scale-adaptive* e agentes especializados. O kit já incorpora seus pilares: porte de fluxo por complexidade (Express vs Completo + roteamento de modelo) e **task com contexto embutido** ([`templates/story.template.md`](templates/story.template.md), inspirado no *story-file* do BMAD). Combinação útil: faça o planejamento pesado nas *web bundles* do BMAD (Gemini/ChatGPT) e traga os artefatos para o `spec-builder`.
 - **Spec-workflow (kfc)**: fluxo de spec orientado a documentos (requirements, design, tasks), com subagentes da extensão Kiro for Claude Code. Não vem no kit; ver *Componentes opcionais de terceiros*.
 
-> O kit é deliberadamente mais enxuto que o BMAD (sem instalador/runtime próprio): tudo são arquivos markdown + scripts, adaptáveis via `/integrar`. Use o BMAD completo quando quiser o ecossistema inteiro; use este kit quando quiser algo portátil e editável que você controla 100%.
+> O kit reúne procedimentos em Markdown e scripts, adaptáveis via `/simbiose`.
 
 ## Componentes opcionais de terceiros (não incluídos)
 
