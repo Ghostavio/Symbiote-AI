@@ -15,15 +15,13 @@ O Symbiote-AI se integra a projetos novos ou existentes e amplia o que a equipe 
   - Codex / Antigravity → `AGENTS.md`
   - VSCode + Copilot → `.github/copilot-instructions.md`
 - **`ai-tools-matrix.md`** mapeia os nomes de tool-call de MCP entre as ferramentas.
-- **Placeholders** (`<AZURE_ORG>`, `<PROJECT_KEY>`, `<TEST_CMD>`, …) marcam tudo que é específico de projeto. O `integrar` os preenche.
+- **Placeholders** (`<AZURE_ORG>`, `<PROJECT_KEY>`, `<TEST_CMD>`, …) marcam tudo que é específico de projeto. A skill `simbiose` os preenche.
 
 Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos processos.
 
 ## Começando
 
 Com o kit disponível na ferramenta de IA, invoque a skill **`simbiose`**. No Codex, use **`$simbiose`**. No Claude Code, use **`/simbiose`**. Se estiver trabalhando em outro diretório, informe o caminho de destino. A skill detecta um projeto existente e propõe a adaptação, ou prepara a criação de um projeto novo. Quando o contexto for ambíguo, ela pergunta antes de começar.
-
-Os comandos `/integrar` e `/scaffold` foram depreciados. Eles continuam disponíveis por compatibilidade. Use `/simbiose` para novos usos.
 
 Para disponibilizar as skills diretamente em um repositório existente, copie o conteúdo do kit para a raiz desse repositório, preservando os arquivos de configuração existentes.
 
@@ -83,7 +81,7 @@ Symbiote-AI/
 - **Ferramentas de IA:** Claude Code, Cursor, Codex/Antigravity, VSCode + Copilot (via wrappers + `ai-tools-matrix.md`). Outras, como o Gemini CLI, entram pela Receita E do `GUIA-DE-EXPANSAO.md`.
 - **Tracker:** Azure DevOps **ou** Jira/Atlassian (`setup-jira`).
 - **Qualidade:** análise estática local, como [SonarJS via ESLint](https://github.com/SonarSource/SonarJS/blob/master/packages/analysis/src/jsts/rules/README.md) em JS/TS, com SonarQube via MCP quando já configurado.
-- **Time tracking:** 7pace, Clockify, e adaptável a **Toggl/Harvest** via `integrar`.
+- **Time tracking:** 7pace, Clockify, e adaptável a **Toggl/Harvest** conforme as instruções do `GUIA-DE-EXPANSAO.md`.
 - **Documentação:** no repo **ou** externa (Confluence/Outline/Notion) via `docs-target` — para PRs limpos.
 - **Design:** Figma via MCP (local Dev Mode ou hospedado) na `figma-requirements`.
 - **Browser/visual:** Playwright MCP (validação visual e E2E).
