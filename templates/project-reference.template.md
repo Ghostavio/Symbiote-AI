@@ -213,6 +213,16 @@ AUTH_CLIENT_ID=<client id público>
 
 ---
 
+## Integrações por Capacidade
+
+Registre as operações do projeto seguindo o [contrato de integração](../docs/integracoes.md). Use uma linha por operação quando o destino, a permissão ou o caminho de execução mudar. Registre a evidência apenas para o ambiente em que a operação foi exercitada.
+
+| Capacidade / operação | Provedor, edição e destino | Cliente e conector | Autenticação e permissões | Alternativa | Estado e evidência |
+| --- | --- | --- | --- | --- | --- |
+| (preencha: board, Git/revisão, CI, docs, horas ou outra capacidade) | (preencha: serviço e escopo) | (preencha: cliente de IA e MCP, CLI ou API) | (preencha: tipo de autenticação e acesso exigido) | (preencha: CLI, API, manual ou local) | (preencha: estado e resultado da verificação) |
+
+---
+
 ## Integrações e Serviços Relacionados
 
 > (preencha: descreva APIs, BFFs ou serviços consumidos/expostos pelo projeto.)

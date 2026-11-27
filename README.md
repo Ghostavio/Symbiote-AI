@@ -17,10 +17,11 @@ O Symbiote-AI se integra a projetos novos ou existentes e amplia o que a equipe 
   - Cursor → `.cursor/rules/<name>.mdc`
   - VSCode + Copilot → `.github/copilot-instructions.md`
 - **`ai-tools-matrix.md`** mapeia os nomes de tool-call de MCP entre as ferramentas.
+- A [matriz de integrações](docs/integracoes.md) documenta como combinar provedores de board, repositório e outros serviços e quais operações foram verificadas.
 - **Adaptadores opcionais** em [`adapters/`](adapters/README.md) isolam especializações de stack (`angular`, `react`), cloud (`cloudflare`, `aws`) e observabilidade (`opentelemetry`) fora do core neutro, acoplados seletivamente pela skill `simbiose`.
 - **Placeholders** (`<AZURE_ORG>`, `<PROJECT_KEY>`, `<TEST_CMD>`, …) marcam tudo que é específico de projeto. A skill `simbiose` os preenche.
 
-Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos processos.
+Ao trocar de ferramenta de IA ou de tracker, atualize os wrappers e a configuração do projeto conforme a integração escolhida.
 
 ## Começando
 
