@@ -1,0 +1,21 @@
+{
+  "canonical_locale": "pt-BR",
+  "canonical_readme": "README.md",
+  "locales": [
+    {
+      "code": "en",
+      "label": "English",
+      "readme": "README.en.md",
+      "docs": [
+        {
+          "source": "GUIA-DE-EXPANSAO.md",
+          "target": "i18n/en/expansion-guide.md"
+        },
+        {
+          "source": "adapters/README.md",
+          "target": "i18n/en/adapters.md"
+        }
+      ]
+    }
+  ]
+}

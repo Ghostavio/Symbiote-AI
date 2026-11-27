@@ -53,8 +53,9 @@ When the user requests one of these by name (e.g., "rode o `phase-code-review`")
 
 ## Idioma e convenções de código
 
-- **Idioma da UI e mensagens:** Português brasileiro (pt-BR) por padrão (ajuste conforme o projeto)
-- **Commit messages:** Português brasileiro
+- **Idioma canônico do kit:** Português brasileiro (`pt-BR`, Brazil-first) em `processes/`. Projetos em outros idiomas (`en`, `es`, etc.) configuram o idioma alvo via `simbiose` abaixo e em `.claude/PROJECT_REFERENCE.md` — os agentes leem os processos canônicos e entregam no idioma do projeto.
+- **Idioma da UI, docs e mensagens:** Português brasileiro (`pt-BR`) por padrão (ajuste conforme o projeto)
+- **Commit messages:** Português brasileiro por padrão (ajuste ao idioma do projeto)
 - **Sem `Co-Authored-By` em commits**
 - **Padrões da stack e testes:** siga a arquitetura, os linters e o framework de testes documentados em `.claude/PROJECT_REFERENCE.md` e `docs/discovery.md` (configurados pela skill `simbiose`)
 

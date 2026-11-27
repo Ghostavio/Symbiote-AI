@@ -821,6 +821,133 @@ class ValidateKitTests(unittest.TestCase):
             # Final validation passes with both adapters present and only one skill installed
             self.assertEqual(validator.validate_repo(root), [])
 
+    def test_valid_i18n_manifest_and_translations_pass_validation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root)
+            (root / "README.md").write_text(
+                "# Kit\n\n[English](README.en.md)\n\n## Visão geral\n\n## Uso\n",
+                encoding="utf-8",
+            )
+            (root / "README.en.md").write_text(
+                "# Kit\n\n[Português](README.md)\n\n## Overview\n\n## Usage\n",
+                encoding="utf-8",
+            )
+            (root / "GUIDE.md").write_text(
+                "# Guia\n\n## Passo 1\n\n```md\n## Ignorado em código\n```\n",
+                encoding="utf-8",
+            )
+            en_dir = root / "i18n" / "en"
+            en_dir.mkdir(parents=True)
+            (en_dir / "guide.md").write_text("# Guide\n\n## Step 1\n", encoding="utf-8")
+            (root / "i18n" / "i18n.json").write_text(
+                json.dumps(
+                    {
+                        "canonical_locale": "pt-BR",
+                        "canonical_readme": "README.md",
+                        "locales": [
+                            {
+                                "code": "en",
+                                "label": "English",
+                                "readme": "README.en.md",
+                                "docs": [
+                                    {"source": "GUIDE.md", "target": "i18n/en/guide.md"}
+                                ],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual(validator.validate_repo(root), [])
+
+    def test_detects_i18n_doc_drift_missing_switcher_and_duplicate_locales(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root)
+            (root / "README.md").write_text(
+                "# Kit\n\n## Seção 1\n\n## Seção 2\n", encoding="utf-8"
+            )
+            (root / "README.en.md").write_text(
+                "# Kit\n\n## Only one section\n", encoding="utf-8"
+            )
+            (root / "GUIDE.md").write_text(
+                "# Guia\n\n## A\n\n## B\n", encoding="utf-8"
+            )
+            en_dir = root / "i18n" / "en"
+            en_dir.mkdir(parents=True)
+            (en_dir / "guide.md").write_text("# Guide\n\n## Only A\n", encoding="utf-8")
+            (root / "i18n" / "i18n.json").write_text(
+                json.dumps(
+                    {
+                        "canonical_locale": "pt-BR",
+                        "canonical_readme": "README.md",
+                        "locales": [
+                            {
+                                "code": "en",
+                                "label": "English",
+                                "readme": "README.en.md",
+                                "docs": [
+                                    {"source": "GUIDE.md", "target": "i18n/en/guide.md"}
+                                ],
+                            },
+                            {
+                                "code": "pt-BR",
+                                "label": "Duplicate canonical",
+                                "readme": "README.en.md",
+                                "docs": [],
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            errors = validator.validate_i18n(root)
+            joined = "\n".join(errors)
+            self.assertIn("README.md: missing language switcher link to 'README.en.md'", joined)
+            self.assertIn("README.en.md: missing language switcher link back to 'README.md'", joined)
+            self.assertIn("README.en.md: section count drift vs README.md", joined)
+            self.assertIn("i18n/en/guide.md: section count drift vs GUIDE.md", joined)
+            self.assertIn("duplicates canonical_locale 'pt-BR'", joined)
+            self.assertIn("collides with locale 'en' readme", joined)
+
+    def test_detects_i18n_symlink_and_path_traversal(self):
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as external_tmp:
+            root = Path(tmp)
+            external = Path(external_tmp)
+            create_minimal_valid_repo(root)
+            (root / "README.md").write_text("# Kit\n\n[English](README.en.md)\n", encoding="utf-8")
+            (root / "README.en.md").write_text("# Kit\n\n[PT](README.md)\n", encoding="utf-8")
+            (root / "GUIDE.md").write_text("# Guia\n\n## A\n", encoding="utf-8")
+            ext_doc = external / "secret.md"
+            ext_doc.write_text("# Secret\n\n## A\n", encoding="utf-8")
+            en_dir = root / "i18n" / "en"
+            en_dir.mkdir(parents=True)
+            (en_dir / "linked.md").symlink_to(ext_doc)
+            (root / "i18n" / "i18n.json").write_text(
+                json.dumps(
+                    {
+                        "canonical_locale": "pt-BR",
+                        "canonical_readme": "README.md",
+                        "locales": [
+                            {
+                                "code": "en",
+                                "label": "English",
+                                "readme": "README.en.md",
+                                "docs": [
+                                    {"source": "../outside.md", "target": "i18n/en/linked.md"}
+                                ],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            errors = validator.validate_i18n(root)
+            joined = "\n".join(errors)
+            self.assertIn("'source' must be a non-symlink relative path inside the repository", joined)
+            self.assertIn("'target' must be a non-symlink relative path inside the repository", joined)
+
 
 if __name__ == "__main__":
     unittest.main()

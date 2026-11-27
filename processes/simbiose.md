@@ -26,7 +26,8 @@ Confirme TODAS as escolhas (stack, nome, local) e mostre o plano antes de gerar 
 3. **Gerenciador de pacotes** preferido (yarn/npm/pnpm/bun, maven/gradle, uv/poetry…).
 4. **Tracker e fluxo do board**, **time tracking** e **destino de docs**. Se o projeto novo já pertencer a um time com board, confirme se deve reaproveitar o fluxo. Caso contrário, inclua a proposta do `integrar` no plano ou registre a escolha de trabalhar sem board.
 5. **Ferramentas de IA** que o time usa (Claude Code / Cursor / Codex / Antigravity / Copilot / Gemini) → quais wrappers manter.
-6. **Adaptadores opcionais** (`adapters/` — ver `adapters/README.md` no kit): verifique se existem adaptadores compatíveis de stack, cloud ou observabilidade (ex.: `adapters/stacks/angular/`) e confirme quais acoplar ao projeto.
+6. **Adaptadores opcionais** (`adapters/` — ver `adapters/README.md` no kit): verifique se existem adaptadores compatíveis de stack, cloud ou observabilidade (ex.: `adapters/stacks/angular/`, `adapters/stacks/react/`, `adapters/cloud/cloudflare/`, `adapters/cloud/aws/`, `adapters/observability/opentelemetry/`) e confirme quais acoplar ao projeto.
+7. **Idioma do projeto:** idioma padrão para UI, documentação e mensagens de commit (`pt-BR` por padrão, ou `en`, `es`, etc. conforme o time). Os processos canônicos em `processes/` permanecem em `pt-BR` como fonte única de verdade; os agentes entregam no idioma configurado do projeto.
 
 ## Passo 2 — Gerar o esqueleto da aplicação (use o scaffolder do ecossistema)
 
@@ -65,6 +66,7 @@ Aplique [o procedimento de integração](integrar.md) ao projeto recém-criado, 
 - mantém só os wrappers das ferramentas de IA escolhidas;
 - configura os MCPs (tracker, qualidade, docs, Figma, Playwright);
 - preenche `templates/project-reference.template.md` → `.claude/PROJECT_REFERENCE.md`;
+- ajusta o idioma alvo do projeto (UI, docs e commits) em `.claude/PROJECT_REFERENCE.md` e `AGENTS.md`, mantendo `processes/` em `pt-BR` sem duplicação;
 - ajusta o time tracking e o destino de docs.
 
 ## Passo 5 — Baseline + primeiro commit

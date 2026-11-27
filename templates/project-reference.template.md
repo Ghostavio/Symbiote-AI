@@ -19,7 +19,7 @@
 
 - **Nome:** <PROJECT_NAME>
 - **Tipo:** (preencha: tipo da aplicação, ex.: aplicação web interna, API REST, CLI, monorepo)
-- **Idioma da UI:** (preencha: idioma da interface, ex.: Português brasileiro (pt-BR) — todo texto hardcoded)
+- **Idioma do projeto (UI, docs e commits):** (preencha: ex.: Português brasileiro (`pt-BR`), English (`en`), Español (`es`) — idioma padrão para UI, documentação e mensagens de commit)
 - **Empresa/Time:** (preencha: nome do time ou organização)
 - **Propósito:** (preencha: o que a aplicação faz)
 - **Público-alvo:** (preencha: quem usa a aplicação)
@@ -129,7 +129,7 @@ modules/<feature>/
 
 > Se o projeto acoplou um adaptador de stack em `adapters/` (ex.: `adapters/stacks/angular/`), importe ou referencie aqui as regras de `files.conventions` desse adaptador e complemente com convenções específicas do time.
 
-1. **Idioma da UI e mensagens:** (preencha: padrão pt-BR com acentuação correta)
+1. **Idioma da UI, docs e mensagens:** (preencha: idioma configurado em *Visão Geral do Projeto* — padrão `pt-BR` com acentuação correta, ou `en`/`es` conforme o time)
 2. **Estilo e tipagem:** (preencha: ex.: modo strict, sem `any` desnecessário, funções pequenas e puras)
 3. **Injeção de dependências e ciclo de vida:** (preencha: padrão da stack para DI e limpeza de recursos)
 4. **Validação de dados:** (preencha: biblioteca de schemas/validadores)

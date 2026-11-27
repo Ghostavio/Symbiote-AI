@@ -1,5 +1,7 @@
 # Symbiote-AI
 
+> **Idioma:** **Português (Brasil)** *(canônico)* · [English](README.en.md) — veja [`i18n/`](i18n/README.md) para contribuir com outros idiomas.
+
 ![Identidade visual do Symbiote-AI. Ferrofluido preto envolve um núcleo facetado, e os espaços entre os dois sugerem um S na versão plana.](docs/brand/symbiote-ai.png)
 
 O Symbiote-AI se integra a projetos novos ou existentes e amplia o que a equipe já faz com desenvolvimento assistido por IA. O kit oferece processos portáteis para iniciar trabalho, levantar requisitos, escrever especificações, revisar código, sincronizar horas e acompanhar tarefas no board. Funciona nativamente com **Claude Code**, **Antigravity**, **Gemini CLI**, **Codex**, **Cursor** e **VSCode + Copilot**.
@@ -57,7 +59,8 @@ Comece a trabalhar com `start-workflow` e use o Fluxo Express para mudanças peq
 
 ```
 Symbiote-AI/
-├── README.md                     ← este arquivo
+├── README.md                     ← este arquivo (canônico pt-BR)
+├── README.en.md                  ← versão em inglês do README
 ├── CHANGELOG.md                  ← histórico de versões e releases
 ├── LICENSE                       ← texto da Apache License 2.0
 ├── NOTICE                        ← aviso de copyright e licença
@@ -83,6 +86,7 @@ Symbiote-AI/
 │   └── rules/<skill>.mdc         ← wrappers Cursor (+ PROJECT-REFERENCE-md.mdc)
 ├── processes/                    ← PROCESSOS CANÔNICOS (fonte de verdade)
 ├── adapters/                     ← adaptadores opcionais (stacks/angular, stacks/react, cloud/cloudflare, cloud/aws, observability/opentelemetry)
+├── i18n/                         ← manifesto multilíngue (i18n.json) e guias traduzidos (ex.: en/)
 ├── templates/                    ← spec-template, story.template, project-reference (template)
 ├── docs/                         ← workflow, discovery (modelo a preencher), e2e, processo-work-items, aprendizados
 ├── scripts/                      ← validador (`validate-kit.py`) e timesync (`time-entry-interval.py`, `sync-7pace.sh`, `setup-7pace.*`)
@@ -102,7 +106,7 @@ Symbiote-AI/
 
 ## Validação local
 
-Para validar paridade de wrappers, links internos, scripts shell, adaptadores e testes unitários:
+Para validar paridade de wrappers, links internos, scripts shell, adaptadores, traduções (`i18n/`) e testes unitários:
 
 ```bash
 python3 -B scripts/validate-kit.py
@@ -121,7 +125,7 @@ O kit embute lições de desenvolvimento assistido por IA "agressivo" — ver [`
 
 ## Expandindo
 
-Para trocar Azure DevOps por Jira, 7pace por Toggl, repo por Confluence, adicionar uma nova ferramenta de IA ou criar um novo adaptador de stack/cloud/observabilidade: ver [`GUIA-DE-EXPANSAO.md`](GUIA-DE-EXPANSAO.md) e [`adapters/README.md`](adapters/README.md). A skill `simbiose` automatiza a maior parte dessas escolhas.
+Para trocar Azure DevOps por Jira, 7pace por Toggl, repo por Confluence, adicionar uma nova ferramenta de IA, criar um adaptador de stack/cloud/observabilidade ou contribuir com um novo idioma: ver [`GUIA-DE-EXPANSAO.md`](GUIA-DE-EXPANSAO.md), [`adapters/README.md`](adapters/README.md) e [`i18n/README.md`](i18n/README.md). A skill `simbiose` automatiza a maior parte dessas escolhas.
 
 ## Metodologias relacionadas (prior art)
 
