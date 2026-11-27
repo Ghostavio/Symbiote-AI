@@ -34,7 +34,7 @@ Convenções recomendadas para projetos com workloads ou Infraestrutura como Có
 
 Combine os servidores MCP oficiais da AWS com a **AWS CLI** e a CLI de IaC adotada pelo projeto, mantendo credenciais temporárias e escopo mínimo:
 
-- **Servidores MCP oficiais da AWS (`awslabs/mcp`):** consulte o catálogo oficial em https://github.com/awslabs/mcp (documentação: https://awslabs.github.io/mcp/), priorizando o **AWS MCP Server** unificado ou servidores especializados compatíveis com o projeto (ex.: documentação oficial `awslabs.aws-documentation-mcp-server` e `awslabs.cdk-mcp-server` para projetos CDK).
+- **Servidores MCP oficiais da AWS (`awslabs/mcp`):** consulte o catálogo oficial em https://github.com/awslabs/mcp (documentação: https://awslabs.github.io/mcp/), priorizando o **AWS MCP Server** unificado ou servidores especializados ativos compatíveis com o projeto (ex.: documentação oficial `awslabs.aws-documentation-mcp-server` e `awslabs.aws-iac-mcp-server` para projetos CDK e CloudFormation).
 - **AWS CLI e ferramentas de IaC:** use o MCP para consulta de documentação e diagnóstico, e mantenha `aws` + a CLI de IaC instalada no projeto (`cdk`, `terraform`, `sam`, `sst`) para validações locais e mudanças rastreadas em código.
 - **Menor privilégio e leitura vs. escrita:** autentique via AWS SSO / IAM Roles temporárias (preferencialmente somente leitura durante discovery e revisão) e exija aprovação explícita do usuário antes de qualquer operação mutante na conta AWS (`deploy`, `apply`, edição de políticas IAM ou criação/exclusão de recursos).
 
