@@ -34,7 +34,8 @@ Exemplos condicionais (somente quando a respectiva ferramenta/configuração exi
 otelcol --config=otel-collector-config.yaml validate
 
 # Em projetos Kubernetes com kubectl e contexto confirmados (somente leitura, sem -f/--follow):
+# Defina as variáveis abaixo após conferir `kubectl config current-context` e o ambiente alvo:
 kubectl config current-context
-kubectl logs -n <namespace> <pod> -c <container> --since=15m --tail=200 --timestamps
-kubectl logs -n <namespace> <pod> -c <container> --previous --tail=200
+kubectl --context "$contexto_confirmado" logs -n "$namespace" "$pod" -c "$container" --since=15m --tail=200 --timestamps
+kubectl --context "$contexto_confirmado" logs -n "$namespace" "$pod" -c "$container" --previous --tail=200
 ```
