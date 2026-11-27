@@ -14,6 +14,10 @@ Checks:
    bit, and bash syntax check (bash -n, plus /bin/bash -n when available).
 4. Optional adapters under adapters/<category>/<id>/: manifest schema, matching
    category/id, detection signals, referenced files, and optional JSON/skills.
+5. Optional i18n manifest under i18n/i18n.json: locale schema, non-symlink
+   paths inside the repo, reciprocal links between canonical and translated
+   READMEs, and H2 section count checks against canonical pt-BR docs
+   (semantic section correspondence and switcher placement are checked in review).
 """
 
 from __future__ import annotations
@@ -41,6 +45,8 @@ ADAPTER_CATEGORIES = {
 }
 ADAPTER_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 ADAPTER_DETECT_KEYS = ("files", "packages", "directories")
+LOCALE_CODE_RE = re.compile(r"^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$")
+H2_HEADING_RE = re.compile(r"(?m)^## [^\r\n]+")
 
 
 def parse_frontmatter(text: str) -> dict[str, str] | None:
@@ -724,12 +730,207 @@ def find_adapter_skill_collisions(
     return collisions
 
 
+def _resolve_inside_repo(root: Path, rel_path: object) -> Path | None:
+    if not isinstance(rel_path, str) or not rel_path.strip():
+        return None
+    candidate = Path(rel_path)
+    if candidate.is_absolute():
+        return None
+    if _has_symlink_component(root, candidate):
+        return None
+    repo_root = root.resolve()
+    resolved = (repo_root / candidate).resolve()
+    if not resolved.is_relative_to(repo_root) or resolved == repo_root:
+        return None
+    return resolved
+
+
+def _count_h2_headings(text: str) -> int:
+    cleaned = FENCED_CODE_RE.sub("\n", text)
+    cleaned = HTML_COMMENT_RE.sub("", cleaned)
+    return len(H2_HEADING_RE.findall(cleaned))
+
+
+def validate_i18n(root: Path) -> list[str]:
+    errors: list[str] = []
+    i18n_dir = root / "i18n"
+    if not i18n_dir.exists() and not i18n_dir.is_symlink():
+        return []
+    if i18n_dir.is_symlink():
+        return ["i18n: symlinks are not allowed for i18n directory"]
+    if not i18n_dir.is_dir():
+        return ["i18n: expected a directory"]
+
+    manifest_path = i18n_dir / "i18n.json"
+    if manifest_path.is_symlink():
+        return ["i18n/i18n.json: symlinks are not allowed for i18n.json"]
+    if not manifest_path.is_file():
+        return ["i18n: missing i18n.json manifest"]
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return [f"i18n/i18n.json: invalid JSON ({exc.msg})"]
+    if not isinstance(manifest, dict):
+        return ["i18n/i18n.json: manifest must be a JSON object"]
+
+    canonical_locale = manifest.get("canonical_locale")
+    if not isinstance(canonical_locale, str) or not LOCALE_CODE_RE.match(canonical_locale):
+        errors.append("i18n/i18n.json: invalid or missing 'canonical_locale'")
+        canonical_locale = ""
+
+    raw_canonical_readme = manifest.get("canonical_readme")
+    canonical_readme = _resolve_inside_repo(root, raw_canonical_readme)
+    canonical_readme_text = ""
+    canonical_readme_targets: set[Path] = set()
+    canonical_readme_h2 = 0
+    if canonical_readme is None:
+        errors.append(
+            "i18n/i18n.json: 'canonical_readme' must be a non-symlink relative path inside the repository"
+        )
+    elif not canonical_readme.is_file():
+        errors.append(
+            f"i18n/i18n.json: canonical_readme '{raw_canonical_readme}' does not exist"
+        )
+    else:
+        canonical_readme_text = canonical_readme.read_text(encoding="utf-8")
+        canonical_readme_targets = _resolved_local_targets(canonical_readme, canonical_readme_text)
+        canonical_readme_h2 = _count_h2_headings(canonical_readme_text)
+
+    locales = manifest.get("locales")
+    if not isinstance(locales, list) or not locales:
+        errors.append("i18n/i18n.json: 'locales' must be a non-empty list")
+        return errors
+
+    seen_codes: set[str] = set()
+    seen_targets: dict[Path, str] = {}
+    if canonical_readme is not None:
+        seen_targets[canonical_readme] = "canonical_readme"
+
+    for idx, entry in enumerate(locales):
+        prefix = f"i18n/i18n.json: locales[{idx}]"
+        if not isinstance(entry, dict):
+            errors.append(f"{prefix}: entry must be a JSON object")
+            continue
+
+        code = entry.get("code")
+        if not isinstance(code, str) or not LOCALE_CODE_RE.match(code):
+            errors.append(f"{prefix}: invalid or missing 'code'")
+            code_label = f"locales[{idx}]"
+        else:
+            code_label = code
+            lowered = code.lower()
+            if canonical_locale and lowered == canonical_locale.lower():
+                errors.append(
+                    f"{prefix}: locale code '{code}' duplicates canonical_locale '{canonical_locale}'"
+                )
+            elif lowered in seen_codes:
+                errors.append(f"{prefix}: duplicate locale code '{code}'")
+            else:
+                seen_codes.add(lowered)
+
+        label = entry.get("label")
+        if not isinstance(label, str) or not label.strip():
+            errors.append(f"i18n/i18n.json ({code_label}): missing or invalid 'label'")
+
+        raw_readme = entry.get("readme")
+        locale_readme = _resolve_inside_repo(root, raw_readme)
+        if locale_readme is None:
+            errors.append(
+                f"i18n/i18n.json ({code_label}): 'readme' must be a non-symlink relative path inside the repository"
+            )
+        elif not locale_readme.is_file():
+            errors.append(
+                f"i18n/i18n.json ({code_label}): readme '{raw_readme}' does not exist"
+            )
+        else:
+            if locale_readme in seen_targets:
+                errors.append(
+                    f"i18n/i18n.json ({code_label}): readme '{raw_readme}' collides with {seen_targets[locale_readme]}"
+                )
+            else:
+                seen_targets[locale_readme] = f"locale '{code_label}' readme"
+
+            locale_readme_text = locale_readme.read_text(encoding="utf-8")
+            if canonical_readme is not None and canonical_readme.is_file():
+                if locale_readme not in canonical_readme_targets:
+                    errors.append(
+                        f"{raw_canonical_readme}: missing language switcher link to '{raw_readme}'"
+                    )
+                locale_targets = _resolved_local_targets(locale_readme, locale_readme_text)
+                if canonical_readme not in locale_targets:
+                    errors.append(
+                        f"{raw_readme}: missing language switcher link back to '{raw_canonical_readme}'"
+                    )
+                locale_h2 = _count_h2_headings(locale_readme_text)
+                if locale_h2 != canonical_readme_h2:
+                    errors.append(
+                        f"{raw_readme}: section count drift vs {raw_canonical_readme} "
+                        f"(expected {canonical_readme_h2} '##' headings, found {locale_h2})"
+                    )
+
+        docs = entry.get("docs", [])
+        if not isinstance(docs, list):
+            errors.append(f"i18n/i18n.json ({code_label}): 'docs' must be a list")
+            continue
+
+        for doc_idx, doc_entry in enumerate(docs):
+            doc_prefix = f"i18n/i18n.json ({code_label}).docs[{doc_idx}]"
+            if not isinstance(doc_entry, dict):
+                errors.append(f"{doc_prefix}: entry must be a JSON object")
+                continue
+            raw_source = doc_entry.get("source")
+            raw_target = doc_entry.get("target")
+            source_path = _resolve_inside_repo(root, raw_source)
+            target_path = _resolve_inside_repo(root, raw_target)
+
+            if source_path is None:
+                errors.append(
+                    f"{doc_prefix}: 'source' must be a non-symlink relative path inside the repository"
+                )
+            elif not source_path.is_file():
+                errors.append(f"{doc_prefix}: source '{raw_source}' does not exist")
+
+            if target_path is None:
+                errors.append(
+                    f"{doc_prefix}: 'target' must be a non-symlink relative path inside the repository"
+                )
+            elif not target_path.is_file():
+                errors.append(f"{doc_prefix}: target '{raw_target}' does not exist")
+            else:
+                if target_path in seen_targets:
+                    errors.append(
+                        f"{doc_prefix}: target '{raw_target}' collides with {seen_targets[target_path]}"
+                    )
+                else:
+                    seen_targets[target_path] = doc_prefix
+
+            if (
+                source_path is not None
+                and target_path is not None
+                and source_path.is_file()
+                and target_path.is_file()
+            ):
+                if source_path == target_path:
+                    errors.append(f"{doc_prefix}: source and target must be different files")
+                else:
+                    src_h2 = _count_h2_headings(source_path.read_text(encoding="utf-8"))
+                    dst_h2 = _count_h2_headings(target_path.read_text(encoding="utf-8"))
+                    if dst_h2 != src_h2:
+                        errors.append(
+                            f"{raw_target}: section count drift vs {raw_source} "
+                            f"(expected {src_h2} '##' headings, found {dst_h2})"
+                        )
+
+    return errors
+
+
 def validate_repo(root: Path) -> list[str]:
     errors: list[str] = []
     errors.extend(validate_wrappers(root))
     errors.extend(validate_links(root))
     errors.extend(validate_shell_scripts(root))
     errors.extend(validate_adapters(root))
+    errors.extend(validate_i18n(root))
     return errors
 
 

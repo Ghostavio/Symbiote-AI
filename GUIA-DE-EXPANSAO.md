@@ -95,6 +95,18 @@ Para especializar o kit para uma tecnologia (ex.: React, Cloudflare, AWS, OpenTe
 
 ---
 
+## Receita H — Adicionar um novo idioma (i18n)
+
+O Symbiote-AI mantém `pt-BR` como idioma canônico em `processes/` (fonte única de verdade, sem duplicação), enquanto oferece documentação de entrada traduzida sob `i18n/` no repositório do kit (ver `i18n/README.md`):
+
+1. Crie `README.<codigo>.md` na raiz mantendo a mesma estrutura de seções (`## `) de `README.md` e um seletor de idioma apontando de volta para `README.md`.
+2. Adicione o link para `README.<codigo>.md` no seletor de idioma no topo de `README.md`.
+3. Crie `i18n/<codigo>/` com as traduções dos guias de entrada mantendo a mesma estrutura de seções (`## `) dos documentos canônicos em `pt-BR`.
+4. Registre o novo idioma e seus pares `source` → `target` em `i18n/i18n.json`.
+5. Rode `python3 -B scripts/validate-kit.py` e `python3 -B -m unittest discover -s tests -v` para checar contagem de seções `## ` (H2), links recíprocos entre os READMEs e links internos (a correspondência semântica das seções e a posição do seletor ficam para a revisão de conteúdo).
+
+---
+
 ## Checklist pós-expansão
 
 - [ ] Nenhum `<PLACEHOLDER>` sobrou onde deveria ter valor real (`grep -rnE '<[A-Z0-9_]+>|<src>|<e2e-dir>' .`).

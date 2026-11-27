@@ -31,6 +31,7 @@ Inspecione o repositório host (sem alterar nada ainda):
 - **Plataforma de docs:** wiki do repo, Confluence, Outline, Notion? (ver Passo 2.4).
 - **Instruções de IA existentes:** já há `CLAUDE.md`/`AGENTS.md`/`.cursor/rules`/`.github/copilot-instructions.md`? (fundir, não sobrescrever cegamente).
 - **Adaptadores compatíveis:** compare arquivos e dependências detectados com os sinais `detect` nos manifestos `adapters/*/*/adapter.json` disponíveis no kit (ver `adapters/README.md`) para sugerir adaptadores de stack, cloud e observabilidade.
+- **Idioma do projeto:** verifique o idioma predominante em README, documentação, textos de UI, histórico de commits e configuração de i18n (`pt-BR` é o padrão canônico do kit, ajustável para `en`, `es` ou outro idioma do time).
 
 Resuma o que detectou e o que ficou incerto.
 
@@ -66,6 +67,10 @@ Claude Code · Antigravity · Gemini CLI · Codex · Cursor · Copilot · outras
 ### 2.7 Pack de domínio (opcional)
 Além dos adaptadores reutilizáveis em `adapters/`, pergunte se o usuário quer **gerar um domain pack** específico do negócio/domínio do projeto (skills de domínio: API, componentes, testes, convenções) a partir do `templates/project-reference.template.md` preenchido.
 
+### 2.8 Idioma do projeto (UI, docs e commits)
+**pt-BR** *(padrão canônico do kit)* · **en** · **es** · outro.
+→ Os processos canônicos em `processes/` permanecem em `pt-BR` como fonte única de verdade (sem duplicação); registre o idioma escolhido do projeto em `.claude/PROJECT_REFERENCE.md`, `AGENTS.md` e `.github/copilot-instructions.md` (quando mantido) para que os agentes escrevam UI, specs, documentação, revisões e mensagens de commit nesse idioma. A pasta `i18n/` pertence apenas ao repositório do kit e não precisa ser copiada para o projeto host.
+
 ## Passo 3 — Apresentar o PLANO de adaptação
 
 Mostre, e peça aprovação explícita:
@@ -77,6 +82,7 @@ Mostre, e peça aprovação explícita:
 5. **Integrações por operação:** indique os provedores, destinos, clientes, conectores e permissões conforme o [contrato de integração](../docs/integracoes.md#contrato-de-integração). Mostre a alternativa quando uma operação não estiver disponível e quais conexões precisam ser configuradas.
 6. **Onde a documentação vai morar** (repo vs externo).
 7. **Fluxo do board:** mostre o mapeamento detectado ou sugerido, onde ficam os critérios de aceite e quem executa cada transição. Se depender de mudanças no board, liste-as separadamente para aprovação.
+8. **Idioma do projeto:** idioma configurado para UI, documentação e mensagens de commit em `.claude/PROJECT_REFERENCE.md`, `AGENTS.md` e `.github/copilot-instructions.md` (quando mantido).
 
 ## Passo 4 — Aplicar (após aprovação)
 
@@ -86,7 +92,7 @@ Mostre, e peça aprovação explícita:
 4. Configurar os conectores MCP, CLI ou API aprovados no formato dos clientes escolhidos. Use `.mcp.json` para clientes que adotem esse arquivo. Preserve as configurações existentes e mantenha credenciais fora dos arquivos versionados.
 5. Configurar o time tracking escolhido (script + chaves no `.env.example`).
 6. Configurar o destino de documentação (in-repo vs MCP externo).
-7. Preencher `templates/project-reference.template.md` → `.claude/PROJECT_REFERENCE.md` com a arquitetura, as convenções, o mapeamento aprovado do board e as integrações por operação. Aponte para a documentação existente do time quando ela já definir o fluxo. Use a `ai-tools-matrix.md` para os nomes de chamadas por cliente. Configure o board apenas se isso fizer parte do plano aprovado.
+7. Preencher `templates/project-reference.template.md` → `.claude/PROJECT_REFERENCE.md` com a arquitetura, as convenções, o idioma alvo do projeto (atualizando também a seção de idioma em `AGENTS.md` e `.github/copilot-instructions.md`, quando mantidos), o mapeamento aprovado do board e as integrações por operação. Aponte para a documentação existente do time quando ela já definir o fluxo. Use a `ai-tools-matrix.md` para os nomes de chamadas por cliente. Configure o board apenas se isso fizer parte do plano aprovado.
 8. (Opcional) Gerar o domain pack para o stack.
 
 ## Passo 5 — Verificar e resumir

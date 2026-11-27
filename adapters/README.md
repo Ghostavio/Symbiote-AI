@@ -23,7 +23,7 @@ adapters/
 | `cloud` | [`aws`](cloud/aws/conventions.md) | Convenções AWS e IaC (IAM de menor privilégio, segredos, Lambda/ECS, SQS/SNS/EventBridge, S3/DynamoDB/RDS, resiliência e custo) e checks para `phase-code-review` |
 | `observability` | [`opentelemetry`](observability/opentelemetry/conventions.md) | Convenções OpenTelemetry neutras de fornecedor (logs estruturados correlacionados, tracing W3C, métricas RED/USE sem explosão de cardinalidade, redação de PII e SLOs) e checks para `phase-code-review` |
 
-> Novos adaptadores (outras stacks, nuvens ou ferramentas de observabilidade) seguem o contrato abaixo e a Receita F em [`GUIA-DE-EXPANSAO.md`](../GUIA-DE-EXPANSAO.md).
+> Novos adaptadores (outras stacks, nuvens ou ferramentas de observabilidade) seguem o contrato abaixo e a Receita G em [`GUIA-DE-EXPANSAO.md`](../GUIA-DE-EXPANSAO.md).
 
 ## Contrato de um adaptador
 

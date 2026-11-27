@@ -258,7 +258,7 @@ Se o usuário pedir ajustes, voltar para a etapa relevante e refazer.
 2. Salvar em: `<src>/modules/[nome-do-modulo]/docs/spec-tela-[nome-da-feature].md` (ou caminho de módulos definido em `.claude/PROJECT_REFERENCE.md`)
    - Se o diretório `docs/` não existir no módulo, criar
    - Se o módulo ainda não existir, salvar em `docs/specs/spec-[nome-da-feature].md`
-3. Commitar com mensagem: `docs: adicionar especificação da feature [nome]`
+3. Commitar com mensagem no idioma configurado para o projeto (padrão `pt-BR`, ex.: `docs: adicionar especificação da feature [nome]`)
 
 > Spec salvo em `[caminho]`. Revise o documento e me avise se quiser fazer ajustes.
 > Quando estiver satisfeito, você pode usar o workflow de desenvolvimento (`/brainstorming` ou prompt direto) para iniciar a implementação.
@@ -272,7 +272,7 @@ Opcional: quem preferir um fluxo de spec com subagentes dedicados (requisitos, d
 - **Propor e validar** — proponha respostas quando tiver contexto suficiente, deixe o usuário corrigir
 - **Nível de detalhe do spec de referência** — quando houver spec de exemplo no projeto, o documento gerado deve ter o mesmo nível de detalhe dele; sem spec de exemplo, preencha todas as seções de `templates/spec-template.md`
 - **Sem suposições silenciosas** — se algo não ficou claro, pergunte. Não preencha com suposições
-- **Português brasileiro** — todas as perguntas, instruções e o documento final em pt-BR
+- **Idioma do projeto** — conduza as perguntas, instruções e o documento final no idioma configurado em `.claude/PROJECT_REFERENCE.md` (ou `AGENTS.md`), usando português brasileiro (`pt-BR`) como padrão na ausência de configuração
 - **Tabelas formatadas** — usar tabelas markdown para campos, roles, mocks, etc.
 - **Exemplos concretos** — incluir exemplos reais nos JSONs de mock e nas descrições
 
