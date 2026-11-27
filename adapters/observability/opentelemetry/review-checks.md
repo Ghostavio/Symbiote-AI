@@ -5,7 +5,7 @@ Checklist especializado para carregar em [`processes/phase-code-review.md`](../.
 ## §2 Code Quality & Patterns (Observabilidade)
 
 - [ ] Logs de produção utilizam o logger estruturado do projeto (sem `console.log`/`print` soltos) com nível adequado e campos semânticos consistentes.
-- [ ] Spans manuais sempre têm encerramento garantido (`try/finally` ou wrapper equivalente) e registram falhas com `recordException` + status `ERROR`.
+- [ ] Spans manuais sempre têm encerramento garantido (`span.end()` em `try/finally` — inclusive dentro de `startActiveSpan` em JS/TS —, `with` em Python, `defer span.End()` em Go ou wrapper equivalente que efetivamente encerre o span) e registram falhas com `recordException` + status `ERROR`.
 - [ ] Nomes de spans e métricas seguem convenções semânticas OpenTelemetry com nomenclatura estável e parametrizada (ex.: `GET /orders/:id`).
 - [ ] Logs emitidos durante requisições/jobs preservam correlação com `trace_id`/`span_id` quando há contexto ativo.
 

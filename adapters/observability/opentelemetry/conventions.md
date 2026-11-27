@@ -17,7 +17,7 @@ Convenções recomendadas para projetos com instrumentação de observabilidade 
 ### Tracing distribuído
 - **Propagação de contexto:** preserve W3C Trace Context (`traceparent` / `tracestate`) em chamadas HTTP, gRPC, workers e mensagens de fila.
 - **Nomes de spans com baixa cardinalidade:** use rotas parametrizadas e nomes estáveis (`GET /orders/:id`, `orders.create`), nunca URLs cruas contendo IDs dinâmicos ou query strings.
-- **Ciclo de vida seguro:** encerre todos os spans criados manualmente em blocos `finally` (ou usando helpers como `startActiveSpan`); em falhas, chame `recordException(err)` e marque status `ERROR`.
+- **Ciclo de vida seguro:** garanta o encerramento explícito de todos os spans criados manualmente — em JS/TS, mesmo dentro de `startActiveSpan`, o callback ainda precisa chamar `span.end()` em um bloco `try/finally` (ou usar um wrapper que garanta o fechamento); em Python use `with tracer.start_as_current_span(...)` e em Go use `defer span.End()`. Em falhas, chame `recordException(err)` e marque status `ERROR`.
 
 ### Métricas (RED / USE) e controle de cardinalidade
 - Priorize sinais **RED** (Rate, Errors, Duration) para serviços/APIs e **USE** (Utilization, Saturation, Errors) para recursos/filas.

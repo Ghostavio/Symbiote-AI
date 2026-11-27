@@ -33,4 +33,4 @@ Convenções recomendadas para projetos com workloads ou Infraestrutura como Có
 ## Verificações locais e segurança operacional
 
 - **Comandos confirmados:** registre no `.claude/PROJECT_REFERENCE.md` apenas ferramentas e scripts instalados no host (`cdk`, `terraform`, `sam`, `cfn-lint`, testes unitários de IaC).
-- **Sem mutações em revisão:** durante revisões ou verificações automatizadas, execute apenas validações locais/offline (`synth`, `validate`, `fmt -check`, `lint`, testes unitários). Nunca execute `deploy`, `apply` ou comandos destrutivos na conta AWS sem aprovação explícita.
+- **Sem mutações em revisão:** durante revisões ou verificações automatizadas, execute apenas validações locais/offline (`cdk synth --no-lookups` quando o app de síntese rodar localmente com contexto em cache, `terraform validate`, `fmt -check`, `lint`, testes unitários). Pule etapas que exijam lookups remotos ausentes no cache local e nunca execute `deploy`, `apply` ou comandos destrutivos na conta AWS sem aprovação explícita.

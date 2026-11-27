@@ -27,11 +27,11 @@ Checklist especializado para carregar em [`processes/phase-code-review.md`](../.
 
 Execute **apenas** ferramentas e scripts realmente instalados e confirmados no projeto host (`.claude/PROJECT_REFERENCE.md`), restringindo revisões a validações locais/offline. **Nunca** execute `deploy`, `apply` ou mutações em contas AWS sem autorização explícita do usuário.
 
-Exemplos condicionais (somente quando a respectiva ferramenta estiver instalada e configurada no host):
+Exemplos condicionais (somente quando a respectiva ferramenta estiver instalada e configurada no host; pule etapas que dependam de lookups remotos ausentes no cache local ou de bundling indisponível):
 
 ```bash
-npm test                                    # testes unitários de handlers e assertions/snapshots de IaC
-terraform fmt -check && terraform validate  # somente em projetos Terraform com binário instalado
-./node_modules/.bin/cdk synth               # somente em projetos AWS CDK instalados localmente
-sam validate                                # somente em projetos AWS SAM com CLI instalada
+npm test                                      # testes unitários de handlers e assertions/snapshots de IaC
+terraform fmt -check && terraform validate    # somente em projetos Terraform já inicializados localmente
+./node_modules/.bin/cdk synth --no-lookups    # somente em projetos CDK cujo app de síntese/bundling rode localmente; desativa lookups na AWS (pule se faltar contexto local)
+sam validate                                  # somente em projetos AWS SAM com CLI instalada
 ```
