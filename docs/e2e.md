@@ -44,18 +44,18 @@ Todos os testes devem seguir o padrão **Page Object Model** (https://playwright
 
 Usar `page.getByTestId('...')` como seletor principal. Nunca usar classes CSS (`.minha-classe`), IDs (`#btn-search`) ou seletores de estrutura DOM (`div > span`).
 
-### No componente Angular
+### No componente de UI
 
-Adicionar `data-testid` nos elementos que serão testados:
+Adicionar `data-testid` nos elementos que serão testados (adapte a sintaxe de template ao framework do projeto):
 
 ```html
-<!-- exemplo: order-card.component.html -->
-<mat-card data-testid="order-card" class="order-card">
-  <h3 data-testid="order-number">{{ order().number }}</h3>
-  <span data-testid="order-status">{{ statusLabel() }}</span>
-  <span data-testid="order-total">{{ formattedTotal() }}</span>
-  <button data-testid="order-view-btn" (click)="onView()">Visualizar</button>
-</mat-card>
+<!-- exemplo: order-card -->
+<article data-testid="order-card" class="order-card">
+  <h3 data-testid="order-number">...</h3>
+  <span data-testid="order-status">...</span>
+  <span data-testid="order-total">...</span>
+  <button type="button" data-testid="order-view-btn">Visualizar</button>
+</article>
 ```
 
 ### No Page Object
@@ -277,13 +277,13 @@ export default defineConfig({
   workers: process.env['CI'] ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:4200',
+    baseURL: '<DEV_URL>',
     trace: 'on-first-retry',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: 'yarn local',
-    url: 'http://localhost:4200',
+    command: '<DEV_CMD>',
+    url: '<DEV_URL>',
     reuseExistingServer: !process.env['CI'],
     timeout: 120000,
   },

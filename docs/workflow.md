@@ -83,7 +83,7 @@ Em outras ferramentas, usar o mecanismo equivalente (Cursor Background Agents, s
 
 - Worktrees paralelas devem ter escopos **estritamente disjuntos** (sem arquivos em comum)
 - Se houver dependências cruzadas, planejar um **passo de integração** após o merge
-- Nunca despachar múltiplas instâncias de `yarn ng test` simultaneamente
+- Nunca despachar múltiplas instâncias concorrentes do runner de testes (`<TEST_CMD>`) no mesmo workspace quando compartilharem cache, portas ou arquivos
 
 ### 4.2 Prompt do Subagente Implementador
 
@@ -91,8 +91,8 @@ Cada subagente recebe:
 
 1. **Task completa** — texto colado no prompt (não path para ler)
 2. **Contexto** — quais arquivos já existem, dependências disponíveis
-3. **Referências** — paths para discovery.md, design técnico, config.ts
-4. **Regras** — OnPush, inject(), Signals, pt-BR, sem Co-Authored-By
+3. **Referências** — paths para `docs/discovery.md`, design técnico, `.claude/PROJECT_REFERENCE.md` e adaptadores ativos em `adapters/`
+4. **Regras** — convenções da stack documentadas em `.claude/PROJECT_REFERENCE.md` (e adaptadores acoplados), idioma do projeto (padrão pt-BR), sem `Co-Authored-By`
 5. **Commit** — mensagem em português
 
 ### 4.3 Agrupamento de Tasks
@@ -240,14 +240,13 @@ scripts/sync-7pace.sh \
 
 ## 6. Testes
 
-### 6.1 Testes Unitários (Vitest)
+### 6.1 Testes Unitários
 
-- Framework: Vitest com `@angular/build:unit-test`
-- NÃO usar: `fakeAsync`/`tick`, `TestBed.initTestEnvironment()`, `provideZonelessChangeDetection()`
-- Mocking: `vi.fn()`, `vi.mock()`, `MockedObject`, `spyOn`
-- Sempre rodar `yarn lint` e typecheck ANTES dos testes unitários
+- Use o framework e as convenções configuradas em `.claude/PROJECT_REFERENCE.md` (e no adaptador de stack em `adapters/`, quando acoplado — ex.: `adapters/stacks/angular/` para Angular/Vitest)
+- Priorize `<LINT_CMD>` e `<TYPECHECK_CMD>` ANTES de rodar `<TEST_CMD>` para feedback mais rápido
+- Evite rodar múltiplas instâncias concorrentes do runner no mesmo workspace
 
-### 6.2 Testes E2E (Playwright)
+### 6.2 Testes E2E (quando aplicável)
 
 Seguir o documento **`docs/e2e.md`** para convenções detalhadas:
 
@@ -331,16 +330,15 @@ Trocar de sessão quando o contexto atingir ~80% de uso:
 
 | Ferramenta                  | Uso                                                                                                         |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Vitest**                  | Testes unitários (`yarn ng test`)                                                                           |
-| **Playwright**              | Testes E2E (`npx playwright test`)                                                                          |
-| **Playwright MCP**          | Validação visual (screenshots, computed styles)                                                             |
-| **SonarQube MCP**           | Análise de qualidade de código via `mcp__sonarqube__analyze_code_snippet` (requer Docker)                   |
-| **sonarqube-cli (`sonar`)** | CLI local — `sonar verify` requer SonarQube Cloud (não funciona com on-premise), usar MCP preferencialmente |
-| **ESLint**                  | Linting (`yarn lint`)                                                                                       |
-| **TypeScript**              | Typecheck (`npx tsc --noEmit`)                                                                              |
-| **Express mock server**     | Dados mockados para desenvolvimento local                                                                   |
-| **Azure DevOps MCP**        | Criação/leitura/atualização de work items (ferramentas `mcp__azure-devops__wit_*`)                          |
-| **7pace API**               | Sincronização de horas via `scripts/sync-7pace.sh` (ou wrapper opcional `sync.sh`)               |
+| **Testes unitários**        | Runner configurado na stack (`<TEST_CMD>`)                                                                  |
+| **Testes E2E**              | Ex.: Playwright (`<E2E_CMD>`), quando aplicável                                                             |
+| **Playwright MCP**          | Validação visual (screenshots, computed styles) para interfaces web                                         |
+| **Análise estática local**  | Linter / analisador da stack (`<LINT_CMD>`, ex.: ESLint com `eslint-plugin-sonarjs` em JS/TS)               |
+| **Typecheck / Build check** | Checagem estática de tipos ou compilação (`<TYPECHECK_CMD>`)                                                |
+| **SonarQube MCP (opcional)**| Análise complementar via `mcp__sonarqube__analyze_code_snippet` (requer Docker) quando o projeto já usa     |
+| **Mock server local**       | Dados mockados para desenvolvimento local (`<DEV_CMD>`), quando aplicável                                   |
+| **Tracker MCP**             | Criação/leitura/atualização de work items (ex.: Azure DevOps `mcp__azure-devops__wit_*` ou Jira via `setup-jira`) |
+| **Time tracking**           | Sincronização de horas via `scripts/sync-7pace.sh` (ou wrapper opcional `sync.sh` com Clockify)             |
 
 ---
 

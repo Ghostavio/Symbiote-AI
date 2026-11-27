@@ -5,7 +5,7 @@ description: "Use quando o usuário quiser criar uma nova especificação de fea
 
 # Spec Builder — Construtor de Especificações
 
-Guia o usuário na criação de um documento de especificação completo para novas features do projeto Angular, seguindo o template padrão e coletando informações seção por seção através de diálogo colaborativo.
+Guia o usuário na criação de um documento de especificação completo para novas features do projeto, seguindo o template padrão e coletando informações seção por seção através de diálogo colaborativo.
 
 ## Documentos de Referencia
 
@@ -33,7 +33,7 @@ Você DEVE criar uma task para cada item e completá-los em ordem:
 4. **Detalhar cada tela** — layout, formulários, campos, botões, regras, estados, modais
 5. **Definir componentes reutilizáveis** — componentes compartilhados entre telas
 6. **Definir regras transversais** — logging, cores, responsividade, acessibilidade, teclado
-7. **Definir permissões** — roles em 3 níveis, grupos Keycloak, perfis sugeridos
+7. **Definir permissões** — roles em 3 níveis, grupos do provedor de identidade (IdP), perfis sugeridos
 8. **Definir dados mock** — JSONs para cada endpoint, comportamento de carregamento
 9. **Definir tratamento de erros** — status codes e comportamento no frontend
 10. **Definir testes** — unitários e E2E esperados
@@ -204,7 +204,7 @@ Para CADA tela, passe por estas subperguntas (uma por vez):
 - **Quais abas/seções precisam de role própria?** (nível 2) — listar
 - **Quais ações precisam de role própria?** (nível 3) — listar
 - Vou propor a estrutura de roles seguindo o padrão `[módulo]-[contexto]-[ação]`. Validar.
-- **Grupos Keycloak:**
+- **Grupos do provedor de identidade (IdP):**
   - Acesso total por aba
   - Acesso limitado
   - Somente leitura
@@ -255,7 +255,7 @@ Se o usuário pedir ajustes, voltar para a etapa relevante e refazer.
 ### Etapa 12 — Salvar
 
 1. Gerar o spec completo preenchendo o template com TODAS as informações coletadas
-2. Salvar em: `<APP_DIR>/src/app/modules/[nome-do-modulo]/docs/spec-tela-[nome-da-feature].md`
+2. Salvar em: `<src>/modules/[nome-do-modulo]/docs/spec-tela-[nome-da-feature].md` (ou caminho de módulos definido em `.claude/PROJECT_REFERENCE.md`)
    - Se o diretório `docs/` não existir no módulo, criar
    - Se o módulo ainda não existir, salvar em `docs/specs/spec-[nome-da-feature].md`
 3. Commitar com mensagem: `docs: adicionar especificação da feature [nome]`
