@@ -22,15 +22,19 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 
 ## Começando
 
+### Contribuir com uma mudança pequena
+
+Abra um checkout do Symbiote-AI e peça à sua ferramenta de IA: "Use `start-workflow` no Fluxo Express para corrigir [problema]". Em seguida, revise o diff e rode a [validação local](#validação-local). O fluxo local usa Git, Python 3 e Bash e pode ser concluído sem configurar credenciais de projeto, integrações MCP ou arquivos `.env`.
+
+### Aplicar o kit a um projeto
+
 Com o kit disponível na ferramenta de IA, invoque a skill **`simbiose`** (ex.: **`$simbiose`** no Codex, **`/simbiose`** no Claude Code, ou peça *"Use a skill simbiose"* no Antigravity e no Gemini CLI — no Gemini CLI, use `/skills list` para conferir se ela foi descoberta). Se estiver trabalhando em outro diretório, informe o caminho de destino. A skill detecta um projeto existente e propõe a adaptação (incluindo adaptadores compatíveis em `adapters/`), ou prepara a criação de um projeto novo. Quando o contexto for ambíguo, ela pergunta antes de começar.
 
 Para disponibilizar as skills diretamente em um repositório existente, copie o conteúdo do kit para a raiz desse repositório, preservando os arquivos de configuração existentes.
 
-**Depois, em qualquer caso:**
-1. Preencha os `.env` a partir dos `.env.example` (no kit: `.claude/integrations/timetracking/.env.example`, usado pelo Clockify) (NUNCA versione segredos).
-2. Configure as integrações que o projeto usa, como `setup-azure-mcp` ou `setup-jira` para o tracker e `setup-7pace` para registrar horas. Use `setup-sonarqube-mcp` se o projeto já tiver uma instância SonarQube.
-3. (Opcional) Rode `full-setup` para instalar ferramentas de sistema e plugins.
-4. Comece a trabalhar com `start-workflow` (use o **Fluxo Express** para mudanças pequenas).
+Configure as integrações à medida que precisar delas. Para as que usam arquivos `.env`, parta dos `.env.example` e mantenha os segredos fora do Git. Use a skill de setup correspondente, como `setup-azure-mcp`, `setup-jira`, `setup-7pace` ou `setup-sonarqube-mcp`. Para instalar ferramentas e plugins, use `full-setup` quando necessário.
+
+Comece a trabalhar com `start-workflow` e use o Fluxo Express para mudanças pequenas.
 
 ## Skills
 
