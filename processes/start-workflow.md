@@ -5,7 +5,7 @@ description: "Use quando o usuário iniciar uma nova sessão de desenvolvimento 
 
 # Start Workflow — Iniciar Sessão de Desenvolvimento
 
-Ponto de entrada para todas as sessões de desenvolvimento assistido por IA. Cada fluxo integra automaticamente: subagentes com code review, análise estática local, timetracking (diário + 7pace), sincronização com o tracker (Azure DevOps / Jira / etc.) e documentação contínua.
+Ponto de entrada para sessões de desenvolvimento assistido por IA. Escolha o fluxo conforme o risco e o escopo. Use as verificações do projeto e acione revisão independente, documentação, tracker e time tracking quando forem relevantes para a entrega.
 
 > **Stack de exemplo.** Os comandos e caminhos abaixo usam um stack de exemplo (Angular + Vitest + Playwright, tracker Azure DevOps). Rode a skill **`/integrar`** para adaptar comandos, caminhos e ferramentas ao SEU projeto. Onde lê-se "o tracker", entenda a ferramenta configurada (Azure DevOps, Jira, GitHub Issues…).
 

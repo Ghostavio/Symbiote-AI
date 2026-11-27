@@ -132,9 +132,9 @@ For each issue found across steps 1-5:
 - If it requires user input (ambiguous spec, design choice, naming decision) → add to escalation list
 
 ### 7. Run quality checks
-Execute in this order (stop if build fails). **Não truncar a saída** (sem `tail`) —
-o agente precisa do output completo (mensagens + arquivo:linha) para corrigir
-os erros automaticamente.
+Identifique os comandos na documentação, configuração ou CI do projeto. Rode lint, checagem de tipos e testes conforme a stack e o risco da mudança. Comece pelas verificações mais rápidas quando isso ajudar a obter feedback. Se um check aplicável estiver indisponível, registre a limitação e rode os demais.
+
+Preserve a saída completa (mensagens e arquivo:linha) para diagnosticar falhas. Os comandos abaixo são exemplos para Angular.
 
 Se o RTK estiver ativo (hook global na ferramenta de AI — ver `full-setup.md`),
 os comandos abaixo são reescritos transparentemente para `rtk yarn ng test`,
@@ -171,8 +171,7 @@ Fix any failures caused by the reviewed code. Do NOT fix pre-existing failures.
 
 Se você usa um proxy que comprime saídas de Bash (ex. RTK — Rust Token Killer),
 há risco residual de a heurística suprimir um warning legítimo. Antes de seguir
-para a análise complementar, o commit ou o PR, rode a suíte crítica em passthrough cru (ex.:
-`rtk proxy <cmd>`):
+para a análise complementar, o commit ou o PR, rode as verificações críticas do passo 7 em passthrough cru (ex.: `rtk proxy <cmd>`). Exemplo para Angular:
 
 ```bash
 cd <APP_DIR>
@@ -183,7 +182,7 @@ rtk proxy yarn lint
 ```
 
 Confirmar:
-- Exit codes 0 nos três
+- Códigos de saída das verificações executadas
 - Contagens de testes/erros batem com o que o RTK comprimido reportou
 - Nenhum warning relevante "novo" aparece no output cru
 
@@ -288,6 +287,6 @@ When the reviewer returns:
 - **Never dispatch the reviewer in background** while making changes to the same files — this causes the reviewer to revert your work
 - **Never run tests concurrently** — multiple `yarn ng test` instances cause timeouts and false failures
 - **The reviewer fixes, not just reports** — this is the key differentiator from generic code review skills
-- **Always run lint and typecheck BEFORE tests** — faster feedback loop (3s vs 60s)
+- **Priorize verificações rápidas quando disponíveis** para antecipar falhas antes das suítes mais longas.
 - **Análise estática faz parte da revisão.** Use as verificações locais e registre se houve análise complementar no SonarQube.
 - **The diary update reminder is mandatory** — the orchestrator tends to skip documentation if not reminded
