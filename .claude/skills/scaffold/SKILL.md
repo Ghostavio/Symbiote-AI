@@ -1,7 +1,7 @@
 ---
 name: scaffold
 alias_of: simbiose
-description: "Alias retrocompatível de `simbiose` — use para dar bootstrap/scaffold de um projeto NOVO (greenfield) já com o Symbiote-AI pré-configurado."
+description: "Depreciado. Use simbiose para iniciar um projeto novo com o Symbiote-AI."
 model: opus
 ---
 
