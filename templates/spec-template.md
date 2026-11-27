@@ -25,7 +25,7 @@
 - Qualquer decisão de escopo importante (ex: "apenas frontend, endpoints como referência para mocks")
 
 Exemplo:
-> **Escopo desta implementação:** Este documento especifica exclusivamente o **frontend** (Angular). Nenhuma implementação de backend faz parte deste escopo.
+> **Escopo desta implementação:** Este documento especifica exclusivamente o **frontend**. Nenhuma implementação de backend faz parte deste escopo.
 
 A feature **[Nome]** adiciona ao app a capacidade de [descrição]. É composta por **N telas** principais:
 1. **[Tela A]** — descrição curta
@@ -330,9 +330,9 @@ Exemplo:
 - Nível 3: Ações específicas (sem role = botão oculto)
 
 Inclua também:
-- Grupos do Keycloak (agrupamento de roles para provisionamento)
+- Grupos do provedor de identidade / IdP (agrupamento de roles para provisionamento)
 - Perfis sugeridos (operador read-only, operador padrão, supervisor, admin)
-- Implementação no frontend (rotas com guard, abas condicionais, botões condicionais)
+- Implementação no frontend/API (rotas com guard/policy, abas condicionais, botões condicionais)
 -->
 
 ### 5.1 Catalogo de Roles
@@ -359,7 +359,7 @@ Inclua também:
 | ---- | ---- |
 |      |      |
 
-### 5.2 Grupos (Keycloak)
+### 5.2 Grupos (Provedor de Identidade / IdP)
 
 <!-- Agrupe as roles em grupos para facilitar o provisionamento.
 Tipos de grupo:
@@ -520,24 +520,25 @@ Não representam o contrato final com a API.
 
 ---
 
-## 8. Componentes Angular Sugeridos
+## 8. Componentes de UI Sugeridos
 
-<!-- Liste os componentes do Angular Material (ou outros) que devem ser usados.
+<!-- Liste os componentes do Design System / biblioteca de UI do projeto que devem ser usados.
 Inclua componentes custom necessários (ex: carrossel, card de resumo).
+Remova esta seção se a feature não possuir interface visual.
 -->
 
-| Componente | Uso | Referencia Angular Material |
-| ---------- | --- | --------------------------- |
-| `MatFormField` + `MatInput` | Campos de formulario | `@angular/material/input` |
-| `MatTabGroup` / `MatTab` | Abas | `@angular/material/tabs` |
-| `MatCard` | Cards | `@angular/material/card` |
-| `MatChip` / Badge | Status (badges) | `@angular/material/chips` |
-| `MatTable` + `MatPaginator` | Tabelas com paginacao | `@angular/material/table` |
-| `MatSelect` | Dropdowns | `@angular/material/select` |
-| `MatTooltip` | Tooltips | `@angular/material/tooltip` |
-| `MatIcon` | Icones | `@angular/material/icon` |
-| `MatDialog` | Modais | `@angular/material/dialog` |
-| `MatButton` | Botoes | `@angular/material/button` |
+| Padrão de UI | Uso | Componente no Design System / Biblioteca |
+| ------------ | --- | ---------------------------------------- |
+| Campo de texto / formulário | Entradas com validação | [PREENCHER] |
+| Abas (Tabs) | Navegação entre seções | [PREENCHER] |
+| Card | Agrupamento visual | [PREENCHER] |
+| Badge / Chip | Status | [PREENCHER] |
+| Tabela + Paginação | Listagens paginadas | [PREENCHER] |
+| Select / Dropdown | Seleção de opções | [PREENCHER] |
+| Tooltip | Ajuda contextual | [PREENCHER] |
+| Ícones | Ações e navegação | [PREENCHER] |
+| Modal / Dialog | Confirmações e formulários modais | [PREENCHER] |
+| Botões | Ações primárias e secundárias | [PREENCHER] |
 |  |  |  |
 
 <!-- Adicione componentes customizados necessários:
@@ -548,17 +549,17 @@ Inclua componentes custom necessários (ex: carrossel, card de resumo).
 
 ## 9. Testes
 
-### 9.1 Testes Unitarios (Vitest)
+### 9.1 Testes Unitarios
 
 <!-- Descreva a expectativa de cobertura de testes unitários:
-- Quais componentes, services, guards, pipes devem ser cobertos
-- Framework utilizado (Vitest com @angular/build:unit-test)
-- Regras especiais (ex: NÃO usar fakeAsync, TestBed.initTestEnvironment, etc.)
+- Quais componentes, serviços, use cases, mappers, guards ou handlers devem ser cobertos
+- Framework/runner configurado no projeto (`.claude/PROJECT_REFERENCE.md` e adaptador ativo em `adapters/`)
+- Regras especiais da stack (se houver)
 -->
 
-Todos os componentes, services, guards, pipes e logica introduzidos por esta feature devem ter cobertura de testes unitarios utilizando Vitest.
+Todos os componentes, serviços, use cases, mappers e regras de negócio introduzidos por esta feature devem ter cobertura de testes unitários usando o runner configurado no projeto (`<TEST_CMD>`).
 
-### 9.2 Testes E2E (Playwright)
+### 9.2 Testes E2E (quando aplicavel)
 
 <!-- Descreva os fluxos E2E que devem ser cobertos:
 - Fluxos principais (busca, navegação, ações críticas)
@@ -596,11 +597,11 @@ O resumo das telas e requisitos transversais deve ser um resumo conciso do spec,
 -->
 
 ```
-Preciso implementar a feature "[PREENCHER: Nome da Feature]" no projeto Angular.
+Preciso implementar a feature "[PREENCHER: Nome da Feature]" no projeto.
 
 Documentos de referência:
 - `[PREENCHER: caminho do módulo]/docs/spec-tela-[PREENCHER].md` — especificação completa da feature (este documento)
-- `templates/project-reference.template.md` — referência técnica do projeto (arquitetura, padrões, stack, guia de implementação)
+- `.claude/PROJECT_REFERENCE.md` (ou `templates/project-reference.template.md`) — referência técnica do projeto (arquitetura, padrões, stack, guia de implementação)
 
 Leia ambos os documentos antes de prosseguir.
 
@@ -649,8 +650,8 @@ Exemplo:
 - Componentes reutilizáveis]
 
 ## Testes:
-- Testes unitários (Vitest) cobrindo todos os componentes, services e lógica introduzidos
-- Testes E2E (Playwright) com Page Object Model e data-testid, cobrindo fluxos principais
+- Testes unitários (`<TEST_CMD>`) cobrindo todos os módulos, serviços, componentes e lógica introduzidos
+- Testes E2E (`<E2E_CMD>`, quando aplicável) com Page Object Model e `data-testid`, cobrindo fluxos principais
 
 ## Referências visuais:
 [PREENCHER: Descrever imagens de referência anexadas, se houver]
