@@ -30,6 +30,7 @@ Inspecione o repositório host (sem alterar nada ainda):
 - **Qualidade de código:** `sonar-project.properties` → SonarQube; ESLint/etc.
 - **Plataforma de docs:** wiki do repo, Confluence, Outline, Notion? (ver Passo 2.4).
 - **Instruções de IA existentes:** já há `CLAUDE.md`/`AGENTS.md`/`.cursor/rules`/`.github/copilot-instructions.md`? (fundir, não sobrescrever cegamente).
+- **Adaptadores compatíveis:** compare arquivos e dependências detectados com os sinais `detect` nos manifestos `adapters/*/*/adapter.json` disponíveis no kit (ver `adapters/README.md`) para sugerir adaptadores de stack, cloud e observabilidade.
 
 Resuma o que detectou e o que ficou incerto.
 
@@ -51,35 +52,37 @@ Azure DevOps · **Jira** · GitHub Issues · GitLab · nenhum.
 **Repositório** (in-repo, default) · **Confluence** · **Outline** · **Notion** · outro.
 → Ver [`docs-target.md`](docs-target.md). Se externo, os fluxos publicam discovery/design/diário/post-mortem na plataforma e referenciam a URL no work item/PR (PRs ficam limpos). Configure o MCP/credenciais correspondentes.
 
-### 2.5 Stack & comandos
-Confirme os comandos reais: `<TEST_CMD>`, `<LINT_CMD>`, `<TYPECHECK_CMD>`, `<BUILD_CMD>`, `<E2E_CMD>`, e os caminhos `<src>`, `<e2e-dir>`. Adapte os checks do `phase-code-review §2` aos padrões da stack detectada.
+### 2.5 Stack, adaptadores e comandos
+Confirme os comandos reais: `<TEST_CMD>`, `<LINT_CMD>`, `<TYPECHECK_CMD>`, `<BUILD_CMD>`, `<E2E_CMD>`, e os caminhos `<src>`, `<e2e-dir>`. Se houver adaptadores compatíveis em `adapters/` (ex.: `adapters/stacks/angular/`), confirme quais acoplar para compor `.claude/PROJECT_REFERENCE.md`, fornecer checks específicos ao `phase-code-review` e sugerir comandos/presets de editor opcionais. Sem adaptador pronto para a stack, adapte os checks do `phase-code-review §2` diretamente aos padrões detectados.
 
 ### 2.6 Ferramentas de IA em uso
 Claude Code · Antigravity · Gemini CLI · Codex · Cursor · Copilot · outras.
 → Mantenha apenas os wrappers das ferramentas usadas (os demais podem ficar como referência). Garanta que cada um aponte para `processes/*.md`. **Atenção:** `.agents/skills/` é compartilhado por Antigravity, Gemini CLI e Codex, e `GEMINI.md` depende de `AGENTS.md` — em projetos Gemini-only ou Antigravity-only, **preserve `AGENTS.md` e `.agents/skills/`** ao remover wrappers de outras ferramentas.
 
 ### 2.7 Pack de domínio (opcional)
-O kit não traz um domain pack pronto. Pergunte se o usuário quer **gerar um domain pack** para o stack do projeto (skills de domínio: API, componentes, testes, convenções) a partir do `templates/project-reference.template.md` preenchido.
+Além dos adaptadores reutilizáveis em `adapters/`, pergunte se o usuário quer **gerar um domain pack** específico do negócio/domínio do projeto (skills de domínio: API, componentes, testes, convenções) a partir do `templates/project-reference.template.md` preenchido.
 
 ## Passo 3 — Apresentar o PLANO de adaptação
 
 Mostre, e peça aprovação explícita:
 
 1. **Mapa de placeholders → valores** (tabela): `<AZURE_ORG>`→…, `<PROJECT_KEY>`→…, `<TEST_CMD>`→…, etc.
-2. **Arquivos a reescrever:** processos, wrappers (por ferramenta de IA), `ai-tools-matrix.md`, scripts.
-3. **Skills a manter / remover / adicionar** (ex.: trocar `setup-azure-mcp`↔`setup-jira`; remover `timesync` se sem time tracking).
-4. **MCPs a configurar** (`.mcp.json`): tracker, qualidade, docs, Figma, Playwright.
-5. **Onde a documentação vai morar** (repo vs externo).
+2. **Adaptadores a acoplar:** lista de adaptadores selecionados (stack/cloud/observabilidade), usando os caminhos declarados em cada `adapter.json` (`files.conventions`, `files.review_checks` e, quando presentes, `files.editor_settings` e `files.skills`). Antes de propor qualquer gravação, compare os nomes (`name`) de todas as skills em `files.skills` **entre si** e com os processos já existentes em `processes/<name>.md`: se duas skills apontarem para o mesmo `processes/<name>.md` ou se esse destino já existir, destaque a colisão no plano e preserve os arquivos existentes até o usuário decidir como seguir (renomear, pular ou substituir).
+3. **Arquivos a reescrever:** processos, wrappers (por ferramenta de IA), `ai-tools-matrix.md`, scripts.
+4. **Skills a manter / remover / adicionar** (ex.: trocar `setup-azure-mcp`↔`setup-jira`; remover `timesync` se sem time tracking).
+5. **MCPs a configurar** (`.mcp.json`): tracker, qualidade, docs, Figma, Playwright.
+6. **Onde a documentação vai morar** (repo vs externo).
 
 ## Passo 4 — Aplicar (após aprovação)
 
-1. Substituir placeholders em `processes/`, wrappers, `ai-tools-matrix.md`, scripts (use busca/substituição consistente; valide que nenhum `<PLACEHOLDER>` ficou para trás onde deveria ter valor). Ajustar também `.cursor/settings.json` conforme formatador, linter e extensões do projeto.
-2. Renomear/remover skills conforme o plano e ajustar todos os conjuntos de wrappers mantidos (`.agents/skills/`, `.claude/skills/`, `.cursor/rules/`, `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md`) + a `ai-tools-matrix.md` coerentemente — preservando `AGENTS.md` e `.agents/skills/` sempre que Antigravity, Gemini CLI ou Codex estiverem em uso.
-3. Escrever/atualizar `.mcp.json` com os servidores escolhidos.
-4. Configurar o time tracking escolhido (script + chaves no `.env.example`).
-5. Configurar o destino de documentação (in-repo vs MCP externo).
-6. Preencher `templates/project-reference.template.md` → `.claude/PROJECT_REFERENCE.md` com a arquitetura/convenções detectadas.
-7. (Opcional) Gerar o domain pack para o stack.
+1. Substituir placeholders em `processes/`, wrappers, `ai-tools-matrix.md`, scripts (use busca/substituição consistente; valide que nenhum `<PLACEHOLDER>` ficou para trás onde deveria ter valor). Ajustar também `.cursor/settings.json` conforme formatador, linter e extensões do projeto (mesclando o arquivo declarado em `files.editor_settings` de cada adaptador apenas quando presente e aprovado).
+2. Acoplar os adaptadores selecionados usando os caminhos declarados no `adapter.json` de cada um: copiar apenas as pastas aprovadas para `adapters/` do projeto host (sem carregar adaptadores de outras stacks), compor o arquivo de `files.conventions` em `.claude/PROJECT_REFERENCE.md`, referenciar o arquivo de `files.review_checks` no `phase-code-review` e, quando o adaptador declarar `files.skills` (respeitando a resolução aprovada pelo usuário para eventuais colisões), copiar o conteúdo de cada `SKILL.md` como processo canônico em `processes/<name>.md` e gerar os wrappers finos correspondentes (`.agents/skills/<name>/SKILL.md`, `.claude/skills/<name>/SKILL.md`, `.cursor/rules/<name>.mdc`, `AGENTS.md` e `.github/copilot-instructions.md`) apontando para `processes/<name>.md` (ver Receita F de `GUIA-DE-EXPANSAO.md`).
+3. Renomear/remover skills conforme o plano e ajustar todos os conjuntos de wrappers mantidos (`.agents/skills/`, `.claude/skills/`, `.cursor/rules/`, `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md`) + a `ai-tools-matrix.md` coerentemente — preservando `AGENTS.md` e `.agents/skills/` sempre que Antigravity, Gemini CLI ou Codex estiverem em uso.
+4. Escrever/atualizar `.mcp.json` com os servidores escolhidos.
+5. Configurar o time tracking escolhido (script + chaves no `.env.example`).
+6. Configurar o destino de documentação (in-repo vs MCP externo).
+7. Preencher `templates/project-reference.template.md` → `.claude/PROJECT_REFERENCE.md` com a arquitetura/convenções detectadas.
+8. (Opcional) Gerar o domain pack para o stack.
 
 ## Passo 5 — Verificar e resumir
 

@@ -12,11 +12,14 @@ Checks:
 2. Local relative markdown links across all .md and .mdc files.
 3. Shell scripts under scripts/ and .claude/integrations/: shebang, executable
    bit, and bash syntax check (bash -n, plus /bin/bash -n when available).
+4. Optional adapters under adapters/<category>/<id>/: manifest schema, matching
+   category/id, detection signals, referenced files, and optional JSON/skills.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shutil
@@ -31,6 +34,13 @@ INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 MD_LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 EXTERNAL_PREFIXES = ("http://", "https://", "mailto:", "tel:")
 MAX_RULE_BYTES = 24_000
+ADAPTER_CATEGORIES = {
+    "stacks": "stack",
+    "cloud": "cloud",
+    "observability": "observability",
+}
+ADAPTER_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+ADAPTER_DETECT_KEYS = ("files", "packages", "directories")
 
 
 def parse_frontmatter(text: str) -> dict[str, str] | None:
@@ -402,11 +412,324 @@ def validate_shell_scripts(root: Path) -> list[str]:
     return errors
 
 
+def _has_symlink_component(base: Path, rel: Path) -> bool:
+    current = base
+    for part in rel.parts:
+        current = current / part
+        if current.is_symlink():
+            return True
+    return False
+
+
+def _resolve_inside_adapter(root: Path, adapter_dir: Path, rel_path: object) -> Path | None:
+    if not isinstance(rel_path, str) or not rel_path.strip():
+        return None
+    candidate = Path(rel_path)
+    if candidate.is_absolute():
+        return None
+    if _has_symlink_component(adapter_dir, candidate):
+        return None
+    repo_root = root.resolve()
+    adapter_root = adapter_dir.resolve()
+    if not adapter_root.is_relative_to(repo_root):
+        return None
+    resolved = (adapter_root / candidate).resolve()
+    if (
+        not resolved.is_relative_to(adapter_root)
+        or not resolved.is_relative_to(repo_root)
+        or resolved == adapter_root
+    ):
+        return None
+    return resolved
+
+
+def validate_adapters(root: Path) -> list[str]:
+    errors: list[str] = []
+    repo_root = root.resolve()
+    adapters_dir = root / "adapters"
+    if not adapters_dir.exists() and not adapters_dir.is_symlink():
+        return []
+    if adapters_dir.is_symlink():
+        return ["adapters: symlinks are not allowed for adapters directory"]
+    if not adapters_dir.is_dir():
+        return ["adapters: expected a directory"]
+
+    for entry in sorted(adapters_dir.iterdir()):
+        if entry.is_symlink():
+            errors.append(
+                f"adapters/{entry.name}: symlinks are not allowed inside adapters/"
+            )
+            continue
+        if entry.is_file():
+            if entry.name != "README.md":
+                errors.append(
+                    f"adapters/{entry.name}: unexpected file (only README.md and category directories are allowed)"
+                )
+            continue
+        if entry.name not in ADAPTER_CATEGORIES:
+            errors.append(
+                f"adapters/{entry.name}: unsupported category directory "
+                f"(expected one of {', '.join(sorted(ADAPTER_CATEGORIES))})"
+            )
+            continue
+
+        expected_category = ADAPTER_CATEGORIES[entry.name]
+        for adapter_dir in sorted(entry.iterdir()):
+            rel_adapter = adapter_dir.relative_to(root).as_posix()
+            if adapter_dir.is_symlink():
+                errors.append(
+                    f"{rel_adapter}: symlinks are not allowed for adapter directories"
+                )
+                continue
+            if adapter_dir.is_file():
+                if adapter_dir.name != "README.md":
+                    errors.append(
+                        f"{rel_adapter}: unexpected file inside category directory"
+                    )
+                continue
+            if not adapter_dir.resolve().is_relative_to(repo_root):
+                errors.append(
+                    f"{rel_adapter}: adapter directory resolves outside repository root"
+                )
+                continue
+            if not ADAPTER_ID_RE.match(adapter_dir.name):
+                errors.append(
+                    f"{rel_adapter}: invalid adapter id '{adapter_dir.name}' (use lowercase kebab-case)"
+                )
+
+            manifest_path = adapter_dir / "adapter.json"
+            rel_manifest = manifest_path.relative_to(root).as_posix()
+            if manifest_path.is_symlink():
+                errors.append(f"{rel_manifest}: symlinks are not allowed for adapter.json")
+                continue
+            if not manifest_path.is_file():
+                errors.append(f"{rel_adapter}: missing adapter.json")
+                continue
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError as exc:
+                errors.append(f"{rel_manifest}: invalid JSON ({exc.msg})")
+                continue
+            if not isinstance(manifest, dict):
+                errors.append(f"{rel_manifest}: manifest must be a JSON object")
+                continue
+
+            adapter_id = manifest.get("id")
+            if adapter_id != adapter_dir.name:
+                errors.append(
+                    f"{rel_manifest}: id '{adapter_id}' does not match directory '{adapter_dir.name}'"
+                )
+            if manifest.get("category") != expected_category:
+                errors.append(
+                    f"{rel_manifest}: category '{manifest.get('category')}' does not match "
+                    f"parent directory '{entry.name}' (expected '{expected_category}')"
+                )
+            for field in ("name", "description"):
+                value = manifest.get(field)
+                if not isinstance(value, str) or not value.strip():
+                    errors.append(f"{rel_manifest}: missing or invalid '{field}'")
+            if "version" in manifest:
+                version = manifest["version"]
+                if not isinstance(version, str) or not version.strip():
+                    errors.append(f"{rel_manifest}: 'version' must be a non-empty string")
+
+            detect = manifest.get("detect")
+            if not isinstance(detect, dict):
+                errors.append(f"{rel_manifest}: missing or invalid 'detect' object")
+            else:
+                unknown_detect = sorted(set(detect) - set(ADAPTER_DETECT_KEYS))
+                if unknown_detect:
+                    errors.append(
+                        f"{rel_manifest}: unsupported detect key(s): {', '.join(unknown_detect)}"
+                    )
+                has_signal = False
+                for key in ADAPTER_DETECT_KEYS:
+                    if key not in detect:
+                        continue
+                    items = detect[key]
+                    if not isinstance(items, list) or not all(
+                        isinstance(item, str) and item.strip() for item in items
+                    ):
+                        errors.append(
+                            f"{rel_manifest}: detect.{key} must be a list of non-empty strings"
+                        )
+                    elif items:
+                        has_signal = True
+                if not has_signal:
+                    errors.append(
+                        f"{rel_manifest}: detect must declare at least one signal in files, packages, or directories"
+                    )
+
+            if "commands" in manifest:
+                commands = manifest["commands"]
+                if not isinstance(commands, dict) or not all(
+                    isinstance(k, str) and k.strip() and isinstance(v, str) and v.strip()
+                    for k, v in commands.items()
+                ):
+                    errors.append(
+                        f"{rel_manifest}: 'commands' must map non-empty strings to non-empty strings"
+                    )
+
+            files = manifest.get("files")
+            if not isinstance(files, dict):
+                errors.append(f"{rel_manifest}: missing or invalid 'files' object")
+                continue
+
+            for req_key in ("conventions", "review_checks"):
+                raw_path = files.get(req_key)
+                resolved = _resolve_inside_adapter(root, adapter_dir, raw_path)
+                if resolved is None:
+                    errors.append(
+                        f"{rel_manifest}: files.{req_key} must be a non-symlink relative path inside the adapter directory"
+                    )
+                elif not resolved.is_file():
+                    errors.append(
+                        f"{rel_manifest}: files.{req_key} target '{raw_path}' does not exist"
+                    )
+
+            if "editor_settings" in files:
+                raw_editor = files["editor_settings"]
+                resolved_editor = _resolve_inside_adapter(root, adapter_dir, raw_editor)
+                if resolved_editor is None:
+                    errors.append(
+                        f"{rel_manifest}: files.editor_settings must be a non-symlink relative path inside the adapter directory"
+                    )
+                elif not resolved_editor.is_file():
+                    errors.append(
+                        f"{rel_manifest}: files.editor_settings target '{raw_editor}' does not exist"
+                    )
+                else:
+                    try:
+                        parsed_editor = json.loads(resolved_editor.read_text(encoding="utf-8"))
+                    except json.JSONDecodeError as exc:
+                        errors.append(
+                            f"{rel_adapter}/{raw_editor}: invalid JSON ({exc.msg})"
+                        )
+                    else:
+                        if not isinstance(parsed_editor, dict):
+                            errors.append(
+                                f"{rel_adapter}/{raw_editor}: editor settings must be a JSON object"
+                            )
+
+            if "skills" in files:
+                raw_skills = files["skills"]
+                if not isinstance(raw_skills, list):
+                    errors.append(f"{rel_manifest}: files.skills must be a list of relative paths")
+                else:
+                    seen_in_adapter: dict[str, str] = {}
+                    for raw_skill in raw_skills:
+                        resolved_skill = _resolve_inside_adapter(root, adapter_dir, raw_skill)
+                        if resolved_skill is None:
+                            errors.append(
+                                f"{rel_manifest}: files.skills entry '{raw_skill}' must be a non-symlink path inside the adapter directory"
+                            )
+                            continue
+                        skill_md = resolved_skill / "SKILL.md"
+                        if skill_md.is_symlink():
+                            errors.append(
+                                f"{rel_adapter}/{raw_skill}/SKILL.md: symlinks are not allowed"
+                            )
+                            continue
+                        if not resolved_skill.is_dir() or not skill_md.is_file():
+                            errors.append(
+                                f"{rel_manifest}: files.skills entry '{raw_skill}' must contain SKILL.md"
+                            )
+                            continue
+                        fm = parse_frontmatter(skill_md.read_text(encoding="utf-8"))
+                        if not fm or fm.get("name") != resolved_skill.name or not fm.get("description"):
+                            errors.append(
+                                f"{rel_adapter}/{raw_skill}/SKILL.md: invalid or incomplete frontmatter"
+                            )
+                            continue
+                        skill_name = fm["name"]
+                        skill_ref = f"{rel_adapter}/{raw_skill}/SKILL.md"
+                        if skill_name in seen_in_adapter:
+                            errors.append(
+                                f"{skill_ref}: duplicate skill name '{skill_name}' within adapter "
+                                f"(already declared at {seen_in_adapter[skill_name]})"
+                            )
+                        else:
+                            seen_in_adapter[skill_name] = skill_ref
+
+    return errors
+
+
+def find_adapter_skill_collisions(
+    root: Path, adapter_dirs: list[Path] | None = None
+) -> list[str]:
+    """Check selected adapters for skill name collisions against each other and processes/."""
+    collisions: list[str] = []
+    repo_root = root.resolve()
+    processes_dir = root / "processes"
+    existing_processes = (
+        {p.stem for p in processes_dir.glob("*.md") if p.is_file()}
+        if processes_dir.is_dir()
+        else set()
+    )
+
+    if adapter_dirs is None:
+        adapter_dirs = []
+        adapters_dir = root / "adapters"
+        if adapters_dir.is_dir() and not adapters_dir.is_symlink():
+            for cat_dir in sorted(adapters_dir.iterdir()):
+                if cat_dir.is_dir() and not cat_dir.is_symlink() and cat_dir.name in ADAPTER_CATEGORIES:
+                    for item in sorted(cat_dir.iterdir()):
+                        if item.is_dir() and not item.is_symlink():
+                            adapter_dirs.append(item)
+
+    seen_skills: dict[str, str] = {}
+    for adapter_dir in adapter_dirs:
+        if adapter_dir.is_symlink() or not adapter_dir.is_dir():
+            continue
+        if not adapter_dir.resolve().is_relative_to(repo_root):
+            continue
+        manifest_path = adapter_dir / "adapter.json"
+        if manifest_path.is_symlink() or not manifest_path.is_file():
+            continue
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(manifest, dict):
+            continue
+        files = manifest.get("files")
+        if not isinstance(files, dict) or not isinstance(files.get("skills"), list):
+            continue
+        rel_adapter = adapter_dir.resolve().relative_to(repo_root).as_posix()
+        for raw_skill in files["skills"]:
+            resolved_skill = _resolve_inside_adapter(root, adapter_dir, raw_skill)
+            if resolved_skill is None:
+                continue
+            skill_md = resolved_skill / "SKILL.md"
+            if skill_md.is_symlink() or not skill_md.is_file():
+                continue
+            fm = parse_frontmatter(skill_md.read_text(encoding="utf-8"))
+            if not fm or not fm.get("name"):
+                continue
+            skill_name = fm["name"]
+            skill_ref = f"{rel_adapter}/{raw_skill}/SKILL.md"
+            if skill_name in seen_skills:
+                collisions.append(
+                    f"{skill_ref}: skill name '{skill_name}' collides with "
+                    f"{seen_skills[skill_name]} (both target processes/{skill_name}.md)"
+                )
+            else:
+                seen_skills[skill_name] = skill_ref
+            if skill_name in existing_processes:
+                collisions.append(
+                    f"{skill_ref}: skill name '{skill_name}' collides with existing "
+                    f"processes/{skill_name}.md"
+                )
+
+    return collisions
+
+
 def validate_repo(root: Path) -> list[str]:
     errors: list[str] = []
     errors.extend(validate_wrappers(root))
     errors.extend(validate_links(root))
     errors.extend(validate_shell_scripts(root))
+    errors.extend(validate_adapters(root))
     return errors
 
 
