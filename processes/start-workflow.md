@@ -7,7 +7,7 @@ description: "Use quando o usuário iniciar uma nova sessão de desenvolvimento 
 
 Ponto de entrada para sessões de desenvolvimento assistido por IA. Escolha o fluxo conforme o risco e o escopo. Use as verificações do projeto e acione revisão independente, documentação, tracker e time tracking quando forem relevantes para a entrega.
 
-> **Stack de exemplo.** Os comandos e caminhos abaixo usam um stack de exemplo (Angular + Vitest + Playwright, tracker Azure DevOps). Rode a skill **`/integrar`** para adaptar comandos, caminhos e ferramentas ao SEU projeto. Onde lê-se "o tracker", entenda a ferramenta configurada (Azure DevOps, Jira, GitHub Issues…).
+> **Adaptação ao projeto.** Os marcadores (`<TEST_CMD>`, `<LINT_CMD>`, `<src>`, …) e exemplos de tracker (Azure DevOps, Jira, GitHub Issues…) são especializados para o SEU projeto pela skill **`simbiose`**. Onde lê-se "o tracker", entenda a ferramenta configurada no projeto.
 
 ---
 
@@ -17,7 +17,7 @@ Estes princípios moldam todos os fluxos abaixo. Detalhe e contexto em [`docs/ap
 
 1. **Edições em documentos gerados pela IA passam pelo orquestrador.** Editar manualmente um spec/design/plano deixa o orquestrador com uma versão velha em contexto e ele "corrige" suas mudanças. Peça a edição ao orquestrador — ou avise explicitamente o que mudou e por quê.
 2. **Higienize o codebase antes da implementação assistida.** Código morto/artefatos não usados poluem discovery, design e implementação — a IA trata tudo que encontra como relevante e propaga o ruído.
-3. **Nunca rode reviewer em background sobre arquivos que você está editando**, nem rode testes concorrentes (muitos runners — ex. Vitest — não suportam instâncias paralelas no mesmo projeto). Sequencial, ou isolado com lista explícita de arquivos a não tocar.
+3. **Nunca rode reviewer em background sobre arquivos que você está editando**, nem rode testes concorrentes (test runners podem compartilhar recursos no mesmo projeto). Sequencial, ou isolado com lista explícita de arquivos a não tocar.
 4. **Dimensione a revisão pelo risco da fase.** Prefira uma revisão independente em entregas de alto impacto ou complexidade, quando disponível e autorizada. Aplique apenas correções que façam parte da entrega.
 5. **Após 2-3 tentativas falhas num ajuste visual/CSS, pare e delegue** a um subagente com validação visual (Playwright MCP) e o histórico das tentativas falhas.
 6. **Escolha o porte do fluxo pelo risco, escopo e reversibilidade.** A quantidade de arquivos ajuda a estimar o esforço. Uma mudança pequena em autorização ou cobrança ainda pode exigir revisão independente.
@@ -248,12 +248,7 @@ Antes: rodar a [validação pré-PR](#validação-pré-pr). Criar PR via `gh` se
 
 ### D.2 — Inventário de testes existentes
 
-Antes de qualquer mudança, levantar cobertura atual (ex.):
-
-```bash
-find <src>/modules/[modulo] -name "*.spec.ts" | wc -l   # unitários
-find <e2e-dir> -name "*.spec.ts" | wc -l                # E2E
-```
+Antes de qualquer mudança, levante a cobertura atual na convenção de testes do projeto (unitários em `<src>` e E2E em `<e2e-dir>`, quando aplicável).
 
 Se a cobertura for insuficiente, **criar testes ANTES da refatoração** (caracterização): escrever testes que validam o comportamento atual, confirmar que passam, e só então refatorar — os testes devem continuar passando após cada etapa. Para E2E, seguir [`docs/e2e.md`](../docs/e2e.md) (Page Object Model, `data-testid`, fixture de auth, AAA).
 
@@ -281,15 +276,9 @@ Antes: [validação pré-PR](#validação-pré-pr). Criar PR via `gh`. Para refa
 
 ### E.2 — Identificar prioridades
 
-Levantar cobertura e gaps (ex.):
+Levante a cobertura atual e os arquivos de produção sem testes correspondentes em `<src>` usando o comando de cobertura ou busca da stack do projeto.
 
-```bash
-find <src> -name "*.component.ts" | while read f; do
-  spec="${f%.ts}.spec.ts"; [ ! -f "$spec" ] && echo "SEM TESTE: $f"
-done
-```
-
-Priorizar: **Crítico** (fluxos de negócio, ações destrutivas, validações) → **Importante** (lógica, services, guards, pipes) → **Nice-to-have** (apresentação simples).
+Priorizar: **Crítico** (fluxos de negócio, ações destrutivas, validações, segurança) → **Importante** (serviços, regras de domínio, integrações, handlers/guards) → **Nice-to-have** (apresentação simples e utilitários triviais).
 
 ### E.3 — Implementar testes
 
@@ -360,15 +349,15 @@ Se (a): rodar a [validação pré-PR](#validação-pré-pr) e criar PR via `gh`;
 
 ## Validação pré-PR
 
-**Aplicável a todos os fluxos** (B.6, C.4, D.5, E.5, F.3, G.5). Antes de criar o PR, rode as verificações relevantes da stack do projeto e confira o estado do repositório. Exemplo para Angular:
+**Aplicável a todos os fluxos** (B.6, C.4, D.5, E.5, F.3, G.5). Antes de criar o PR, rode as verificações relevantes da stack do projeto (documentadas na configuração/CI ou preenchidas via `/integrar`) e confira o estado do repositório:
 
 ```bash
-yarn ng test --watch=false        # testes
-npx playwright test               # E2E (se relevante)
-yarn lint                         # lint
-npx tsc --noEmit                  # typecheck
+<LINT_CMD>                        # lint / análise estática local
+<TYPECHECK_CMD>                   # typecheck / build check (quando aplicável)
+<TEST_CMD>                        # testes unitários / integração
+<E2E_CMD>                         # E2E (quando relevante)
 git status                        # estado da árvore
-git diff --stat origin/<main>...HEAD
+git diff --stat origin/<main>...HEAD   # ou compare com a branch base local se não houver remoto
 ```
 
 Confirmar: exit codes 0; `git status` mostra só o esperado (sem órfãos como `.env`, PNGs de debug, `.DS_Store`); `git diff --stat` bate com o escopo do work item.

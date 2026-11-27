@@ -31,7 +31,7 @@ Use o roteiro abaixo na sessão atual ou compartilhe-o com um reviewer autorizad
 Use the following prompt structure:
 
 ````
-Review the proposed change for this project.
+Review the proposed change using the stack and conventions documented in `.claude/PROJECT_REFERENCE.md` and `docs/discovery.md` when available.
 
 ## Review mode
 [Assessment or implementation review, including any explicitly authorized edits]
@@ -73,38 +73,36 @@ For each file, verify:
 
 If the spec itself has problems (gaps, contradictions, outdated info), recommend updating the spec — don't silently work around it.
 
-### 2. Code Quality & Patterns (example stack: Angular)
+### 2. Code Quality & Patterns
 
-> Os checks abaixo refletem o stack de exemplo (Angular). Adapte-os ao seu stack com a skill `/integrar`.
+> Verifique contra os padrões da stack configurada no projeto (`.claude/PROJECT_REFERENCE.md` e `docs/discovery.md`).
 
-- `ChangeDetectionStrategy.OnPush` on all components
-- `inject()` for DI (not constructor injection)
-- Angular Signals (`signal()`, `computed()`, `input()`, `output()`)
-- `takeUntilDestroyed(this.destroyRef)` on all subscriptions
-- Control flow syntax (`@if`, `@for`, `@switch`)
-- Text in Portuguese brasileiro (pt-BR) with correct accents
-- Dark mode support (`:host-context(.dark-theme)` or CSS variables)
-- No unused imports, no `console.log` in production code
+- Idiomatic use of the project's language, framework, and state/reactivity patterns
+- Proper dependency injection, error handling, and resource cleanup (connections, timers, listeners, subscriptions, file handles)
+- Clear control flow and small, readable functions/components without unnecessary complexity
+- User-facing copy in the project's configured language (default pt-BR with proper accents)
+- Consistent styling/theming and design tokens when touching UI (including dark mode if supported)
+- No unused imports, dead code, or debug logging left in production code
 
 ### 3. Architecture & Layer Consistency
 
-- Entity fields → DTO fields → Mapper transform → Gateway methods → Use Case → Facade → Component
-- Names and types match across all layers
+- Respect the project's module and layer boundaries (e.g., domain → data/infra → application/use cases → presentation/API)
+- Names, types, and contracts match across all layers
 - SOLID principles respected, separation of concerns clear
-- Use cases are pure (no direct HTTP, no UI concerns)
-- Gateways abstract HTTP details from the domain
-- New shared utilities placed under `shared/` (not duplicated in feature modules)
+- Core domain/business logic stays decoupled from transport/UI details
+- Infrastructure/gateways abstract external I/O details from the domain
+- New shared utilities placed in the project's shared module/package (not duplicated across features)
 
 ### 4. Bug Detection
 
 Identify actual bugs that will impact functionality:
 
 - Logic errors (off-by-one, wrong operator, inverted condition)
-- Null/undefined handling (missing optional chaining, unsafe access)
-- Race conditions (subscription leaks, unhandled async, stale closures in Signals)
-- Memory leaks (missing `takeUntilDestroyed`, unsubscribed observables)
-- Security vulnerabilities (XSS via `[innerHTML]`, missing input sanitization, exposed credentials)
-- Performance problems (large lists without `trackBy`, expensive computations in templates)
+- Null/undefined/nil handling (missing guards, unsafe access)
+- Race conditions (unhandled async, stale state, concurrent mutation hazards)
+- Resource and memory leaks (unclosed handles/connections, uncleaned timers, listeners, or subscriptions)
+- Security vulnerabilities (injection, XSS, missing input validation/sanitization, exposed credentials)
+- Performance problems (N+1 queries, unbounded lists/renders, expensive computations in hot paths)
 
 ### 5. Documentation & Accessibility
 
@@ -121,35 +119,34 @@ Na avaliação, reporte os achados e suas consequências. Na revisão de impleme
 ### 7. Run quality checks
 Identifique os comandos na documentação, configuração ou CI do projeto. Rode lint, checagem de tipos e testes conforme a stack e o risco da mudança. Comece pelas verificações mais rápidas quando isso ajudar a obter feedback. Se um check aplicável estiver indisponível, registre a limitação e rode os demais.
 
-Preserve a saída completa (mensagens e arquivo:linha) para diagnosticar falhas. Os comandos abaixo são exemplos para Angular.
+Preserve a saída completa (mensagens e arquivo:linha) para diagnosticar falhas. Use os comandos reais do projeto (substitua os marcadores pelos comandos detectados ou configurados via `/simbiose`):
 
 Se o RTK estiver ativo (hook global na ferramenta de AI — ver `full-setup.md`),
-os comandos abaixo são reescritos transparentemente para `rtk yarn ng test`,
-`rtk tsc` etc, comprimindo a saída de forma semântica (vitest mostra só
-failures, tsc agrupa erros por arquivo, etc.). Não é necessário usar `tail`
-ou redirect — RTK já entrega só o que importa:
+os comandos abaixo são reescritos transparentemente para `rtk <cmd>`,
+comprimindo a saída de forma semântica (mostrando apenas falhas e erros
+agrupados por arquivo). Não é necessário usar `tail` ou redirect — RTK já
+entrega só o que importa:
 
 ```bash
-cd <APP_DIR>
+# Lint / análise estática local
+<LINT_CMD>
 
-# Lint
-yarn lint
-
-# Typecheck (faster than full test for type errors)
-npx tsc --noEmit
+# Typecheck / build check (quando aplicável à stack)
+<TYPECHECK_CMD>
 
 # Unit tests
-yarn ng test --watch=false
+<TEST_CMD>
 
-# E2E tests (only if E2E files were modified or new components affect existing E2E)
-npx playwright test --reporter=list
+# E2E / integration tests (only if E2E files were modified or behavior affects existing E2E)
+<E2E_CMD>
 ```
 
 Se o RTK NÃO estiver instalado e a suíte for muito verbosa, use:
 
 ```bash
-yarn ng test --watch=false 2>&1 | tee /tmp/test-output.log
-# depois inspecione com Read/Grep no /tmp/test-output.log
+<TEST_CMD> > /tmp/test-output.log 2>&1
+TEST_STATUS=$?
+# inspecione /tmp/test-output.log com Read/Grep e confira TEST_STATUS (0 = sucesso)
 ```
 
 Identifique quais falhas foram causadas pela mudança. Na revisão de implementação, corrija as falhas introduzidas que estiverem no escopo. Registre falhas preexistentes separadamente quando forem relevantes.
@@ -158,14 +155,12 @@ Identifique quais falhas foram causadas pela mudança. Na revisão de implementa
 
 Se você usa um proxy que comprime saídas de Bash (ex. RTK — Rust Token Killer),
 há risco residual de a heurística suprimir um warning legítimo. Antes de seguir
-para a análise complementar, o commit ou o PR, rode as verificações críticas do passo 7 em passthrough cru (ex.: `rtk proxy <cmd>`). Exemplo para Angular:
+para a análise complementar, o commit ou o PR, rode as verificações críticas do passo 7 em passthrough cru (ex.: `rtk proxy <cmd>`):
 
 ```bash
-cd <APP_DIR>
-
-rtk proxy yarn ng test --watch=false
-rtk proxy npx tsc --noEmit
-rtk proxy yarn lint
+rtk proxy <TEST_CMD>
+rtk proxy <TYPECHECK_CMD>
+rtk proxy <LINT_CMD>
 ```
 
 Confirmar:
@@ -230,7 +225,7 @@ Apresente primeiro os achados por severidade, com arquivo e linha, impacto e ver
 | # | Severity | Area | File:Line | Issue | Status |
 |---|----------|------|-----------|-------|-------------|
 | 1 | Critical | Spec compliance | path:42 | Field renamed without spec update | Renamed back to spec name |
-| 2 | Important | Code quality | path:99 | Missing `OnPush` | Added |
+| 2 | Important | Code quality | path:99 | Uncleaned resource handle / missing error check | Fixed |
 
 ### Issues Requiring User Decision
 | # | Area | File:Line | Issue | Options |

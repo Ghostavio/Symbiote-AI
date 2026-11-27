@@ -4,7 +4,7 @@ This repository supports AI-assisted development across multiple tools. The proc
 
 ## Project context
 
-- **Project:** o projeto — stack definido via `/integrar` (exemplo do kit: Angular + Material, Clean Architecture, Vitest, Playwright)
+- **Project:** `<PROJECT_NAME>` — stack, arquitetura e comandos definidos pela skill `simbiose` e documentados em `.claude/PROJECT_REFERENCE.md`
 - **Repository:** `<ORG>/<PROJECT_KEY>`
 - **Tracker:** Azure DevOps nos exemplos; para Jira use `setup-jira`
 - **Architecture overview:** `templates/project-reference.template.md`
@@ -32,17 +32,16 @@ When the user requests one of these by name, open the corresponding canonical an
 | `setup-sonarqube-mcp`     | [processes/setup-sonarqube-mcp.md](../processes/setup-sonarqube-mcp.md) | Configurar MCP do SonarQube (via Docker)                                                |
 | `setup-7pace`             | [processes/setup-7pace.md](../processes/setup-7pace.md)       | Configurar integração com 7pace Timetracker                                             |
 | `full-setup`              | [processes/full-setup.md](../processes/full-setup.md)         | Setup completo do ambiente em uma nova máquina                                          |
-| `simbiose`                | [processes/simbiose.md](../processes/simbiose.md)             | Bootstrap de um projeto NOVO (greenfield) com o Symbiote-AI pré-configurado (alias: `scaffold`) |
-| `scaffold` *(alias)*      | [processes/simbiose.md](../processes/simbiose.md)             | Alias retrocompatível de `simbiose`                                                     |
-| `integrar`                | [processes/integrar.md](../processes/integrar.md)             | Adaptar o kit ao projeto host (stack, tracker, time tracking, docs, convenções)         |
+| `simbiose`                | [processes/simbiose.md](../processes/simbiose.md)             | Aplicar o Symbiote-AI a um projeto existente ou iniciar um novo |
+| `scaffold` *(depreciado)*      | [processes/simbiose.md](../processes/simbiose.md)             | Use `simbiose` para iniciar um projeto novo                                                     |
+| `integrar` *(depreciado)*                | [processes/integrar.md](../processes/integrar.md)             | Procedimento de integração para projetos existentes, acionado por `simbiose`         |
 | `figma-requirements`      | [processes/figma-requirements.md](../processes/figma-requirements.md) | Levantar requisitos a partir de um design no Figma (MCP local ou online)        |
 | `setup-jira`              | [processes/setup-jira.md](../processes/setup-jira.md)         | Configurar MCP do Jira (Atlassian) — alternativa ao `setup-azure-mcp`                    |
 | `docs-target`             | [processes/docs-target.md](../processes/docs-target.md)       | Destino da documentação: repo ou plataforma externa (Confluence/Outline/Notion)         |
 
 ## Idioma e convenções de código
 
-- **Idioma da UI e mensagens:** Português brasileiro (pt-BR)
+- **Idioma da UI e mensagens:** Português brasileiro (pt-BR) por padrão (ajuste conforme o projeto)
 - **Commit messages:** Português brasileiro
 - **Sem `Co-Authored-By` em commits**
-- **Standalone components, `inject()`, Angular Signals, `OnPush`**
-- **Sem `fakeAsync`/`tick`, sem `TestBed.initTestEnvironment()`** — Vitest com `@angular/build:unit-test`
+- **Padrões da stack e testes:** siga a arquitetura, os linters e o framework de testes documentados em `.claude/PROJECT_REFERENCE.md` e `docs/discovery.md` (configurados pela skill `simbiose`)

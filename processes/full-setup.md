@@ -213,7 +213,7 @@ Consultar https://github.com/obra/superpowers/blob/main/README.md para detalhes 
 | Capacidade                | Claude Code                              | Cursor                                | VSCode + Copilot                                  | Codex / Antigravity                  |
 | ------------------------- | ---------------------------------------- | ------------------------------------- | ------------------------------------------------- | ------------------------------------ |
 | Browser automation (E2E)  | `playwright@claude-plugins-official`     | Playwright MCP via `.cursor/mcp.json` | Playwright MCP via `settings.json`                | Playwright MCP                       |
-| TypeScript / Angular LSP  | `typescript-lsp@claude-plugins-official` | Built-in TS server                    | Built-in TS server                                | Tool-dependent                       |
+| Language Server (LSP)     | Plugin LSP da stack (ex.: `typescript-lsp@claude-plugins-official`) | Built-in / extensão da stack          | Built-in / extensão da stack                      | Tool-dependent                       |
 
 #### Comandos de instalação por ferramenta (Claude Code)
 
@@ -221,7 +221,10 @@ Consultar https://github.com/obra/superpowers/blob/main/README.md para detalhes 
 claude plugin marketplace add https://registry.claude.ai/marketplace
 claude plugin install superpowers@claude-plugins-official
 claude plugin install playwright@claude-plugins-official
-claude plugin install typescript-lsp@claude-plugins-official
+
+# Opcional — instale apenas o plugin LSP correspondente à stack do projeto
+# Exemplo para TypeScript/JavaScript:
+# claude plugin install typescript-lsp@claude-plugins-official
 ```
 
 Se algum plugin falhar:
@@ -242,7 +245,7 @@ Após instalar/configurar, informar:
 > **Capacidades configuradas:**
 > - **Superpowers** — brainstorming, planning, code review, TDD, debugging, executing-plans, etc.
 > - **Playwright MCP** — automação de browser (testes E2E, validação visual)
-> - **TypeScript / Angular tooling** — análise e navegação de código
+> - **Language Server (LSP) da stack** — análise e navegação de código
 
 ---
 
