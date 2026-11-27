@@ -24,6 +24,7 @@ DESCRIPTION=""
 START_TIME=""
 END_TIME=""
 DRY_RUN=false
+REQUIRE_CONFIG=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -31,6 +32,7 @@ while [[ $# -gt 0 ]]; do
     --start) START_TIME="$2"; shift 2 ;;
     --end) END_TIME="$2"; shift 2 ;;
     --dry-run) DRY_RUN=true; shift ;;
+    --require-config) REQUIRE_CONFIG=true; shift ;;
     *) echo "[Clockify] Argumento desconhecido: $1" >&2; exit 1 ;;
   esac
 done
@@ -46,13 +48,21 @@ fi
 START_UTC=$(INTERVAL_JSON="$INTERVAL" python3 -c 'import json, os; print(json.loads(os.environ["INTERVAL_JSON"])["start_utc"])')
 END_UTC=$(INTERVAL_JSON="$INTERVAL" python3 -c 'import json, os; print(json.loads(os.environ["INTERVAL_JSON"])["end_utc"])')
 
-if [[ -z "${CLOCKIFY_API_TOKEN:-}" ]]; then
-  echo "[Clockify] SKIP — CLOCKIFY_API_TOKEN não configurado"
-  exit 0
-fi
-if [[ -z "${CLOCKIFY_WORKSPACE_ID:-}" ]]; then
-  echo "[Clockify] SKIP — CLOCKIFY_WORKSPACE_ID não configurado"
-  exit 0
+if ! $DRY_RUN; then
+  MISSING_CONFIG=""
+  if [[ -z "${CLOCKIFY_API_TOKEN:-}" ]]; then
+    MISSING_CONFIG="CLOCKIFY_API_TOKEN"
+  elif [[ -z "${CLOCKIFY_WORKSPACE_ID:-}" ]]; then
+    MISSING_CONFIG="CLOCKIFY_WORKSPACE_ID"
+  fi
+  if [[ -n "$MISSING_CONFIG" ]]; then
+    if $REQUIRE_CONFIG; then
+      echo "[Clockify] ERRO — $MISSING_CONFIG não configurado." >&2
+      exit 1
+    fi
+    echo "[Clockify] SKIP — $MISSING_CONFIG não configurado"
+    exit 0
+  fi
 fi
 
 PROJECT_ID="${CLOCKIFY_PROJECT_ID:-}"

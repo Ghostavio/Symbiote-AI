@@ -88,6 +88,12 @@ Use o wrapper `sync.sh` (nesta pasta) — registra no **7pace E no Clockify** de
 
 Se você só registra no 7pace (sem Clockify), use `scripts/sync-7pace.sh` diretamente.
 
+### Retomar após falha parcial
+
+Reutilize os argumentos da sessão original e acrescente `--provider clockify` ou `--provider 7pace` para enviar somente ao provedor pendente. O wrapper mantém o prefixo do work item no Clockify e a exceção para `Daily`. Você pode combinar com `--dry-run` para conferir o payload antes do envio.
+
+Se houve timeout, falha de rede ou resposta inconclusiva, confira no provedor se a entrada existe antes de retomar. Sem a opção `--provider`, o wrapper continua executando 7pace primeiro e só chama Clockify se o 7pace tiver sucesso. Uma retomada explícita para Clockify retorna erro se o token ou o workspace estiver ausente.
+
 ### 4. (Opcional) Automatizar com a memória do assistente
 
 Salve uma preferência no seu assistente de IA indicando os provedores de controle de tempo ativos no projeto (ex.: somente Clockify via `sync-clockify.sh`, ou 7pace + Clockify via o wrapper `sync.sh`). A skill canônica [`timesync`](../../../processes/timesync.md) lê essa preferência automaticamente.
@@ -95,7 +101,7 @@ Salve uma preferência no seu assistente de IA indicando os provedores de contro
 ## Regras específicas do Clockify
 
 1. **Prefixo `{WorkItemId}:` na descrição:** como o Clockify não tem vínculo nativo com o tracker, use `{WorkItemId}: {nome}` (ex.: `1234: Setup e Infraestrutura`). **Exceção:** a Daily é sempre apenas `Daily` (sem prefixo e sem "Scrum").
-2. **Timezone explícito:** passe `--start` e `--end` com o offset local válido na data da sessão (por exemplo, `-03:00`). `Z` representa UTC e é enviado sem conversão.
+2. **Fuso explícito:** passe `--start` e `--end` com o offset local válido na data da sessão (por exemplo, `-03:00`) ou com `Z` para UTC. O script envia os instantes em UTC.
 3. **`projectId` obrigatório:** configure `CLOCKIFY_PROJECT_ID` no `.env` para vincular todas as entradas ao projeto correto.
 4. **Endpoints essenciais da API v1** (`https://api.clockify.me/api/v1`, header `X-Api-Key`):
    - Criar: `POST /workspaces/{workspaceId}/time-entries`
