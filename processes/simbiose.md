@@ -42,7 +42,7 @@ Confirme o comando com o usuário antes de rodar. Se ele já tem um boilerplate/
 Copie a estrutura do kit para a raiz do projeto recém-criado (sem `.env`):
 
 ```
-.claude/   .cursor/   .github/copilot-instructions.md   AGENTS.md
+.agents/   .claude/   .cursor/   .github/copilot-instructions.md   AGENTS.md   GEMINI.md
 processes/   templates/   docs/   scripts/   ai-tools-matrix.md
 ```
 
