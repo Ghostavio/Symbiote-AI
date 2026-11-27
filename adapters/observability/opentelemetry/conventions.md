@@ -33,3 +33,12 @@ Convenções recomendadas para projetos com instrumentação de observabilidade 
 - **Flush/shutdown gracioso:** em servidores, chame `sdk.shutdown()` no encerramento gracioso (`SIGTERM`/`SIGINT`); em jobs efêmeros, CLIs, Lambdas ou Workers, garanta `forceFlush()` (ex.: antes do fim da execução ou via `ctx.waitUntil(...)`) para não perder os últimos spans/métricas.
 - **Volume e sampling:** evite logs `info`/`debug` dentro de loops quentes ou retries acelerados; configure sampling coerente com o volume de produção (head ou tail sampling no Collector).
 - **SLOs e alertas acionáveis:** derive alertas de sintomas que afetam o usuário (taxa de erro, latência p95/p99, burn rate de SLO) associados a contexto/runbook, em vez de alertar sobre ruído transitório.
+
+## Inspeção de logs em Kubernetes com `kubectl` (quando aplicável)
+
+Quando o serviço rodar em **Kubernetes** e o ambiente tiver `kubectl` configurado com acesso autorizado, siga estas diretrizes para inspeção segura de logs:
+
+- **Confirme contexto e namespace antes de consultar:** verifique `kubectl config current-context` e passe sempre `--context <ctx>` e `-n <namespace>` explicitamente para evitar consultar (ou tocar) o cluster errado.
+- **Somente leitura por padrão:** restrinja diagnósticos a comandos read-only (`kubectl logs`, `kubectl get pods`, `kubectl describe pod`, `kubectl get events`). Nunca execute comandos mutantes (`apply`, `delete`, `patch`, `rollout restart`, `scale`) nem despeje segredos (`kubectl get secret`) sem aprovação explícita.
+- **Limite volume e evite travar sessões:** use sempre `--tail` (ex.: `--tail=200`) e/ou `--since` (ex.: `--since=15m`) com `--timestamps`; especifique `-c <container>` em pods multi-container (ex.: com sidecar) e `--previous` em casos de `CrashLoopBackOff`/OOMKilled. Em execuções automatizadas não interativas, **não** use `-f`/`--follow` (bloqueia indefinidamente).
+- **Correlação e sanitização:** em logs JSON, filtre por `trace_id`/`span_id` ou nível (`error`/`warn`) para cruzar com traces distribuídos e redija quaisquer tokens, cookies ou PII antes de compartilhar trechos em issues, PRs ou diários.

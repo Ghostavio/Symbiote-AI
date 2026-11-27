@@ -32,4 +32,9 @@ Exemplos condicionais (somente quando a respectiva ferramenta/configuração exi
 # Rodar testes de instrumentação configurados no projeto (ex.: com InMemorySpanExporter / exporter mockado)
 # Validar sintaxe de configuração do OpenTelemetry Collector quando o binário existir localmente:
 otelcol --config=otel-collector-config.yaml validate
+
+# Em projetos Kubernetes com kubectl e contexto confirmados (somente leitura, sem -f/--follow):
+kubectl config current-context
+kubectl logs -n <namespace> <pod> -c <container> --since=15m --tail=200 --timestamps
+kubectl logs -n <namespace> <pod> -c <container> --previous --tail=200
 ```
