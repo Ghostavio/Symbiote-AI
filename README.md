@@ -22,7 +22,7 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 
 ## Começando
 
-Com o kit disponível na ferramenta de IA, invoque a skill **`simbiose`** (ex.: **`$simbiose`** no Codex, **`/simbiose`** no Claude Code, ou via `.agents/skills/` / `/skills` no Antigravity e Gemini CLI). Se estiver trabalhando em outro diretório, informe o caminho de destino. A skill detecta um projeto existente e propõe a adaptação (incluindo adaptadores compatíveis em `adapters/`), ou prepara a criação de um projeto novo. Quando o contexto for ambíguo, ela pergunta antes de começar.
+Com o kit disponível na ferramenta de IA, invoque a skill **`simbiose`** (ex.: **`$simbiose`** no Codex, **`/simbiose`** no Claude Code, ou peça *"Use a skill simbiose"* no Antigravity e no Gemini CLI — no Gemini CLI, use `/skills list` para conferir se ela foi descoberta). Se estiver trabalhando em outro diretório, informe o caminho de destino. A skill detecta um projeto existente e propõe a adaptação (incluindo adaptadores compatíveis em `adapters/`), ou prepara a criação de um projeto novo. Quando o contexto for ambíguo, ela pergunta antes de começar.
 
 Para disponibilizar as skills diretamente em um repositório existente, copie o conteúdo do kit para a raiz desse repositório, preservando os arquivos de configuração existentes.
 
