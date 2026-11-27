@@ -4,6 +4,23 @@ Todas as mudanças relevantes do **Symbiote-AI** são registradas neste arquivo.
 
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto adota [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.3.0] — 2026-11-27
+
+### Adicionado
+- **Adaptador oficial de stack React (`adapters/stacks/react/`):** convenções modernas para React (JavaScript ou TypeScript quando configurado), Hooks, separação de estado cliente/servidor, RSC, acessibilidade, checklist especializado para `phase-code-review`, preset de editor escopado por linguagem e testes cobrindo instalação seletiva via `simbiose` (#23).
+- **Adaptadores oficiais de Cloud e Observabilidade (`adapters/cloud/` e `adapters/observability/`):** novos adaptadores composíveis para **Cloudflare** (Workers/Pages, bindings, KV/D1/R2/Durable Objects/Queues, cache de borda, MCP oficial + Wrangler CLI), **AWS** (IAM de menor privilégio, OIDC/Secrets Manager, IaC com `cdk synth --no-lookups`, Lambda/SQS/S3/DynamoDB, `awslabs/mcp` + `awslabs.aws-iac-mcp-server`) e **OpenTelemetry** (logs estruturados correlacionados, tracing W3C com encerramento explícito de spans, métricas RED/USE com cardinalidade controlada, redação de PII, SLOs e diretrizes seguras de `kubectl logs` com `--context` explícito), além de testes de composição ortogonal (`stack` + `cloud` + `observability`) (#25).
+- **Contrato e matriz de integrações por capacidade (`docs/integracoes.md`):** contrato de 6 campos por operação desacoplando host Git, board, CI, documentação e horas, com distinção explícita entre estados **Verificado**, **Documentado no kit** e **Candidato**, exemplos de composição (Linear + GitLab; Jira + Bitbucket Cloud + Confluence) e seção `## Integrações por Capacidade` em `templates/project-reference.template.md` (#26).
+- **Suporte multilíngue Brazil-first (`README.en.md` e `i18n/`):** `pt-BR` preservado como idioma canônico único em `processes/`, com seletor bidirecional em `README.md` / `README.en.md`, manifesto extensível `i18n/i18n.json`, guias traduzidos em `i18n/en/` (`expansion-guide.md`, `adapters.md`), setup locale-aware em `simbiose`, `integrar`, `spec-builder`, `AGENTS.md`, `.github/copilot-instructions.md` e `docs/workflow.md`, **Receita H** em `GUIA-DE-EXPANSAO.md` e validação `validate_i18n()` em `scripts/validate-kit.py` (contagem de cabeçalhos H2, links recíprocos e proteção contra symlinks/path traversal) (#27).
+- **Retomada por provedor no time tracking:** opção `--provider 7pace|clockify` em `.claude/integrations/timetracking/sync.sh` e `--require-config` em `sync-clockify.sh` para reenviar somente ao provedor pendente com os argumentos originais, após conferir o estado no serviço quando o resultado anterior for incerto (#20).
+
+### Alterado
+- **Desangularização completa de templates e guias (Fatia 2):** removidos defaults residuais de Angular, Material, Keycloak e Vitest de `templates/project-reference.template.md`, `templates/spec-template.md`, `processes/spec-builder.md`, `docs/workflow.md` e `docs/e2e.md`, separando `<API_BASE_URL>` de `<DEV_URL>` e direcionando projetos Angular para `adapters/stacks/angular/` (#21).
+- **Fluxo de work items neutro de board:** `simbiose`, `integrar`, `create-work-item`, `spec-builder`, `start-workflow`, `docs/workflow.md`, `docs/processo-work-items.md` e templates agora preservam o fluxo real do board configurado, propõem **A fazer → Em andamento → Em revisão → Concluído** quando indefinido e permitem operar sem board; specs passam a usar o campo neutro **Item no board** mantendo compatibilidade com `Azure DevOps Feature ID` (#22).
+- **Contribuição em checkout limpo pelo Fluxo Express:** `README.md` separa explicitamente o caminho de contribuição pequena no próprio kit (apenas Git, Python 3 e Bash, sem MCP, `.env` ou credenciais de projeto) da aplicação do kit a um projeto com setup progressivo (#24).
+
+### Qualidade e testes
+- Suíte automatizada ampliada para **46 testes** (`python3 -B -m unittest discover -s tests -v`), cobrindo retomada por provedor no timesync, todos os 5 adaptadores oficiais, composição ortogonal de adaptadores e validação `i18n/` (#20, #23, #25, #27).
+
 ## [0.2.0] — 2026-11-27
 
 ### Adicionado
@@ -30,5 +47,6 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 ### Adicionado
 - Baseline público inicial do kit (então *AI Workflow Kit*) com processos canônicos, wrappers para Claude Code, Cursor, Codex e Copilot, templates e scripts de time tracking para iniciar o ciclo de auto-aprimoramento.
 
+[0.3.0]: https://github.com/Ghostavio/Symbiote-AI/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Ghostavio/Symbiote-AI/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Ghostavio/Symbiote-AI/releases/tag/v0.1.0

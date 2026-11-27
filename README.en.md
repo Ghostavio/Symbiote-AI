@@ -89,7 +89,7 @@ Symbiote-AI/
 ├── adapters/                     ← optional adapters (stacks/angular, stacks/react, cloud/cloudflare, cloud/aws, observability/opentelemetry)
 ├── i18n/                         ← multilingual manifest (i18n.json) and translated guides (e.g. en/)
 ├── templates/                    ← spec-template, story.template, project-reference (template)
-├── docs/                         ← workflow, discovery (template), e2e, work-items process, lessons learned
+├── docs/                         ← workflow, discovery (template), e2e, integracoes, work-items process, lessons learned
 ├── scripts/                      ← validator (`validate-kit.py`) and timesync (`time-entry-interval.py`, `sync-7pace.sh`, `setup-7pace.*`)
 └── tests/                        ← automated tests for the validator, adapters, i18n, and timesync scripts
 ```
@@ -97,7 +97,7 @@ Symbiote-AI/
 ## Tools and integrations
 
 - **AI tools:** native support for **Claude Code**, **Antigravity**, **Gemini CLI**, **Codex**, **Cursor**, and **VSCode + Copilot** (via wrappers + `ai-tools-matrix.md`). Additional tools follow Recipe E in [`i18n/en/expansion-guide.md`](i18n/en/expansion-guide.md).
-- **Tracker / Board:** Azure DevOps, Jira/Atlassian (`setup-jira`), or any board configured in `.claude/PROJECT_REFERENCE.md` (teams without a board can run locally with the journal).
+- **Tracker / Board:** Azure DevOps, Jira/Atlassian (`setup-jira`), or any board configured in `.claude/PROJECT_REFERENCE.md` (see [`docs/integracoes.md`](docs/integracoes.md); teams without a board can run locally with the journal).
 - **Quality:** local static analysis such as [SonarJS via ESLint](https://github.com/SonarSource/SonarJS/blob/master/packages/analysis/src/jsts/rules/README.md) for JS/TS, plus SonarQube via MCP when already configured.
 - **Time tracking:** 7pace and Clockify (explicit-offset ISO 8601 timestamps normalized to UTC), extensible to **Toggl/Harvest** per [`i18n/en/expansion-guide.md`](i18n/en/expansion-guide.md).
 - **Documentation:** in-repo **or** external (Confluence/Outline/Notion) via `docs-target` — keeping PRs clean.
