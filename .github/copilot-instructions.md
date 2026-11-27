@@ -27,8 +27,7 @@ When the user requests one of these by name, open the corresponding canonical an
 | `create-work-item`        | [processes/create-work-item.md](../processes/create-work-item.md) | Criar/vincular work item no Azure DevOps Board                                          |
 | `spec-builder`            | [processes/spec-builder.md](../processes/spec-builder.md)     | Construir especificação de feature                                                       |
 | `phase-code-review`  | [processes/phase-code-review.md](../processes/phase-code-review.md) | Code review com lint + typecheck + SonarQube + testes                                  |
-| `timesync`                | [processes/timesync.md](../processes/timesync.md)             | Sincronização de horas no 7pace Timetracker                                             |
-| `timesync-clockify`       | [processes/timesync-clockify.md](../processes/timesync-clockify.md) | Extensão opcional para registrar as mesmas horas também no Clockify                     |
+| `timesync`                | [processes/timesync.md](../processes/timesync.md)             | Registrar horas em uma ou mais ferramentas de controle de tempo configuradas no projeto |
 | `setup-azure-mcp`         | [processes/setup-azure-mcp.md](../processes/setup-azure-mcp.md) | Configurar MCP do Azure DevOps                                                           |
 | `setup-sonarqube-mcp`     | [processes/setup-sonarqube-mcp.md](../processes/setup-sonarqube-mcp.md) | Configurar MCP do SonarQube (via Docker)                                                |
 | `setup-7pace`             | [processes/setup-7pace.md](../processes/setup-7pace.md)       | Configurar integração com 7pace Timetracker                                             |

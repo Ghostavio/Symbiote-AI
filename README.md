@@ -40,7 +40,7 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 | `spec-builder` | Constrói a especificação de uma feature a partir do template |
 | `create-work-item` | Cria/vincula work item no tracker (Azure DevOps / Jira) |
 | `phase-code-review` | Code review por subagente: spec compliance + qualidade + SonarQube + testes + correções |
-| `timesync` / `timesync-clockify` | Sincroniza horas no 7pace (e opcionalmente Clockify) |
+| `timesync` | Registra horas em uma ou mais ferramentas de controle de tempo configuradas no projeto |
 | `docs-target` | Define se a doc vai pro repo ou pra plataforma externa (Confluence/Outline/Notion) |
 | `setup-azure-mcp` / `setup-jira` | Configura o MCP do tracker (Azure DevOps ou Jira/Atlassian) |
 | `setup-sonarqube-mcp` | Configura o MCP do SonarQube (via Docker) |

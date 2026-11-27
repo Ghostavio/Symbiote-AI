@@ -90,4 +90,22 @@ Se você só registra no 7pace (sem Clockify), use `scripts/sync-7pace.sh` diret
 
 ### 4. (Opcional) Automatizar com a memória do assistente
 
-Salve uma preferência no seu assistente de IA para sempre usar o wrapper `sync.sh` (em vez de `sync-7pace.sh`) ao sincronizar horas. A skill `timesync-clockify` cobre esse fluxo.
+Salve uma preferência no seu assistente de IA indicando os provedores de controle de tempo ativos no projeto (ex.: somente Clockify via `sync-clockify.sh`, ou 7pace + Clockify via o wrapper `sync.sh`). A skill canônica [`timesync`](../../../processes/timesync.md) lê essa preferência automaticamente.
+
+## Regras específicas do Clockify
+
+1. **Prefixo `{WorkItemId}:` na descrição:** como o Clockify não tem vínculo nativo com o tracker, use `{WorkItemId}: {nome}` (ex.: `1234: Setup e Infraestrutura`). **Exceção:** a Daily é sempre apenas `Daily` (sem prefixo e sem "Scrum").
+2. **Timezone explícito (`-03:00` / offset local):** o Clockify interpreta `Z` literalmente como UTC. O `sync-clockify.sh` converte o sufixo `Z` para `-03:00` (ajuste o offset se o time usar outro fuso).
+3. **`projectId` obrigatório:** configure `CLOCKIFY_PROJECT_ID` no `.env` para vincular todas as entradas ao projeto correto.
+4. **Endpoints essenciais da API v1** (`https://api.clockify.me/api/v1`, header `X-Api-Key`):
+   - Criar: `POST /workspaces/{workspaceId}/time-entries`
+   - Listar: `GET /workspaces/{workspaceId}/user/{userId}/time-entries?start=...&end=...`
+   - Atualizar: `PUT /workspaces/{workspaceId}/time-entries/{id}`
+   - Deletar: `DELETE /workspaces/{workspaceId}/time-entries/{id}`
+
+### Checklist específico do Clockify
+
+- [ ] Cada entrada vinculada a item do tracker tem prefixo `{WorkItemId}: ` (exceto `Daily`)
+- [ ] Timestamps enviados à API usam offset explícito (nunca `Z` cru)
+- [ ] `projectId` preenchido corretamente em todas as entradas
+- [ ] Dailies registradas como `Daily` (sem prefixo)

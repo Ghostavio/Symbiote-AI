@@ -1,5 +1,5 @@
 ---
-description: "Use quando o usuário precisar sincronizar horas de trabalho com o 7pace Timetracker — tanto para o dia atual quanto para múltiplos dias passados."
+description: "Use quando o usuário precisar registrar horas em uma ou mais ferramentas de controle de tempo configuradas no projeto — seja para o dia atual ou para múltiplos dias passados."
 ---
 
 Follow the canonical procedure in `processes/timesync.md`.

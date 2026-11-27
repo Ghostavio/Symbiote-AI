@@ -1,7 +1,0 @@
----
-description: "Use quando o usuário precisar registrar as mesmas horas também no Clockify, além do 7pace Timetracker."
----
-
-Follow the canonical procedure in `processes/timesync-clockify.md`.
-
-Tool-call examples in the canonical use Claude Code MCP naming (e.g., `mcp__azure-devops__*`, `mcp__sonarqube__*`). In Cursor, use the equivalent MCP tools registered in your stack — see `ai-tools-matrix.md` for the mapping.
