@@ -441,9 +441,124 @@ class ValidateKitTests(unittest.TestCase):
             )
             errors = validator.validate_adapters(root)
             joined = "\n".join(errors)
-            self.assertIn("files.conventions must be a relative path inside the adapter directory", joined)
+            self.assertIn("files.conventions must be a non-symlink relative path inside the adapter directory", joined)
             self.assertIn("files.review_checks target 'missing.md' does not exist", joined)
             self.assertIn("editor-settings.json: invalid JSON", joined)
+
+    def test_detects_symlink_escaping_adapter_or_repo_root(self):
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as external_tmp:
+            root = Path(tmp)
+            external = Path(external_tmp)
+            create_minimal_valid_repo(root)
+
+            # Case 1: external adapter dir linked into adapters/stacks/
+            ext_adapter = external / "ext-stack"
+            ext_adapter.mkdir()
+            (ext_adapter / "conventions.md").write_text("# External\n", encoding="utf-8")
+            (ext_adapter / "review-checks.md").write_text("# External\n", encoding="utf-8")
+            (ext_adapter / "adapter.json").write_text(
+                json.dumps(
+                    {
+                        "id": "ext-stack",
+                        "name": "External Stack",
+                        "category": "stack",
+                        "description": "Symlinked outside repo",
+                        "detect": {"files": ["ext.json"]},
+                        "files": {
+                            "conventions": "conventions.md",
+                            "review_checks": "review-checks.md",
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            stacks_dir = root / "adapters" / "stacks"
+            stacks_dir.mkdir(parents=True)
+            (stacks_dir / "ext-stack").symlink_to(ext_adapter)
+
+            # Case 2: real adapter dir containing a symlinked file escaping to external dir
+            real_adapter = stacks_dir / "real-stack"
+            real_adapter.mkdir()
+            ext_file = external / "secret.md"
+            ext_file.write_text("# Secret\n", encoding="utf-8")
+            (real_adapter / "conventions.md").symlink_to(ext_file)
+            (real_adapter / "review-checks.md").write_text("# Checks\n", encoding="utf-8")
+            (real_adapter / "adapter.json").write_text(
+                json.dumps(
+                    {
+                        "id": "real-stack",
+                        "name": "Real Stack",
+                        "category": "stack",
+                        "description": "Has symlinked file",
+                        "detect": {"files": ["real.json"]},
+                        "files": {
+                            "conventions": "conventions.md",
+                            "review_checks": "review-checks.md",
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            errors = validator.validate_adapters(root)
+            joined = "\n".join(errors)
+            self.assertIn("adapters/stacks/ext-stack: symlinks are not allowed for adapter directories", joined)
+            self.assertIn(
+                "adapters/stacks/real-stack/adapter.json: files.conventions must be a non-symlink relative path inside the adapter directory",
+                joined,
+            )
+
+    def test_installed_adapter_skill_via_canonical_and_thin_wrappers_passes_validation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            create_minimal_valid_repo(root)
+            adapter_dir = root / "adapters" / "cloud" / "demo-cloud"
+            skill_src = adapter_dir / "skills" / "demo-deploy"
+            skill_src.mkdir(parents=True)
+            (adapter_dir / "conventions.md").write_text("# Cloud\n", encoding="utf-8")
+            (adapter_dir / "review-checks.md").write_text("# Checks\n", encoding="utf-8")
+            skill_body = (
+                "---\nname: demo-deploy\ndescription: \"Deploy helper\"\n---\n\n"
+                "# Demo Deploy\n"
+            )
+            (skill_src / "SKILL.md").write_text(skill_body, encoding="utf-8")
+            (adapter_dir / "adapter.json").write_text(
+                json.dumps(
+                    {
+                        "id": "demo-cloud",
+                        "name": "Demo Cloud",
+                        "category": "cloud",
+                        "description": "Cloud adapter with optional skill",
+                        "detect": {"files": ["cloud.toml"]},
+                        "files": {
+                            "conventions": "conventions.md",
+                            "review_checks": "review-checks.md",
+                            "skills": ["skills/demo-deploy"],
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            # Install adapter skill following source-of-truth convention: canonical + thin wrappers
+            (root / "processes" / "demo-deploy.md").write_text(skill_body, encoding="utf-8")
+            wrapper = (
+                "---\nname: demo-deploy\ndescription: \"Deploy helper\"\n---\n\n"
+                "Follow [`processes/demo-deploy.md`](../../../processes/demo-deploy.md).\n"
+            )
+            for base in (root / ".claude" / "skills", root / ".agents" / "skills"):
+                d = base / "demo-deploy"
+                d.mkdir(parents=True)
+                (d / "SKILL.md").write_text(wrapper, encoding="utf-8")
+            (root / ".cursor" / "rules" / "demo-deploy.mdc").write_text(
+                "---\ndescription: \"Deploy helper\"\n---\n\nFollow `processes/demo-deploy.md`.\n",
+                encoding="utf-8",
+            )
+            with (root / "AGENTS.md").open("a", encoding="utf-8") as f:
+                f.write("| `demo-deploy` | [processes/demo-deploy.md](processes/demo-deploy.md) |\n")
+            with (root / ".github" / "copilot-instructions.md").open("a", encoding="utf-8") as f:
+                f.write("| `demo-deploy` | [processes/demo-deploy.md](../processes/demo-deploy.md) |\n")
+
+            self.assertEqual(validator.validate_repo(root), [])
 
     def test_installed_layout_with_selected_adapter_passes_validation(self):
         simbiose_text = (REPO_ROOT / "processes" / "simbiose.md").read_text(encoding="utf-8")

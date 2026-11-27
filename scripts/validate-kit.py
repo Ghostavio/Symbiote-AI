@@ -412,28 +412,54 @@ def validate_shell_scripts(root: Path) -> list[str]:
     return errors
 
 
-def _resolve_inside_adapter(adapter_dir: Path, rel_path: object) -> Path | None:
+def _has_symlink_component(base: Path, rel: Path) -> bool:
+    current = base
+    for part in rel.parts:
+        current = current / part
+        if current.is_symlink():
+            return True
+    return False
+
+
+def _resolve_inside_adapter(root: Path, adapter_dir: Path, rel_path: object) -> Path | None:
     if not isinstance(rel_path, str) or not rel_path.strip():
         return None
     candidate = Path(rel_path)
     if candidate.is_absolute():
         return None
+    if _has_symlink_component(adapter_dir, candidate):
+        return None
+    repo_root = root.resolve()
     adapter_root = adapter_dir.resolve()
+    if not adapter_root.is_relative_to(repo_root):
+        return None
     resolved = (adapter_root / candidate).resolve()
-    if not resolved.is_relative_to(adapter_root) or resolved == adapter_root:
+    if (
+        not resolved.is_relative_to(adapter_root)
+        or not resolved.is_relative_to(repo_root)
+        or resolved == adapter_root
+    ):
         return None
     return resolved
 
 
 def validate_adapters(root: Path) -> list[str]:
     errors: list[str] = []
+    repo_root = root.resolve()
     adapters_dir = root / "adapters"
-    if not adapters_dir.exists():
+    if not adapters_dir.exists() and not adapters_dir.is_symlink():
         return []
+    if adapters_dir.is_symlink():
+        return ["adapters: symlinks are not allowed for adapters directory"]
     if not adapters_dir.is_dir():
         return ["adapters: expected a directory"]
 
     for entry in sorted(adapters_dir.iterdir()):
+        if entry.is_symlink():
+            errors.append(
+                f"adapters/{entry.name}: symlinks are not allowed inside adapters/"
+            )
+            continue
         if entry.is_file():
             if entry.name != "README.md":
                 errors.append(
@@ -450,11 +476,21 @@ def validate_adapters(root: Path) -> list[str]:
         expected_category = ADAPTER_CATEGORIES[entry.name]
         for adapter_dir in sorted(entry.iterdir()):
             rel_adapter = adapter_dir.relative_to(root).as_posix()
+            if adapter_dir.is_symlink():
+                errors.append(
+                    f"{rel_adapter}: symlinks are not allowed for adapter directories"
+                )
+                continue
             if adapter_dir.is_file():
                 if adapter_dir.name != "README.md":
                     errors.append(
                         f"{rel_adapter}: unexpected file inside category directory"
                     )
+                continue
+            if not adapter_dir.resolve().is_relative_to(repo_root):
+                errors.append(
+                    f"{rel_adapter}: adapter directory resolves outside repository root"
+                )
                 continue
             if not ADAPTER_ID_RE.match(adapter_dir.name):
                 errors.append(
@@ -463,6 +499,9 @@ def validate_adapters(root: Path) -> list[str]:
 
             manifest_path = adapter_dir / "adapter.json"
             rel_manifest = manifest_path.relative_to(root).as_posix()
+            if manifest_path.is_symlink():
+                errors.append(f"{rel_manifest}: symlinks are not allowed for adapter.json")
+                continue
             if not manifest_path.is_file():
                 errors.append(f"{rel_adapter}: missing adapter.json")
                 continue
@@ -538,10 +577,10 @@ def validate_adapters(root: Path) -> list[str]:
 
             for req_key in ("conventions", "review_checks"):
                 raw_path = files.get(req_key)
-                resolved = _resolve_inside_adapter(adapter_dir, raw_path)
+                resolved = _resolve_inside_adapter(root, adapter_dir, raw_path)
                 if resolved is None:
                     errors.append(
-                        f"{rel_manifest}: files.{req_key} must be a relative path inside the adapter directory"
+                        f"{rel_manifest}: files.{req_key} must be a non-symlink relative path inside the adapter directory"
                     )
                 elif not resolved.is_file():
                     errors.append(
@@ -550,10 +589,10 @@ def validate_adapters(root: Path) -> list[str]:
 
             if "editor_settings" in files:
                 raw_editor = files["editor_settings"]
-                resolved_editor = _resolve_inside_adapter(adapter_dir, raw_editor)
+                resolved_editor = _resolve_inside_adapter(root, adapter_dir, raw_editor)
                 if resolved_editor is None:
                     errors.append(
-                        f"{rel_manifest}: files.editor_settings must be a relative path inside the adapter directory"
+                        f"{rel_manifest}: files.editor_settings must be a non-symlink relative path inside the adapter directory"
                     )
                 elif not resolved_editor.is_file():
                     errors.append(
@@ -578,13 +617,18 @@ def validate_adapters(root: Path) -> list[str]:
                     errors.append(f"{rel_manifest}: files.skills must be a list of relative paths")
                 else:
                     for raw_skill in raw_skills:
-                        resolved_skill = _resolve_inside_adapter(adapter_dir, raw_skill)
+                        resolved_skill = _resolve_inside_adapter(root, adapter_dir, raw_skill)
                         if resolved_skill is None:
                             errors.append(
-                                f"{rel_manifest}: files.skills entry '{raw_skill}' must stay inside the adapter directory"
+                                f"{rel_manifest}: files.skills entry '{raw_skill}' must be a non-symlink path inside the adapter directory"
                             )
                             continue
                         skill_md = resolved_skill / "SKILL.md"
+                        if skill_md.is_symlink():
+                            errors.append(
+                                f"{rel_adapter}/{raw_skill}/SKILL.md: symlinks are not allowed"
+                            )
+                            continue
                         if not resolved_skill.is_dir() or not skill_md.is_file():
                             errors.append(
                                 f"{rel_manifest}: files.skills entry '{raw_skill}' must contain SKILL.md"

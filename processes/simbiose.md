@@ -59,7 +59,7 @@ Crie um `.gitignore` que ignore `.env` e segredos (e adicione as entradas do sta
 
 Aplique [o procedimento de integração](integrar.md) ao projeto recém-criado, reaproveitando as escolhas do Passo 1. Ele:
 - substitui os placeholders (`<PROJECT_KEY>`, `<TEST_CMD>`, `<src>`, …) pelos valores reais do projeto recém-criado;
-- acopla os adaptadores selecionados (convenções em `.claude/PROJECT_REFERENCE.md`, checks em `phase-code-review` e presets opcionais de editor/skills);
+- acopla os adaptadores selecionados (convenções em `.claude/PROJECT_REFERENCE.md`, checks em `phase-code-review`, presets opcionais de editor e eventuais `skills/` instaladas como canônicos em `processes/` + wrappers finos);
 - mantém só os wrappers das ferramentas de IA escolhidas;
 - configura os MCPs (tracker, qualidade, docs, Figma, Playwright);
 - preenche `templates/project-reference.template.md` → `.claude/PROJECT_REFERENCE.md`;

@@ -63,10 +63,10 @@ Cada adaptador vive em `adapters/<categoria_dir>/<id>/` (onde `<categoria_dir>` 
   - `conventions` *(obrigatório)*: convenções de código, arquitetura e testes a compor em `.claude/PROJECT_REFERENCE.md` e `AGENTS.md`.
   - `review_checks` *(obrigatório)*: checklist específico carregado em [`processes/phase-code-review.md`](../processes/phase-code-review.md) (§2–§4).
   - `editor_settings` *(opcional)*: JSON com preferências de editor/formatador específicas da stack para mesclar em `.cursor/settings.json` mediante aprovação.
-  - `skills` *(opcional)*: lista de subdiretórios relativos contendo `SKILL.md` com frontmatter válido, instalados nos wrappers apenas quando o adaptador é acoplado.
+  - `skills` *(opcional)*: lista de subdiretórios relativos contendo `SKILL.md` com frontmatter válido (`name` e `description`). Quando o adaptador é acoplado, cada skill é instalada seguindo a convenção de fonte única de verdade do kit: o corpo vira canônico em `processes/<name>.md` e os wrappers finos correspondentes (`.agents/skills/<name>/SKILL.md`, `.claude/skills/<name>/SKILL.md`, `.cursor/rules/<name>.mdc`, `AGENTS.md`, `.github/copilot-instructions.md`) apontam para ele.
 
 ## Como o acoplamento funciona
 
 1. **Detecção (`simbiose` / `integrar`):** inspeciona o projeto host usando os sinais de `detect` nos `adapters/*/*/adapter.json` disponíveis (ou a escolha explícita do usuário em projetos novos).
 2. **Plano com confirmação:** apresenta quais adaptadores serão acoplados, quais comandos e convenções entram no projeto e se há presets de editor ou skills opcionais a incluir.
-3. **Instalação seletiva:** copia apenas os adaptadores aprovados para `adapters/` do projeto host (sem levar adaptadores de outras stacks), compõe as convenções em `.claude/PROJECT_REFERENCE.md` e referencia `review-checks.md` no fluxo de revisão.
+3. **Instalação seletiva:** copia apenas os adaptadores aprovados para `adapters/` do projeto host (sem levar adaptadores de outras stacks), compõe as convenções em `.claude/PROJECT_REFERENCE.md`, referencia `review-checks.md` no fluxo de revisão e, quando houver `files.skills`, instala cada skill como canônico em `processes/<name>.md` com seus respectivos wrappers finos nas ferramentas ativas.
