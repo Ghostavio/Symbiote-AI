@@ -41,7 +41,7 @@ Trocar de ferramenta ou de tracker = editar wrappers/matrix, sem tocar nos proce
 | `figma-requirements` | Levanta requisitos a partir de um design no **Figma** (MCP local ou online) |
 | `spec-builder` | Constrói a especificação de uma feature a partir do template |
 | `create-work-item` | Cria/vincula work item no tracker (Azure DevOps / Jira) |
-| `phase-code-review` | Code review por subagente com verificação da especificação, análise estática, testes e correções |
+| `phase-code-review` | Code review com análise e testes proporcionais ao risco, com correções quando autorizadas |
 | `timesync` | Registra horas em uma ou mais ferramentas de controle de tempo configuradas no projeto |
 | `docs-target` | Define se a doc vai pro repo ou pra plataforma externa (Confluence/Outline/Notion) |
 | `setup-azure-mcp` / `setup-jira` | Configura o MCP do tracker (Azure DevOps ou Jira/Atlassian) |
@@ -96,7 +96,7 @@ Symbiote-AI/
 
 ## Princípios
 
-O kit embute lições de desenvolvimento assistido por IA "agressivo" — ver [`docs/aprendizados.md`](docs/aprendizados.md) e a seção *Princípios* em [`processes/start-workflow.md`](processes/start-workflow.md). Resumo: editar docs via orquestrador; review por subagente dedicado que corrige; nunca rodar testes/reviewer concorrentes nos mesmos arquivos; lint+typecheck antes de testes; porte do fluxo conforme o tamanho da demanda; tracker e diário proativos.
+O kit embute lições de desenvolvimento assistido por IA "agressivo" — ver [`docs/aprendizados.md`](docs/aprendizados.md) e a seção *Princípios* em [`processes/start-workflow.md`](processes/start-workflow.md). Resumo: editar docs via orquestrador; revisão proporcional ao risco, com correções autorizadas; nunca rodar testes/reviewer concorrentes nos mesmos arquivos; lint+typecheck antes de testes; porte do fluxo conforme o tamanho da demanda; tracker e diário proativos.
 
 ## Expandindo
 

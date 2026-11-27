@@ -1,7 +1,6 @@
 ---
 name: phase-code-review
-description: "Use when an implementation phase, feature chunk, or significant code change is complete in the project — after a subagent finishes a task, after a polish round, before committing or pushing work, or when the user asks to review recent changes. Invoke PROACTIVELY without waiting for the user to ask."
-model: opus
+description: "Use para revisar código quando solicitado ou após uma entrega que justifique revisão. Ajuste a profundidade ao risco e aplique correções somente dentro do escopo autorizado."
 ---
 
 Follow the canonical procedure in [`processes/phase-code-review.md`](../../../processes/phase-code-review.md).

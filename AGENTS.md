@@ -38,7 +38,7 @@ When the user requests one of these by name (e.g., "rode o `phase-code-review`")
 | `start-workflow`          | [processes/start-workflow.md](processes/start-workflow.md) | Ponto de entrada para nova sessão de desenvolvimento (feature/bug/refactor/freestyle)   |
 | `create-work-item`        | [processes/create-work-item.md](processes/create-work-item.md) | Criar/vincular work item no Azure DevOps Board (Feature → User Story → Tasks)            |
 | `spec-builder`            | [processes/spec-builder.md](processes/spec-builder.md)     | Construir especificação de feature a partir do template padrão                          |
-| `phase-code-review`  | [processes/phase-code-review.md](processes/phase-code-review.md) | Code review com lint + typecheck + análise estática + testes + correções automáticas |
+| `phase-code-review`  | [processes/phase-code-review.md](processes/phase-code-review.md) | Code review com lint + typecheck + análise estática e testes, com correções quando autorizadas |
 | `timesync`                | [processes/timesync.md](processes/timesync.md)             | Registrar horas em uma ou mais ferramentas de controle de tempo configuradas no projeto |
 | `setup-azure-mcp`         | [processes/setup-azure-mcp.md](processes/setup-azure-mcp.md) | Configurar MCP do Azure DevOps na ferramenta de AI em uso                                |
 | `setup-sonarqube-mcp`     | [processes/setup-sonarqube-mcp.md](processes/setup-sonarqube-mcp.md) | Configurar MCP do SonarQube (via Docker)                                                |

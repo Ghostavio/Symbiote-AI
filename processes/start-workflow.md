@@ -18,7 +18,7 @@ Estes princípios moldam todos os fluxos abaixo. Detalhe e contexto em [`docs/ap
 1. **Edições em documentos gerados pela IA passam pelo orquestrador.** Editar manualmente um spec/design/plano deixa o orquestrador com uma versão velha em contexto e ele "corrige" suas mudanças. Peça a edição ao orquestrador — ou avise explicitamente o que mudou e por quê.
 2. **Higienize o codebase antes da implementação assistida.** Código morto/artefatos não usados poluem discovery, design e implementação — a IA trata tudo que encontra como relevante e propaga o ruído.
 3. **Nunca rode reviewer em background sobre arquivos que você está editando**, nem rode testes concorrentes (muitos runners — ex. Vitest — não suportam instâncias paralelas no mesmo projeto). Sequencial, ou isolado com lista explícita de arquivos a não tocar.
-4. **Code review por subagente dedicado após cada fase** — o orquestrador tende a revisar superficialmente. O mesmo reviewer deve corrigir o que não exige decisão do usuário.
+4. **Dimensione a revisão pelo risco da fase.** Prefira uma revisão independente em entregas de alto impacto ou complexidade, quando disponível e autorizada. Aplique apenas correções que façam parte da entrega.
 5. **Após 2-3 tentativas falhas num ajuste visual/CSS, pare e delegue** a um subagente com validação visual (Playwright MCP) e o histórico das tentativas falhas.
 6. **Escolha o porte do fluxo pelo risco, escopo e reversibilidade.** A quantidade de arquivos ajuda a estimar o esforço. Uma mudança pequena em autorização ou cobrança ainda pode exigir revisão independente.
 7. **Cole o texto da task no prompt do subagente** em vez de mandá-lo ler um plano gigante — ele lê o arquivo inteiro e gasta contexto à toa.
@@ -77,7 +77,7 @@ Classifique cada subagente **antes** de despachar e anuncie a escolha (ex.: "des
 - Extração/sumarização de informação já estruturada
 
 **→ Opus (complexo / alto impacto):**
-- **Code review** e **design técnico** (sempre — decisões propagam para todas as fases)
+- **Code review de alto impacto** e **design técnico** com decisões que afetam várias fases
 - **Orquestração** (o thread principal)
 - Lógica de negócio não-trivial, integração entre camadas, algoritmos
 - Depuração de causa raiz, ajustes visuais difíceis, decisões de arquitetura
@@ -125,7 +125,7 @@ Seguir as etapas do `docs/workflow.md`:
 3. **Design técnico** via subagente → `docs/design/design-tecnico.md`
 4. **Plano de implementação** via subagente → `docs/plano-implementacao.md` — **marque explicitamente quais tasks são "integração" e quais são "implementação pura"** (Princípio 8). Para cada task, use [`templates/story.template.md`](../templates/story.template.md) (contexto embutido — Princípio 7)
 5. **Implementação** em fases com subagentes — agrupe tasks relacionadas num subagente grande e **cole o texto da task no prompt** (Princípios 6 e 7)
-6. **Code review** obrigatório por subagente dedicado após cada fase (skill `phase-code-review`), que também corrige o que não exige decisão do usuário (Princípio 4)
+6. **Code review** ao concluir cada fase (skill `phase-code-review`), com profundidade e correções conforme risco e escopo (Princípio 4)
 7. **Timetracking** incremental no diário + 7pace; **tracker** sincronizado via MCP a cada fase (Princípios 12 e 13)
 
 ### A.4 — Conclusão
