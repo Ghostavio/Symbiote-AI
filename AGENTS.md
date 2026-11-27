@@ -7,8 +7,8 @@ This repository supports AI-assisted development across multiple tools (Claude C
 - **Source of truth:** `processes/<name>.md` (this is what every wrapper points to)
 - **Wrappers per tool** (committed to the repo, no setup needed):
   - Claude Code: `.claude/skills/<name>/SKILL.md`
+  - Antigravity / Gemini CLI / Codex: `.agents/skills/<name>/SKILL.md` + `AGENTS.md` / `GEMINI.md`
   - Cursor: `.cursor/rules/<name>.mdc`
-  - Codex / Antigravity: this `AGENTS.md` (single file, sections below)
   - VSCode + Copilot: `.github/copilot-instructions.md`
 
 - **Tool-call examples in canonicals**: most procedures use Claude Code MCP names (e.g., `mcp__azure-devops__wit_create_work_item`, `mcp__sonarqube__analyze_code_snippet`) as concrete examples. When working in Codex/Antigravity, use the equivalent tools from your stack:
@@ -20,7 +20,7 @@ This repository supports AI-assisted development across multiple tools (Claude C
 
 ## Project context
 
-- **Project:** o projeto — stack definido via `/integrar` (exemplo do kit: Angular + Material, Clean Architecture, Vitest, Playwright)
+- **Project:** `<PROJECT_NAME>` — stack, arquitetura e comandos definidos via `/integrar` (ou `/simbiose` em projetos novos) e documentados em `.claude/PROJECT_REFERENCE.md`
 - **Repository:** `<ORG>/<PROJECT_KEY>`
 - **Tracker:** Azure DevOps por padrão nos exemplos; para Jira use `setup-jira` (os exemplos `mcp__azure-devops__*` viram chamadas do MCP Atlassian/Jira)
 - **Architecture overview:** `templates/project-reference.template.md`
@@ -53,11 +53,10 @@ When the user requests one of these by name (e.g., "rode o `phase-code-review`")
 
 ## Idioma e convenções de código
 
-- **Idioma da UI e mensagens:** Português brasileiro (pt-BR) — todo texto de interface é hardcoded em pt-BR
+- **Idioma da UI e mensagens:** Português brasileiro (pt-BR) por padrão (ajuste conforme o projeto)
 - **Commit messages:** Português brasileiro
 - **Sem `Co-Authored-By` em commits**
-- **Standalone components, `inject()`, Angular Signals, `OnPush`**
-- **Sem `fakeAsync`/`tick`, sem `TestBed.initTestEnvironment()`** — Vitest com `@angular/build:unit-test`
+- **Padrões da stack e testes:** siga a arquitetura, os linters e o framework de testes documentados em `.claude/PROJECT_REFERENCE.md` e `docs/discovery.md` (configurados via `/integrar` ou `/simbiose`)
 
 ## Updates
 
