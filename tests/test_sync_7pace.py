@@ -12,7 +12,7 @@ INTERVAL_HELPER = Path(__file__).resolve().parents[1] / "scripts/time-entry-inte
 
 
 class SevenPaceSyncTests(unittest.TestCase):
-    def run_sync(self, *flags, legacy_env=None):
+    def run_sync(self, *flags, legacy_env=None, start="2026-01-14T14:00:00Z", end="2026-01-14T15:00:00Z"):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             scripts = root / "scripts"
@@ -35,8 +35,8 @@ class SevenPaceSyncTests(unittest.TestCase):
                 [
                     "/bin/bash", script,
                     "--description", "Exemplo de simulação",
-                    "--start", "2026-01-14T14:00:00Z",
-                    "--end", "2026-01-14T15:00:00Z",
+                    "--start", start,
+                    "--end", end,
                     "--work-item-id", "42",
                     *flags,
                 ],
@@ -55,6 +55,18 @@ class SevenPaceSyncTests(unittest.TestCase):
         self.assertEqual(payload["workItemId"], 42)
         self.assertEqual(payload["length"], 3600)
         self.assertEqual(payload["activityTypeId"], "<7PACE_ACTIVITY_ID_REUNIAO>")
+
+    def test_dry_run_normalizes_offset_to_utc_and_omits_timezone_field(self):
+        result = self.run_sync(
+            "--dry-run",
+            start="2026-01-14T14:00:00-03:00",
+            end="2026-01-14T15:30:00-03:00",
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        payload, _ = json.JSONDecoder().raw_decode(result.stdout[result.stdout.index("{"):])
+        self.assertEqual(payload["timeStamp"], "2026-01-14T17:00:00Z")
+        self.assertEqual(payload["length"], 5400)
+        self.assertNotIn("timeZone", payload)
 
     def test_live_run_requires_token(self):
         result = self.run_sync()

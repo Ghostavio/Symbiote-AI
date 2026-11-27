@@ -64,9 +64,11 @@ if [[ ! "$WORK_ITEM_ID" =~ ^[0-9]+$ ]]; then
   echo "  --work-item-id: '$WORK_ITEM_ID'" >&2
   exit 1
 fi
-if ! DURATION_SECONDS=$(python3 "$SCRIPT_DIR/time-entry-interval.py" "$START_TIME" "$END_TIME"); then
+if ! INTERVAL=$(python3 "$SCRIPT_DIR/time-entry-interval.py" "$START_TIME" "$END_TIME"); then
   exit 1
 fi
+DURATION_SECONDS=$(INTERVAL_JSON="$INTERVAL" python3 -c 'import json, os; print(json.loads(os.environ["INTERVAL_JSON"])["duration_seconds"])')
+START_UTC=$(INTERVAL_JSON="$INTERVAL" python3 -c 'import json, os; print(json.loads(os.environ["INTERVAL_JSON"])["start_utc"])')
 
 # --- Activity Type IDs ---
 # Os IDs abaixo são específicos do SEU tenant 7pace. Obtenha-os via API:
@@ -116,7 +118,7 @@ if ! $DRY_RUN; then
 fi
 
 BODY=$(WORK_ITEM_ID="$WORK_ITEM_ID" DURATION_SECONDS="$DURATION_SECONDS" \
-  START_TIME="$START_TIME" DESCRIPTION="$DESCRIPTION" ACTIVITY_TYPE_ID="$ACTIVITY_TYPE_ID" \
+  START_TIME="$START_UTC" DESCRIPTION="$DESCRIPTION" ACTIVITY_TYPE_ID="$ACTIVITY_TYPE_ID" \
   python3 -c '
 import json, os
 body = {

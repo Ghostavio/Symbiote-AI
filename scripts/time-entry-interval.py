@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
-"""Validate timezone-aware ISO 8601 timestamps and print elapsed seconds."""
+"""Validate timezone-aware ISO 8601 timestamps and print normalized interval JSON."""
 
 from datetime import datetime, timezone
+import json
 import re
 import sys
 
@@ -37,7 +37,11 @@ def main() -> int:
         print("ERRO: --end deve representar um instante posterior a --start.", file=sys.stderr)
         return 1
 
-    print(duration)
+    print(json.dumps({
+        "duration_seconds": duration,
+        "start_utc": start.isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "end_utc": end.isoformat(timespec="seconds").replace("+00:00", "Z"),
+    }))
     return 0
 
 

@@ -40,9 +40,11 @@ if [[ -z "$DESCRIPTION" || -z "$START_TIME" || -z "$END_TIME" ]]; then
   exit 1
 fi
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-if ! python3 "$PROJECT_ROOT/scripts/time-entry-interval.py" "$START_TIME" "$END_TIME" >/dev/null; then
+if ! INTERVAL=$(python3 "$PROJECT_ROOT/scripts/time-entry-interval.py" "$START_TIME" "$END_TIME"); then
   exit 1
 fi
+START_UTC=$(INTERVAL_JSON="$INTERVAL" python3 -c 'import json, os; print(json.loads(os.environ["INTERVAL_JSON"])["start_utc"])')
+END_UTC=$(INTERVAL_JSON="$INTERVAL" python3 -c 'import json, os; print(json.loads(os.environ["INTERVAL_JSON"])["end_utc"])')
 
 if [[ -z "${CLOCKIFY_API_TOKEN:-}" ]]; then
   echo "[Clockify] SKIP — CLOCKIFY_API_TOKEN não configurado"
@@ -55,7 +57,7 @@ fi
 
 PROJECT_ID="${CLOCKIFY_PROJECT_ID:-}"
 
-BODY=$(CLOCKIFY_START="$START_TIME" CLOCKIFY_END="$END_TIME" \
+BODY=$(CLOCKIFY_START="$START_UTC" CLOCKIFY_END="$END_UTC" \
   DESCRIPTION="$DESCRIPTION" PROJECT_ID="$PROJECT_ID" \
   python3 -c '
 import json, os
